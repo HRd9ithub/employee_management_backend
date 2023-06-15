@@ -27,7 +27,7 @@ const sendMail = async (email, mailsubject, content) => {
             }
         });
     } catch (error) {
-        console.log(error)
+        console.log(error, "error  ======> send mail file")
     }
 }
 

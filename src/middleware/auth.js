@@ -9,11 +9,15 @@ const Auth = async (req, res, next) => {
         console.log('verifyUser', verifyUser)
         const data = await user.findOne({ _id: verifyUser._id }).select("-password")
         console.log('user', data)
-        req.user = data
-        next()
+        if (data) {
+            req.user = data
+            next()
+        }else{
+            return res.status(404).json({message:"UnAuthorization",success :false})
+        }
     } catch (error) {
         res.status(404).send("UnAuthorization")
     }
 }
 
-module.exports =Auth
+module.exports = Auth

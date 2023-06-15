@@ -129,11 +129,13 @@ const resetPassword = async (req, res) => {
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
 
-        if (userData) {
+            if (userData.email == req.user.email) {
             // password convert hash
             let passwordHash = await bcrypt.hash(req.body.password, 10)
             const response = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash }, { new: true })
             return res.status(200).json({ success: true, message: "Your password has been changed successfully." })
+        }else{
+            return res.status(404).json({ success: false, message: "Your password has been changed failed." })
         }
     } catch (error) {
         console.log('error', error)
