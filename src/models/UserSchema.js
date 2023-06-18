@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['Active', 'Inactive']
     },
-    // profileImage: {
+    // image: {
     //     type: String,
     //     required: true
     // },
