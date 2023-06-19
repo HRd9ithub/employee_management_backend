@@ -9,6 +9,10 @@ const designationRoute = require('./Routes/DesignationRoute');
 const menuRoute = require('./Routes/MenuRoute');
 const holidayRoute = require('./Routes/HolidayRoute');
 const leaveTypeRoute = require('./Routes/leaveTypeRoute');
+const accountRoute = require('./Routes/AccountRoute');
+const timeSheetRoute = require('./Routes/timesheetRoute');
+const documentRoute = require('./Routes/documentRoute');
+const roleRoute = require('./Routes/roleRoute');
 // add database
 require("./DB/conn")
 
@@ -20,6 +24,8 @@ app.use(cors())
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use('/uploads',express.static('uploads'))
+
 
 app.use('/api/auth',AuthRoute)
 app.use('/api/user',userRoute)
@@ -28,6 +34,13 @@ app.use('/api/designation',designationRoute)
 app.use('/api/menu',menuRoute)
 app.use('/api/holiday',holidayRoute)
 app.use('/api/leaveType',leaveTypeRoute)
+app.use('/api/timeSheet',timeSheetRoute)
+app.use('/api/document',documentRoute)
+app.use('/api/role',roleRoute)
+
+
+
+app.use('/api/account',accountRoute)
 
 // server for listen
 app.listen(port,() => {
