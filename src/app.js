@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require("express")
+var cors = require('cors')
 const userRoute = require("./Routes/UserRoute");
 var bodyParser = require('body-parser');
 const AuthRoute = require("./Routes/AuthRoute");
@@ -14,6 +15,8 @@ require("./DB/conn")
 const app = express();
 
 const port = process.env.PORT || 8000
+
+app.use(cors())
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
