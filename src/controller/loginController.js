@@ -101,7 +101,7 @@ const mailSend = async (req, res) => {
                             <hr/> \
                             <p>hi</p>\
                       <p>Thank you for choosing Your Brand. Use the following OTP to complete your Sign Up procedures. OTP is valid for 5 minutes</p>\
-                       <a href=http://localhost:3000/newPassword?email=${req.body.email}&token=${token}>Reset Password </a>
+                       <a href=http://localhost:3001/newPassword?email=${req.body.email}&token=${token}>Reset Password </a>
                     `
             // mail send function
             sendMail(req.body.email, mailsubject, content);

@@ -13,10 +13,10 @@ const Auth = async (req, res, next) => {
             req.user = data
             next()
         }else{
-            return res.status(404).json({message:"UnAuthorization",success :false})
+            return  res.status(400).json({ message: "UnAuthorization" })
         }
     } catch (error) {
-        res.status(404).send("UnAuthorization")
+        res.status(400).json({ message: "UnAuthorization" })
     }
 }
 
