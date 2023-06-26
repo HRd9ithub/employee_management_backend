@@ -10,8 +10,12 @@ const Auth = async (req, res, next) => {
         const data = await user.findOne({ _id: verifyUser._id }).select("-password")
         console.log('user', data)
         if (data) {
-            req.user = data
-            next()
+            if(data.token == token){
+                req.user = data
+                next()
+            }else{
+                return  res.status(400).json({ message: "Please login try again." })
+            }
         }else{
             return  res.status(400).json({ message: "UnAuthorization" })
         }

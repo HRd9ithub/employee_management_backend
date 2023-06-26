@@ -21,9 +21,8 @@ const userLogin = async (req, res) => {
             let isMatch = await bcrypt.compare(req.body.password, userData.password);
             if (isMatch) {
                 let mailsubject = 'Mail Verification';
-                let otp = Math.random().toString().slice(3, 7);
-
-                otp.length < 4 ? otp = otp + "3" : otp;
+                let otp = Math.random().toString().slice(3, 5);
+                otp.length < 4 ? otp = otp.padEnd(4,"0") : otp;
                 // mail content
                 let content = `<h4><b>D9ithub</b></h4> \
                             <hr/> \
@@ -65,7 +64,7 @@ const verifyOtp = async (req, res) => {
         const data = await user.findOne({ email: req.body.email });
         if (data.otp == req.body.otp) {
             // generate token
-            var token = jwt.sign({ _id: data._id }, process.env.SECRET_KEY);
+            const token = await data.generateToken();
 
             // otp match for update otp value null
             const response = await user.findByIdAndUpdate({ _id: data._id }, { otp: null }, { new: true })
@@ -142,5 +141,21 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }
+// logout  function
+const userLogout = async (req, res) => {
+    try {
+        req.user.token = null
 
-module.exports = { userLogin, verifyOtp, mailSend, resetPassword }
+        if (req.user) {
+            await req.user.save();
+            return res.status(200).json({ success: true, message: "Logout is successfully." })
+        } else {
+            return res.status(404).json({ success: false, message: "Logout is faied." })
+        }
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
+
+module.exports = { userLogin, verifyOtp, mailSend, resetPassword ,userLogout}

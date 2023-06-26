@@ -1,6 +1,6 @@
 const express = require("express")
 const expressValidator = require("express-validator");
-const { userLogin, verifyOtp, mailSend, resetPassword } = require("../controller/loginController");
+const { userLogin, verifyOtp, mailSend, resetPassword, userLogout } = require("../controller/loginController");
 const Auth = require("../middleware/auth");
 const AuthRoute = express.Router();
 
@@ -24,6 +24,9 @@ AuthRoute.post('/resetpassword',Auth, [
     expressValidator.body('email', "Enter a valid email.").isEmail(),
     expressValidator.body("password", "Password must be at least 6 character ").isLength({ min: 6 })
 ],resetPassword)
+
+// logout  api
+AuthRoute.post('/logout',Auth,userLogout)
 
 
 

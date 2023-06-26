@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs")
+var jwt = require('jsonwebtoken')
 
 // document structure define 
 const userSchema = new mongoose.Schema({
@@ -95,12 +96,31 @@ const userSchema = new mongoose.Schema({
     },
     delete_Date: {
         type: Date,
-        default:null
+        default: null
     },
     update_Date: {
         type: Date
-    }
+    },
+    token:{
+            type: String
+        }
 })
+
+// generate token
+userSchema.methods.generateToken = async function () {
+    try {
+        console.log('this._id :>> ', this._id);
+        var token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+        console.log('token :>> ', token);
+        this.token = token
+        console.log('this.Tokens :>> ', this.Tokens);
+        await this.save();
+        return token
+
+    } catch (error) {
+        console.log('error :>> ', error);
+    }
+}
 
 // password convert
 userSchema.pre("save", async function (next) {
