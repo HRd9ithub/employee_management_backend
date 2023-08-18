@@ -16,13 +16,13 @@ const userLogin = async (req, res) => {
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
         console.log('userData====>', userData)
-        if (userData && userData.status !== 'Inactive') {
+        if (userData && userData.status !== 'Inactive' && !userData.delete_Date) {
             // password compare
             let isMatch = await bcrypt.compare(req.body.password, userData.password);
             if (isMatch) {
                 let mailsubject = 'Mail Verification';
                 let otp = Math.random().toString().slice(3, 5);
-                otp.length < 4 ? otp = otp.padEnd(4,"0") : otp;
+                otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
                 // mail content
                 let content = `<h4><b>D9ithub</b></h4> \
                             <hr/> \
@@ -36,11 +36,15 @@ const userLogin = async (req, res) => {
                 console.log('otp', otp)
                 // update data for otp
                 const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp }, { new: true })
-                return res.status(200).json({ success: true, message: "Otp send successfully.",data:response.email })
+                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
             } else {
                 // password not match send message
                 return res.status(400).json({ message: "Invalid email or password.", success: false })
             }
+        }
+
+        if (userData && userData.status === 'Inactive') {
+            return res.status(400).json({ message: "Please contact admin in status is inactive.", success: false })
         } else {
             // email not match send message
             return res.status(404).json({ message: "Invalid email or password.", success: false })
@@ -71,7 +75,7 @@ const verifyOtp = async (req, res) => {
             return res.status(200).json({ success: true, message: "Otp verify successfully.", token: token, id: response._id })
         } else {
             // not match send message
-            return res.status(400).json({ message: "Invalid OTP entered.",success:false })
+            return res.status(400).json({ message: "Invalid OTP entered.", success: false })
         }
     } catch (error) {
         console.log('error', error)
@@ -158,4 +162,4 @@ const userLogout = async (req, res) => {
     }
 }
 
-module.exports = { userLogin, verifyOtp, mailSend, resetPassword ,userLogout}
+module.exports = { userLogin, verifyOtp, mailSend, resetPassword, userLogout }

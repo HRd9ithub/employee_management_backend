@@ -1,0 +1,132 @@
+openapi: 3.0.0
+info:
+  title: Code Improve API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 1.0 
+  
+
+servers:
+  - url: http://localhost:8000/
+    description:  Local server 
+  # - url: https://prod.com/
+  #   description:  Pre Production server
+  # - url: https://test.com/
+  #   description:  Production server
+  
+
+ 
+components:
+  securitySchemes:
+    ApiTokenss:        # arbitrary name for the security scheme
+          
+      type: http
+      scheme: bearer
+    
+    # ApiKey:        # arbitrary name for the security scheme
+    #   type: apiKey
+    #   in: header       # can be "header", "query" or "cookie"
+    #   name: apikey
+      
+paths:
+  /api/user/{id}:
+    get:
+      tags: ["single user"]
+      security:
+       - token: []
+      summary: Returns a user details by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+          schema:
+            # type : integer
+            # format: int64
+            # type: string
+            # example: "Users String"
+            minimum: 1
+      responses: 
+        '200':
+          description: OK
+  
+
+  paths:
+  /api/user:
+    post:
+      tags:
+        - Add user
+      summary: Returns a user list. 
+      # description: <b> Request :- </b> <br /> <br />
+      #         <b> page_no* </b>  is required <br /> 
+      #         <b> status* </b>  is required <br /> 
+      #         <b> type* </b>  is required <br /> 
+
+      parameters: []
+      #   - in: query
+      #     name: month_year
+      #     schema:
+      #       #type: integer
+      #       example: 2022-10        
+      post:
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+           #application/json:
+            schema:
+              type: object
+              properties: 
+                employee_id:         
+                  type: String
+                firstName:       
+                  type: string
+                lastName:       
+                  type: string
+                email:       
+                  type: string
+                password:       
+                  type: string
+                phone:
+                  type: integer
+                reportTo:       
+                  type: string
+                roleId:       
+                  type: string
+                departmentId:       
+                  type: string
+                designationId:       
+                  type: string
+                joiningDate:       
+                    type: string
+                    format: date
+                status:
+                    type: "string"
+                    enum: ['Active', 'Inactive']
+                fileName:
+                  type: string 
+                  format: binary
+              required:
+                - employee_id
+                - firstName
+                - lastName
+                - email
+                - phone
+                - reportTo
+                - joiningDate
+                - status
+                - password
+                - roleId
+                - departmentId
+                - designationId
+         
+      responses:
+        '200':
+          description: A user object. 
+        '400':
+          description: The specified user ID is invalid (not a number).
+        '404':
+          description: A user with the specified ID was not found.
+        default:
+          description: Unexpected error
+  
+  

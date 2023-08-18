@@ -13,8 +13,27 @@ const accountRoute = require('./Routes/AccountRoute');
 const timeSheetRoute = require('./Routes/timesheetRoute');
 const documentRoute = require('./Routes/documentRoute');
 const roleRoute = require('./Routes/roleRoute');
+
+const { swaggerServe, swaggerSetup } = require('./config')
+
+// const swaggerDocument = require('./swagger.json');
 // add database
 require("./DB/conn")
+// var options = {
+//     explorer: true,
+//     swaggerOptions: {
+//       urls: [
+//         {
+//           url: 'http://petstore.swagger.io/v2/swagger.json',
+//           name: 'Spec1'
+//         },
+//         {
+//           url: 'http://petstore.swagger.io/v2/swagger.json',
+//           name: 'Spec2'
+//         }
+//       ]
+//     },
+//   }
 
 const app = express();
 
@@ -22,10 +41,12 @@ const port = process.env.PORT || 8000
 
 app.use(cors())
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 app.use('/uploads',express.static('uploads'))
 
+
+app.use("/api-docs", swaggerServe, swaggerSetup); 
 
 app.use('/api/auth',AuthRoute)
 app.use('/api/user',userRoute)

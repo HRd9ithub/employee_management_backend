@@ -1,6 +1,6 @@
 const mongoose =require("mongoose");
 
-mongoose.connect('mongodb://localhost:27017/employee_management',{
+mongoose.connect(process.env.URL,{
     useNewUrlParser : true,
     useUnifiedTopology: true
 }).then(() => {

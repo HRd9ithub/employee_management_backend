@@ -4,6 +4,10 @@ var jwt = require('jsonwebtoken')
 
 // document structure define 
 const userSchema = new mongoose.Schema({
+    employee_id: {
+        type: String,
+        required: true
+    },
     firstName: {
         type: String,
         required: true
@@ -21,22 +25,22 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    reportTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     age: {
         type: Number,
-        required: true
     },
     address: {
         type: String,
-        required: true
     },
     gender: {
         type: String,
-        required: true,
         enum: ['Male', 'Female']
     },
     dateOfBirth: {
         type: Date,
-        required: true
     },
     joiningDate: {
         type: Date,
@@ -44,7 +48,6 @@ const userSchema = new mongoose.Schema({
     },
     bloodGroup: {
         type: String,
-        required: true
     },
     status: {
         type: String,
@@ -57,19 +60,15 @@ const userSchema = new mongoose.Schema({
     // },
     country: {
         type: String,
-        required: true
     },
     state: {
         type: String,
-        required: true
     },
     city: {
         type: String,
-        required: true
     },
     postCode: {
         type: Number,
-        required: true
     },
     password: {
         type: String,

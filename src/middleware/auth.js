@@ -20,7 +20,7 @@ const Auth = async (req, res, next) => {
             return  res.status(400).json({ message: "UnAuthorization" })
         }
     } catch (error) {
-        res.status(400).json({ message: "UnAuthorization" })
+        res.status(500).json({ message: "UnAuthorization" })
     }
 }
 
