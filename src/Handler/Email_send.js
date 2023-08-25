@@ -4,14 +4,22 @@ const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
 const sendMail = async (email, mailsubject, content) => {
     try {
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
+        // const transport = nodemailer.createTransport({
+        //     host: 'smtp.gmail.com',
+        //     port: 587,
+        //     auth: {
+        //         user: SMTP_EMAIL,
+        //         pass: SMTP_PASSWORD
+        //     }
+        // })
+        var transport = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
             auth: {
                 user: SMTP_EMAIL,
                 pass: SMTP_PASSWORD
             }
-        })
+        });
         var mailOptions = {
             from: SMTP_EMAIL,
             to: email,
@@ -19,7 +27,7 @@ const sendMail = async (email, mailsubject, content) => {
             html: content
         };
 
-        transporter.sendMail(mailOptions, function (error, info) {
+        transport.sendMail(mailOptions, function (error, info) {
             if (error) {
                 console.log(error);
             } else {

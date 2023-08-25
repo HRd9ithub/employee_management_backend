@@ -1,12 +1,15 @@
+const { default: mongoose } = require("mongoose");
+const upload = require("../middleware/ImageProfile");
 const user = require("../models/UserSchema")
 const expressValidator = require("express-validator");
+const { findByIdAndUpdate } = require("../models/TokenSchema");
 
 // create user function
 const createUser = async (req, res) => {
     try {
         console.log('req.body', req.body)
         const errors = expressValidator.validationResult(req)
-
+        console.log(req.socket, "socket")
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -26,11 +29,14 @@ const createUser = async (req, res) => {
             return res.status(400).json({ message: "Employee id already exists.", success: false })
         }
         if (!email && !employee_id) {
+            req.body.profile_image = req.file && req.file.fileName
             const userData = new user(req.body);
             const response = await userData.save();
             console.log('response', response)
             return res.status(201).json({ success: true, message: "user create successfully." })
         }
+
+
     } catch (error) {
         console.log('error', error)
         res.status(500).json({ message: "Internal server error", success: false })
@@ -40,31 +46,34 @@ const createUser = async (req, res) => {
 // single user data fetch function
 const activeUser = async (req, res) => {
     try {
-        console.log('req.params', req.params)
+        console.log('req.params', req.params,new mongoose.Types.ObjectId(req.params.id))
         // if (req.user) {
-            const value = await user.aggregate([
-                {
-                    $lookup: {
-                        from: "departments", localField: "departmentId", foreignField: "_id", as: "department"
-                    }
-                }, {
-                    $lookup: {
-                        from: "designations", localField: "designationId", foreignField: "_id", as: "designation"
-                    }
-                }, {
-                    $lookup: {
-                        from: "users", localField: "reportTo", foreignField: "_id", as: "report"
-                    }
-                },{
-                    $project: { "password": 0 }
+        const value = await user.aggregate([
+            {
+                $match: { _id: new mongoose.Types.ObjectId(req.params.id)}
+            },
+            {
+                $lookup: {
+                    from: "departments", localField: "departmentId", foreignField: "_id", as: "department"
                 }
-            ])
-            const userData = value.filter((val) => {
-                return val._id == req.params.id
-            })
-            console.log('userData', userData,value)
+            }, {
+                $lookup: {
+                    from: "designations", localField: "designationId", foreignField: "_id", as: "designation"
+                }
+            }, {
+                $lookup: {
+                    from: "users", localField: "reportTo", foreignField: "_id", as: "report"
+                }
+            }, {
+                $project: {
+                    "password": 0,
+                    "token" : 0
+                }
+            }
+        ])
+      
 
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: userData })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
         // }
     } catch (error) {
         console.log('error', error)
@@ -76,25 +85,25 @@ const activeUser = async (req, res) => {
 const getUser = async (req, res) => {
     try {
         // if (req.user) {
-            const value = await user.aggregate([
-                {
-                    $lookup: {
-                        from: "departments", localField: "departmentId", foreignField: "_id", as: "department"
-                    }
-                }, {
-                    $lookup: {
-                        from: "designations", localField: "designationId", foreignField: "_id", as: "designation"
-                    }
-                }, {
-                    $lookup: {
-                        from: "users", localField: "reportTo", foreignField: "_id", as: "report"
-                    }
-                },{
-                    $project: { "password": 0 }
+        const value = await user.aggregate([
+            {
+                $lookup: {
+                    from: "departments", localField: "departmentId", foreignField: "_id", as: "department"
                 }
-            ])
-            console.log('value', value)
-            return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
+            }, {
+                $lookup: {
+                    from: "designations", localField: "designationId", foreignField: "_id", as: "designation"
+                }
+            }, {
+                $lookup: {
+                    from: "users", localField: "reportTo", foreignField: "_id", as: "report"
+                }
+            }, {
+                $project: { "password": 0 ,"token" :0}
+            }
+        ])
+        console.log('value', value)
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
         // }
     } catch (error) {
         console.log('error', error)
@@ -106,15 +115,7 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         console.log('req.body', req.params)
-        const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
-        let err = errors.array().map((val) => {
-            return val.msg
-        })
-        // check data validation error
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
-        }
+
         // check email exist or not
         const data = await user.findOne({ email: req.body.email })
         console.log(data, "====> email")
@@ -122,7 +123,6 @@ const updateUser = async (req, res) => {
         if (data && data._id != req.params.id) {
             return res.status(400).json({ message: "email address already exists.", success: false })
         } else {
-            req.body.update_Date = Date.now()
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
             console.log('response', response)
@@ -150,9 +150,9 @@ const deleteUser = async (req, res) => {
         if (!data) {
             return res.status(404).json({ message: "User are not found.", success: false })
         } else {
-            req.body.delete_Date = Date.now()
+            // req.body.deleteAt = Date.now()
             // data update method
-            const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_Date: Date.now() });
+            const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_at: Date.now() });
             console.log('response', response)
             return res.status(200).json({ success: true, message: "User delete successfully." })
         }
@@ -174,7 +174,7 @@ const updateStatusUser = async (req, res) => {
             return res.status(404).json({ message: "User are not found.", success: false })
         } else {
             // data update method
-            const response = await user.findByIdAndUpdate({ _id: req.params.id }, { update_Date: Date.now(), status: data.status === 'Active' ? 'Inactive' : "Active" });
+            const response = await user.findByIdAndUpdate({ _id: req.params.id }, {status: data.status === 'Active' ? 'Inactive' : "Active" });
             console.log('response', response)
             return res.status(200).json({ success: true, message: "User status update successfully." })
         }
@@ -241,5 +241,18 @@ const checkEmployeeId = async (req, res) => {
     }
 }
 
+// change profile image
+const changeImage = async(req,res) => {
+    console.log(req.file)
+    try {
+       let data = await user.findByIdAndUpdate({_id : req.user._id},{profile_image : req.file.filename});
+       return res.status(200).json({message : "Profile changed successfully.",success :true}) 
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
 
-module.exports = { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail ,checkEmployeeId}
+
+
+module.exports = { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId,changeImage }

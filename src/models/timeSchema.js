@@ -1,13 +1,14 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-
-const timeSheetSchema = new mongoose.Schema({
-    user_id: {
+// document structure define 
+const timeSchema = new mongoose.Schema({
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     date: {
-        type: String
+        type: Date,
+        default: Date.now
     },
     login_time: {
         type: String,
@@ -25,7 +26,7 @@ const timeSheetSchema = new mongoose.Schema({
     }
 )
 
-
-const timeSheet = new mongoose.model("timeSheet",timeSheetSchema)
+// create collection
+const timeSheet = new mongoose.model("timesheet", timeSchema)
 
 module.exports = timeSheet

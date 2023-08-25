@@ -71,10 +71,9 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
-           #application/json:
+          # multipart/form-data:
+           application/json:
             schema:
-              type: object
               properties: 
                 employee_id:         
                   type: String
@@ -94,7 +93,7 @@ paths:
                   type: string
                 departmentId:       
                   type: string
-                designationId:       
+                designationId:   
                   type: string
                 joiningDate:       
                     type: string
@@ -102,9 +101,6 @@ paths:
                 status:
                     type: "string"
                     enum: ['Active', 'Inactive']
-                fileName:
-                  type: string 
-                  format: binary
               required:
                 - employee_id
                 - firstName

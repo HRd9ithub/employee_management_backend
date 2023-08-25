@@ -8,11 +8,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    firstName: {
+    first_name: {
         type: String,
         required: true
     },
-    lastName: {
+    last_name: {
         type: String,
         required: true
     },
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    reportTo: {
+    report_to: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
@@ -39,14 +39,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['Male', 'Female']
     },
-    dateOfBirth: {
+    date_of_birth: {
         type: Date,
     },
-    joiningDate: {
+    joining_date: {
         type: Date,
         required: true
     },
-    bloodGroup: {
+    blood_group: {
         type: String,
     },
     status: {
@@ -54,10 +54,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['Active', 'Inactive']
     },
-    // image: {
-    //     type: String,
-    //     required: true
-    // },
+    profile_image: {
+        type: String,
+        default: "image_1692858235397.jpg"
+    },
     country: {
         type: String,
     },
@@ -67,52 +67,55 @@ const userSchema = new mongoose.Schema({
     city: {
         type: String,
     },
-    postCode: {
+    maried_status: {
+        type: String,
+        enum: ['Married', 'Unmarried']
+    },
+    postcode: {
         type: Number,
     },
     password: {
         type: String,
         required: true
     },
-    roleId: {
+    role_id: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    departmentId: {
+    department_id: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    designationId: {
+    designation_id: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     otp: {
         type: Number
     },
-    create_Date: {
-        type: Date,
-        default: Date.now
-    },
-    delete_Date: {
-        type: Date,
-        default: null
-    },
-    update_Date: {
+    delete_at: {
         type: Date
     },
-    token:{
-            type: String
-        }
-})
+    expireIn: {
+        type: Number
+    },
+    token: {
+        type: String
+    }
+},
+{
+    timestamps: true,
+}
+)
 
 // generate token
 userSchema.methods.generateToken = async function () {
     try {
         console.log('this._id :>> ', this._id);
-        var token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+        var token = jwt.sign({ _id: this._id,date: new Date().toLocaleDateString()}, process.env.SECRET_KEY);
         console.log('token :>> ', token);
         this.token = token
-        console.log('this.Tokens :>> ', this.Tokens);
+        console.log('this.Tokens :>> ', this.Token);
         await this.save();
         return token
 

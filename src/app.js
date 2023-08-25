@@ -13,6 +13,7 @@ const accountRoute = require('./Routes/AccountRoute');
 const timeSheetRoute = require('./Routes/timesheetRoute');
 const documentRoute = require('./Routes/documentRoute');
 const roleRoute = require('./Routes/roleRoute');
+const {encode, decode} = require('node-base64-image');
 
 const { swaggerServe, swaggerSetup } = require('./config')
 
@@ -41,9 +42,16 @@ const port = process.env.PORT || 8000
 
 app.use(cors())
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.json()) 
+
+app.use(bodyParser.urlencoded({ extended: true })); 
+
+app.use(express.json())
 app.use('/uploads',express.static('uploads'))
+
+app.post("/",async(req,res) => {
+  
+})
 
 
 app.use("/api-docs", swaggerServe, swaggerSetup); 

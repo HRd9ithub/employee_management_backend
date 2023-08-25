@@ -6,10 +6,10 @@ const Auth = require("../middleware/auth");
 const timeSheetRoute = new express.Router();
 
 // add login time api
-timeSheetRoute.post("/",Auth,[body("loginTime","login time is required.").notEmpty()],addLoginTime);
+timeSheetRoute.post("/",Auth,[body("login_time","login time is required.").notEmpty()],addLoginTime);
 
 // add logout time api
-timeSheetRoute.patch("/",Auth,[body("logoutTime","logout time is required.").notEmpty()],addLogoutTime);
+timeSheetRoute.patch("/",Auth,[body("logout_time","logout time is required.").notEmpty()],addLogoutTime);
 
 // get all data api
 timeSheetRoute.get("/",Auth,getTimeSheet);
