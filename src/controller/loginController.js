@@ -7,7 +7,7 @@ const otpGenerator = require('otp-generator');
 const loginInfo = require("../models/loginInfoSchema");
 const timeSheet = require("../models/timeSheetSchema");
 const forgetEmail = require("../Handler/forgetEmail");
-const TokenSchema = require("../models/TokenSchema");
+const tokenSchema = require("../models/TokenSchema");
 
 const addTime = async (id) => {
     try {
@@ -215,7 +215,7 @@ const mailSend = async (req, res) => {
 
             // mail send function
             forgetEmail(req.body.email, mailsubject, url, name);
-            let tokenData = new TokenSchema({
+            let tokenData = new tokenSchema({
                 email: req.body.email,
                 token,
                 expireIn: new Date().getTime() + 30 * 60000
@@ -251,12 +251,13 @@ const resetPassword = async (req, res) => {
         }
         let token = req.headers['token'];
 
-        const data = await TokenSchema.findOne({
+        const data = await tokenSchema.findOne({
             email: req.body.email,
             token: token,
         });
 
-        if (!data) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+
+        if (!data) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email."})
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
@@ -274,8 +275,8 @@ const resetPassword = async (req, res) => {
                 // password convert hash
                 let passwordHash = await bcrypt.hash(req.body.password, 10)
                 const response = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash }, { new: true })
-                await TokenSchema.deleteOne({ _id: data._id })
-                return res.status(200).json({ success: true, message: "Password reset sucessfully." })
+                await tokenSchema.deleteOne({ _id: data._id })
+                return res.status(200).json({ success: true, message: "Password reset successfully." })
             } else {
                 return res.status(400).json({ success: false, message: "Your password has been reset failed." })
             }
@@ -296,7 +297,7 @@ const checkLink = async (req, res) => {
 
         if (!token) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
 
-        const data = await TokenSchema.findOne({
+        const data = await tokenSchema.findOne({
             token: token,
         });
         console.log(data)

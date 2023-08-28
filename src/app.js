@@ -15,7 +15,9 @@ const documentRoute = require('./Routes/documentRoute');
 const roleRoute = require('./Routes/roleRoute');
 const {encode, decode} = require('node-base64-image');
 
-const { swaggerServe, swaggerSetup } = require('./config')
+const { swaggerServe, swaggerSetup } = require('./config');
+const emergencyRoute = require('./Routes/emergencyRoute');
+const userDocumentRoute = require('./Routes/userDocumentRoute');
 
 // const swaggerDocument = require('./swagger.json');
 // add database
@@ -66,10 +68,9 @@ app.use('/api/leaveType',leaveTypeRoute)
 app.use('/api/timeSheet',timeSheetRoute)
 app.use('/api/document',documentRoute)
 app.use('/api/role',roleRoute)
-
-
-
 app.use('/api/account',accountRoute)
+app.use('/api/emergency',emergencyRoute)
+app.use('/api/user_document',userDocumentRoute)
 
 // server for listen
 app.listen(port,() => {

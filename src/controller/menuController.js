@@ -5,11 +5,11 @@ const createMenu = async (req, res) => {
     try {
         console.log('req.body', req.body)
         // find menu name in database
-        const data = await menu.findOne({ name: req.body.name })
+        const data = await menu.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }})
         console.log('data', data)
         if (data) {
             // exists menu name for send message
-            return res.status(400).json({ message: "The menu name already exists.", success: false })
+            return res.status(400).json({ message: "Menu name already exists.", success: false })
         }
 
         // not exists menu name for add database
@@ -20,7 +20,7 @@ const createMenu = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -47,7 +47,7 @@ const updateMenu = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -64,7 +64,7 @@ const deleteMenu = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -79,7 +79,7 @@ const getMenu = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 

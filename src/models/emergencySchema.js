@@ -1,29 +1,29 @@
 const mongoose = require('mongoose');
 
 // document structure define 
-const accountSchema = new mongoose.Schema({
+const emergencySchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
     },
-    bank_name : {
+    relationship : {
         type:String,
         required : true,   
     },
-    account_number:{
-        type:Number,
-        required:true
-    },
-    ifsc_code:{
+    email:{
         type:String,
         required:true
     },
-    branch_name:{
+    address:{
+        type:String,
+        required:true
+    },
+    phone:{
         type:String,
         required:true
     },
     user_id:{
-        type:mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required:true
     }
 },
@@ -34,6 +34,6 @@ const accountSchema = new mongoose.Schema({
 
 
 // create collection
-const account = new mongoose.model("account", accountSchema)
+const emergency_contact = new mongoose.model("emergency_contact", emergencySchema)
 
-module.exports = account
+module.exports = emergency_contact
