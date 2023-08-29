@@ -44,7 +44,7 @@ userRoute.post('/', Auth, [
     expressValidator.body('department_id', "Please Enter valid departmentId.").isMongoId(),
     expressValidator.body('designation_id', "Please Enter valid designationId.").isMongoId(),
     expressValidator.body('report_to', "Please enter valid report to.").isMongoId(),
-], upload.single("profile_image"), createUser)
+], createUser)
 
 // active user get api
 userRoute.get('/:id', Auth, activeUser);
@@ -68,7 +68,7 @@ userRoute.post('/email', Auth, [expressValidator.body('email', "Enter a valid em
 userRoute.post('/employeeId', Auth, [expressValidator.body('employee_id', "Employee Id is Required.").notEmpty()], checkEmployeeId)
 
 // change profile image
-userRoute.post('/image', Auth, upload.single("profile_image"), changeImage);
+userRoute.post('/image', Auth, changeImage);
 
 // change password image
 userRoute.post('/password', Auth, [

@@ -9,7 +9,7 @@ const timeSheet = require("../models/timeSheetSchema");
 const forgetEmail = require("../Handler/forgetEmail");
 const tokenSchema = require("../models/TokenSchema");
 
-const addTime = async (id) => {
+const addTime = async (id,login) => {
     try {
         let data = await timeSheet.findOne({ user_id: id, date: new Date().toLocaleDateString() });
         console.log(data, "data")
@@ -22,7 +22,8 @@ const addTime = async (id) => {
             const timeData = new timeSheet({
                 user_id: id,
                 date: new Date().toLocaleDateString(),
-                login_time: login_time
+                login_time: login_time,
+                login_id : login
             });
 
             await timeData.save();
@@ -129,7 +130,8 @@ const verifyOtp = async (req, res) => {
                 browser_name: req.body.browser_name
             });
             let login = await loginData.save();
-            let time = await addTime(data._id)
+            console.log(login,"Ewrfwe")
+            let time = await addTime(data._id,login._id)
 
             if (login && time) {
                 // otp match for update otp value null

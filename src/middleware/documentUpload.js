@@ -1,34 +1,31 @@
 const multer = require("multer");
 const path = require("path");
 
-
-const imgConfig = multer.diskStorage({
-    destination: './uploads/document',
-    filename: (req, file, callback) => {
-        // image/png,image/jpeg,image/jpg,.doc,.pdf
-        // console.log('file.mimetype ', file)
-        // if (file !== undefined) {
-        //     if (file.mimetype === "application/pdf") {
-        //         return callback(null, `${file.originalname}`);
-        //     } else if (file.mimetype === "text/csv") {
-        //         return callback(null, `${file.originalname}`);
-        //     } else {
-        return callback(null, file.originalname);
-        // }
-        // }
+const storage = multer.diskStorage({
+    destination: path.join(__dirname,'../../uploads/document'),
+    filename: function (req, file, cb) {
+        console.log(file)
+        return cb(null, `file_${Date.now()}${path.extname(file.originalname)}`)
     }
 })
 
 const documentUpload = multer({
-    storage: imgConfig,
-    dest: 'uploads/',
-    fileFilter: function (req, file, callback) {
-        var ext = path.extname(file.originalname);
-        if (ext !== '.png' && ext !== '.jpg' && ext !== '.svg' && ext !== '.jpeg' && ext !== '.pdf' && ext !== '.doc') {
-            return callback(new Error('The file is invalid or the image type is not allowed. Allowed types: SVG, jpeg, jpg, png, pdf, doc'))
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        var ext = path.extname(file.originalname)
+        console.log(ext, "ext")
+        if (ext === '.png' || ext === '.jpg' || ext === '.svg' || ext === '.jpeg' || ext === '.pdf' || ext === '.doc') {
+            cb(null, true);
+        } else {
+            return cb(new Error('The file is invalid or the image type is not allowed. Allowed types: SVG, jpeg, jpg, png, pdf, doc'))
         }
-        callback(null, true)
     }
-})
+});
 
-module.exports = imgConfig
+const uploadSingleImage = documentUpload.fields([{ name: 'resume' },
+{ name: 'offer_letter' },
+{ name: 'joining_letter' },
+{ name: 'other' },
+]);
+
+module.exports = uploadSingleImage

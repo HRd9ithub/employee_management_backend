@@ -13,6 +13,10 @@ const timeSheetSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    login_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     logout_time: {
         type: String
     },

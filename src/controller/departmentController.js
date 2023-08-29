@@ -1,15 +1,25 @@
+const expressValidator = require("express-validator");
 const department = require("../models/departmentSchema");
 
-// craete department function
+// create department function
 const createDepartment = async (req, res) => {
     try {
-        console.log('req.body', req.body)
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
+
         // find department name in database
-        const data = await department.findOne({ name: req.body.name })
-        console.log('data', data)
+        const data = await department.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
+
         if (data) {
             // exists department name for send message
-            return res.status(400).json({ message: "The department name already exists.", success: false })
+            return res.status(400).json({ message: "Department name already exists.", success: false })
         }
 
         // not exists department name for add database
@@ -20,34 +30,43 @@ const createDepartment = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
 // update department function
 const updateDepartment = async (req, res) => {
     try {
-        console.log('req.body', req.body)
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
+
         // find department name in database
-        const data = await department.findOne({ name: req.body.name })
-        console.log('data', data)
+        const data = await department.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
+
         if (data && data._id != req.params.id) {
             // exists department name for send message
-            return res.status(400).json({ message: "The department name already exists.", success: false })
+            return res.status(400).json({ message: "Department name already exists.", success: false })
         }
 
         // not exists department name for update database
         const response = await department.findByIdAndUpdate({ _id: req.params.id }, req.body)
-        console.log('response', response)
-        if(response){
+        
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully edited a department." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Department is not found." })
         }
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+       res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -56,15 +75,14 @@ const deleteDepartment = async (req, res) => {
     try {
         const response = await department.findByIdAndDelete({ _id: req.params.id })
         console.log('response', response)
-        if(response){
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a department." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Department is not found." })
         }
-
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+       res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -75,14 +93,38 @@ const getDepartment = async (req, res) => {
         const data = await department.find()
         console.log('data', data)
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a department data.",data:data })
+        return res.status(200).json({ success: true, message: "Successfully fetch a department data.", data: data })
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+       res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
+// check department existing function
+const checkDepartment = async (req, res) => { 
+    try {
+        const errors = expressValidator.validationResult(req)
+        console.log('errors', errors)
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
 
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
 
-module.exports = { createDepartment, updateDepartment,deleteDepartment,getDepartment }
+        const response = await department.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }});
+
+        if(response){
+            return res.status(400).json({ success: false, message: "Department name already exists." })
+        }
+        return res.status(200).json({ success: true, message: "Department name not exist"})
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
+
+module.exports = { createDepartment, updateDepartment, deleteDepartment, getDepartment,checkDepartment }

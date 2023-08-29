@@ -26,6 +26,6 @@ const user_documentSchema = new mongoose.Schema({
 
 
 // create collection
-const user_document = new mongoose.model("user_document_contact", user_documentSchema)
+const user_document = new mongoose.model("user_document", user_documentSchema)
 
 module.exports = user_document

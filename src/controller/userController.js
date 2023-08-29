@@ -1,9 +1,8 @@
 const { default: mongoose } = require("mongoose");
-const upload = require("../middleware/ImageProfile");
 const user = require("../models/UserSchema")
 const expressValidator = require("express-validator");
 const bcrypt = require("bcryptjs");
-const account = require("../models/accountSchema");
+const profile_image = require("../middleware/ImageProfile");
 
 // create user function
 const createUser = async (req, res) => {
@@ -49,7 +48,7 @@ const activeUser = async (req, res) => {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
-            },{
+            }, {
                 $lookup: {
                     from: "users", localField: "reportTo", foreignField: "_id", as: "report"
                 }
@@ -60,6 +59,14 @@ const activeUser = async (req, res) => {
             }, {
                 $lookup: {
                     from: "emergency_contacts", localField: "_id", foreignField: "user_id", as: "emergency_contact"
+                }
+            }, {
+                $lookup: {
+                    from: "user_documents", localField: "_id", foreignField: "user_id", as: "user_document"
+                }
+            },{
+                $lookup: {
+                    from: "educations", localField: "_id", foreignField: "user_id", as: "education"
                 }
             },{
                 $project: {
@@ -120,15 +127,24 @@ const updateUser = async (req, res) => {
         if (data && data._id != req.params.id) {
             return res.status(400).json({ message: "email address already exists.", success: false })
         } else {
-            // data update method
-            const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
-            console.log('response', response)
+            profile_image(req, res, async function (err) {
+                if (err) {
+                    return res.status(400).send({ message: err.message })
+                }
 
-            if (response) {
-                return res.status(200).json({ success: true, message: "User update successfully." })
-            } else {
-                return res.status(404).json({ success: false, message: "User not found." })
-            }
+                // Everything went fine.
+                let file = req.file;
+                req.body.profile_image = req.file && req.file.filename
+                // data update method
+                const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
+                console.log('response', response)
+    
+                if (response) {
+                    return res.status(200).json({ success: true, message: "User update successfully." })
+                } else {
+                    return res.status(404).json({ success: false, message: "User not found." })
+                }
+            })
         }
     } catch (error) {
         console.log('error', error)
@@ -241,17 +257,26 @@ const checkEmployeeId = async (req, res) => {
 // change profile image
 const changeImage = async (req, res) => {
     console.log(req.file)
-    try {
-        if (req.file) {
-            let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: req.file.filename });
-            return res.status(200).json({ message: "Profile changed successfully.", success: true })
-        } else {
-            return res.status(400).json({ message: "Profile Image is Required.", success: false })
+    profile_image(req, res, async function (err) {
+        if (err) {
+            return res.status(400).send({ message: err.message })
         }
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal server error", success: false })
-    }
+
+        // Everything went fine.
+        let file = req.file;
+
+        try {
+            if (req.file) {
+                let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: req.file.filename });
+                return res.status(200).json({ message: "Profile changed successfully.", success: true })
+            } else {
+                return res.status(400).json({ message: "Profile Image is Required.", success: false })
+            }
+        } catch (error) {
+            console.log(error)
+            res.status(500).json({ message: "Internal server error", success: false })
+        }
+    })
 }
 
 // change password

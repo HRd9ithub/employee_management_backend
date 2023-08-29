@@ -18,7 +18,10 @@ const { swaggerServe, swaggerSetup } = require('./config');
 const emergencyRoute = require('./Routes/emergencyRoute');
 const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
-
+const user = require('./models/UserSchema');
+const jwt = require("jsonwebtoken");
+// const http = require("http")
+// const {Server} = require('socket.io')
 // const swaggerDocument = require('./swagger.json');
 // add database
 require("./DB/conn")
@@ -44,14 +47,20 @@ const port = process.env.PORT || 8000
 
 app.use(cors())
 
+// const server = http.createServer(app)
+
 app.use(bodyParser.json())
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json())
 
+//New imports
+const http = require("http").Server(app);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))
+
+
 
 app.use("/api-docs", swaggerServe, swaggerSetup);
 
@@ -70,8 +79,44 @@ app.use('/api/emergency', emergencyRoute)
 app.use('/api/user_document', userDocumentRoute)
 app.use('/api/education', educationRoute)
 
+const socketIO = require('socket.io')(http, {
+    cors: {
+        origin: "http://localhost:3001"
+    }
+});
 
-app.listen(port,() => {
-    console.log(`server is running for ${port}.`)
-})
+//Add this before the app.get() block
+socketIO.on('connection', (socket) => {
+    console.log(`⚡: ${socket.id} user just connected!`);
+    socket.on("send", async(data) => {
+        console.log(data)
+        verifyUser = jwt.verify(data.message, process.env.SECRET_KEY);
+            if (verifyUser.date === new Date().toLocaleDateString()) {
+                const data = await user.findOne({ _id: verifyUser._id }).select("-password")
+                console.log('user', data)
+                if (data) {
+                    if (!data.token) {
+                        socket.emit("receive",{isAuth : false})
+                    }else{
+                        socket.emit("receive",{isAuth : true})
+                    }
+                }
+            }
+    })
+
+    socket.on('disconnect', () => {
+        console.log('🔥: A user disconnected');
+    });
+});
+
+// server for listen
+//  server.listen(port,() => {
+//     console.log(`server is running for ${port}.`)
+// })
+http.listen(port, () => {
+    console.log(`Server listening on ${port}`);
+});
+// const server = app.listen(port,() => {
+//     console.log(`server is running for ${port}.`)
+// })
 

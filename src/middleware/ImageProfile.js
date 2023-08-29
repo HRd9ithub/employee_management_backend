@@ -3,24 +3,31 @@ const path = require("path");
 
 
 const imgConfig = multer.diskStorage({
-    destination : './uploads',
-    filename: (req,file,callback) => {
-        // console.log('file.mimetype ', file)
-        // if (file !== undefined) {
-        //     if (file.mimetype === "application/pdf") {
-        //         return callback(null, `${file.originalname}`);
-        //     } else if (file.mimetype === "text/csv") {
-        //         return callback(null, `${file.originalname}`);
-        //     } else {
-                return callback(null, `image_${Date.now()}${path.extname(file.originalname)}`);
-            // }
-        // }
+    destination: './uploads',
+    filename: (req, file, callback) => {
+        return callback(null, `image_${Date.now()}${path.extname(file.originalname)}`);
     }
 })
 
+// const upload = multer({
+//     storage: imgConfig,
+//     dest: 'uploads/'
+// })
+
 const upload = multer({
     storage: imgConfig,
-    dest: 'uploads/'
-})
+    fileFilter: (req, file, cb) => {
+        var ext = path.extname(file.originalname)
+        console.log(ext, "ext")
+        if (ext === '.png' || ext === '.jpg' || ext === '.svg' || ext === '.jpeg' ) {
+            cb(null, true);
+        } else {
+            return cb(new Error('The image type is not allowed. Allowed types: SVG, jpeg, jpg, png'))
+        }
+    }
+});
 
-module.exports = upload
+
+const profile_image = upload.single("profile_image")
+
+module.exports = profile_image

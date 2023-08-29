@@ -1,20 +1,24 @@
 const express = require("express")
 const Auth = require("../middleware/auth");
-const { createDesignation, updateDesignation,deleteDesignation,getDesignation} = require("../controller/designationController");
+const expressValidator = require("express-validator");
+const { createDesignation, updateDesignation,deleteDesignation,getDesignation, checkDesignation} = require("../controller/designationController");
 
 const designationRoute = express.Router();
 
-// create department api
-designationRoute.post('/',Auth,createDesignation);
+// create Designation api
+designationRoute.post('/',Auth,[expressValidator.body("name","Designation name is Required.").notEmpty()],createDesignation);
 
-// update department api
-designationRoute.patch('/:id',Auth,updateDesignation);
+// update Designation api
+designationRoute.patch('/:id',Auth,[expressValidator.body("name","Designation name is Required.").notEmpty()],updateDesignation);
 
-// delete department api
+// delete Designation api
 designationRoute.delete('/:id',Auth,deleteDesignation);
 
-// get department api
+// get Designation api
 designationRoute.get('/',Auth,getDesignation);
+
+// check designation
+designationRoute.post('/name', Auth, [expressValidator.body("name","Designation name is Required.").notEmpty()],checkDesignation)
 
 
 module.exports = designationRoute
