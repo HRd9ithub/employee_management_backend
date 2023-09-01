@@ -6,9 +6,7 @@ const documentRoute = express.Router();
 
 
 // add document api
-documentRoute.post('/', Auth, [body("name", "name is required.").notEmpty(),
-body("description", "description is required.").notEmpty()
-],addDocument)
+documentRoute.post('/', Auth,addDocument)
 
 
 // update document api

@@ -2,7 +2,7 @@ const express = require("express")
 var bodyParser = require('body-parser');
 const expressValidator = require("express-validator");
 const upload = require("../middleware/ImageProfile");
-const { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId, changeImage, changePassword } = require("../controller/userController");
+const { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId, changeImage, changePassword, getLoginInfo, getUserName } = require("../controller/userController");
 const Auth = require("../middleware/auth");
 const user = require("../models/UserSchema");
 
@@ -92,5 +92,10 @@ userRoute.post('/password', Auth, [
     }),
 ], changePassword);
 
+//get login info
+userRoute.post('/loginInfo', Auth, getLoginInfo);
+
+//get only use name
+userRoute.post('/username', Auth, getUserName);
 
 module.exports = userRoute

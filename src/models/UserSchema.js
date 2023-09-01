@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    leaveing_date: {
+        type: Date
+    },
     blood_group: {
         type: String,
     },

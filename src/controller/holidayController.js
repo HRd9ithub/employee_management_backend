@@ -1,10 +1,21 @@
 const holiday = require("../models/holidaySchema");
+const expressValidator = require("express-validator");
 
 // create holiday function
 const createHoliday = async (req, res) => {
     try {
-        console.log('req.body', req.body)
+        const errors = expressValidator.validationResult(req)
 
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
+
+        // add data in database
         const holidayData = new holiday(req.body);
         const response = await holidayData.save();
         console.log('response', response)
@@ -12,13 +23,24 @@ const createHoliday = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
 // update holiday function
 const updateHoliday = async (req, res) => {
     try {
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
+
         const response = await holiday.findByIdAndUpdate({ _id: req.params.id }, req.body)
         console.log('response', response)
         if (response) {
@@ -28,7 +50,7 @@ const updateHoliday = async (req, res) => {
         }
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -44,7 +66,7 @@ const deleteHoliday = async (req, res) => {
         }
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 
@@ -59,7 +81,7 @@ const getHoliday = async (req, res) => {
 
     } catch (error) {
         console.log('error =======> ', error);
-        res.status(500).send("Internal server error")
+        res.status(500).json({ message: "Internal server error", success: false })
     }
 }
 

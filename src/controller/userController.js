@@ -3,11 +3,11 @@ const user = require("../models/UserSchema")
 const expressValidator = require("express-validator");
 const bcrypt = require("bcryptjs");
 const profile_image = require("../middleware/ImageProfile");
+const loginInfo = require("../models/loginInfoSchema");
 
 // create user function
 const createUser = async (req, res) => {
     try {
-        console.log('req.body', req.body)
         const errors = expressValidator.validationResult(req)
 
         let err = errors.array().map((val) => {
@@ -21,7 +21,7 @@ const createUser = async (req, res) => {
         const userData = new user(req.body);
         const response = await userData.save();
         console.log('response', response)
-        return res.status(201).json({ success: true, message: "user create successfully." })
+        return res.status(201).json({ success: true, message: "User create successfully." })
     } catch (error) {
         console.log('error', error)
         res.status(500).json({ message: "Internal server error", success: false })
@@ -40,38 +40,52 @@ const activeUser = async (req, res) => {
                 $lookup: {
                     from: "departments", localField: "department_id", foreignField: "_id", as: "department"
                 }
-            }, {
+            }, { $unwind: {path: "$department"}},
+             {
                 $lookup: {
                     from: "designations", localField: "designation_id", foreignField: "_id", as: "designation"
                 }
-            }, {
+            },  { $unwind: {path: "$designation"}},
+            {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
-            }, {
+            },  { $unwind: {path: "$role"}},
+            {
                 $lookup: {
-                    from: "users", localField: "reportTo", foreignField: "_id", as: "report"
+                    from: "users", localField: "report_to", foreignField: "_id", as: "report"
                 }
-            }, {
+            },  { $unwind: {path: "$report"}},
+            {
                 $lookup: {
                     from: "accounts", localField: "_id", foreignField: "user_id", as: "account_detail"
                 }
-            }, {
+            },  
+            {
                 $lookup: {
                     from: "emergency_contacts", localField: "_id", foreignField: "user_id", as: "emergency_contact"
                 }
-            }, {
+            },
+            {
                 $lookup: {
                     from: "user_documents", localField: "_id", foreignField: "user_id", as: "user_document"
                 }
-            },{
+            }, {
                 $lookup: {
                     from: "educations", localField: "_id", foreignField: "user_id", as: "education"
                 }
-            },{
+            }, 
+            {
                 $project: {
                     "password": 0,
-                    "token": 0
+                    "token": 0,
+                    "expireIn": 0,
+                    "otp": 0,
+                    "role.permissions": 0,
+                    "report.password": 0,
+                    "report.token": 0,
+                    "report.expireIn": 0,
+                    "report.otp": 0,
                 }
             }
         ])
@@ -92,18 +106,33 @@ const getUser = async (req, res) => {
         const value = await user.aggregate([
             {
                 $lookup: {
-                    from: "departments", localField: "departmentId", foreignField: "_id", as: "department"
+                    from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
-            }, {
+            },
+            { $unwind: {path: "$role"}},
+            {
                 $lookup: {
-                    from: "designations", localField: "designationId", foreignField: "_id", as: "designation"
+                    from: "users", localField: "report_to", foreignField: "_id", as: "report"
                 }
-            }, {
-                $lookup: {
-                    from: "users", localField: "reportTo", foreignField: "_id", as: "report"
+            },
+            { $unwind: {path: "$report"}},
+            {
+                $project: {
+                    "employee_id": 1,
+                    "profile_image": 1,
+                    "first_name": 1,
+                    "last_name": 1,
+                    "email": 1,
+                    "phone": 1,
+                    "status": 1,
+                     "role.name":1,
+                    // report: {$first: "$report" }
+                    // role: {$arrayElemAt:["$role",0]},
+                    "report.first_name": 1,
+                    "report.last_name": 1,
+                    "report._id": 1,
+                    "report.profile_image": 1
                 }
-            }, {
-                $project: { "password": 0, "token": 0 }
             }
         ])
         console.log('value', value)
@@ -138,7 +167,7 @@ const updateUser = async (req, res) => {
                 // data update method
                 const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
                 console.log('response', response)
-    
+
                 if (response) {
                     return res.status(200).json({ success: true, message: "User update successfully." })
                 } else {
@@ -313,6 +342,93 @@ const changePassword = async (req, res) => {
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }
+// get login information
+const getLoginInfo = async (req, res) => {
+    try {
+        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id))
+        const value = await loginInfo.aggregate([
+            {
+                $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
+            },
+            {
+                $lookup: {
+                    from: "timesheets", localField: "_id", foreignField: "login_id", as: "timesheet"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users", localField: "userId", foreignField: "_id", as: "user"
+                }
+            }, { $sort: { "createdAt": -1 } },
+            {
+                $project: {
+                    "ip": 1,
+                    "city": 1,
+                    "device": 1,
+                    "userId": 1,
+                    "createdAt": 1,
+                    "device_name": 1,
+                    "browser_name": 1,
+                    "timesheet.date": 1,
+                    "timesheet.login_time": 1,
+                    "timesheet.logout_time": 1,
+                    "timesheet.total": 1,
+                    "user.first_name": 1,
+                    "user.last_name": 1,
+                    "user.profile_image": 1,
+                    "user.employee_id": 1,
+                    "user.status": 1
+                }
+            }
+        ])
 
 
-module.exports = { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId, changeImage, changePassword }
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
+
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
+
+// get user name information
+const getUserName = async (req, res) => {
+    try {
+        let date = new Date().toISOString()
+        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id),date)
+        const value = await user.aggregate([
+            {
+                $match: {
+                    status: "Active", "delete_at": null
+                }
+            },
+            {
+                $lookup: {
+                    from: "roles", localField: "role_id", foreignField: "_id", as: "role"
+                }
+            },
+            {
+                $project: {
+                    "first_name": 1,
+                    "last_name": 1,
+                    role: { $first: "$role.name" },
+                    leaveing_date : 1
+                }
+            }
+        ])
+
+        let data = value.filter((val) => {
+            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date) && val.role.toLowerCase()  !== "admin"
+        })
+
+
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data })
+
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
+
+
+module.exports = { createUser, activeUser, getUser, getUserName, updateUser, deleteUser, updateStatusUser, checkEmail, getLoginInfo, checkEmployeeId, changeImage, changePassword }

@@ -27,5 +27,6 @@ const uploadSingleImage = documentUpload.fields([{ name: 'resume' },
 { name: 'joining_letter' },
 { name: 'other' },
 ]);
+const importDocument = documentUpload.single("image");
 
-module.exports = uploadSingleImage
+module.exports = {uploadSingleImage,importDocument}

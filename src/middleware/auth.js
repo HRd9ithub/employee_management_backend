@@ -1,36 +1,55 @@
-const jwt = require("jsonwebtoken");
-const user = require("../models/UserSchema");
+const jwt = require('jsonwebtoken');
+const user = require('../models/UserSchema');
+const SECRET_KEY = process.env.SECRET_KEY;
 
-let verifyUser = ""
-const Auth = async (req, res, next) => {
+async function Auth(req, res, next) {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send("Authorization failed. No access token.");
+    }
     try {
-        let token = req.headers['token'];
-        if (token) {
-            verifyUser = jwt.verify(token, process.env.SECRET_KEY);
-            if (verifyUser.date === new Date().toLocaleDateString()) {
-                const data = await user.findOne({ _id: verifyUser._id }).select("-password")
-                console.log('user', data)
-                if (data) {
-                    if (data.token == token && data.status === "Active" && !data.delete_at) {
-                        req.user = data
-                        next()
-                    } else {
-                        return res.status(401).json({ message: "Unauthenticated.", success: false })
-                    }
+        const token = authorization.split('Bearer ')[1];
+        if (!token) {
+            return res.status(401).json({
+                message: 'Invalid Token Format'
+            })
+        }
+        const decode = jwt.verify(token, SECRET_KEY);
+        if (decode.date === new Date().toLocaleDateString()) {
+            const data = await user.findOne({ _id: decode._id }).select("-password")
+            if (data) {
+                if (data.token == token && data.status === "Active" && !data.delete_at) {
+                    req.user = data
+                    next()
                 } else {
                     return res.status(401).json({ message: "Unauthenticated.", success: false })
                 }
-            }
-            else {
+            } else {
                 return res.status(401).json({ message: "Unauthenticated.", success: false })
             }
-        } else {
-            return res.status(400).json({ message: "UnAuthorization.", success: false })
         }
-        console.log('verifyUser', verifyUser)
+        else {
+            return res.status(401).json({ message: "Unauthenticated.", success: false })
+        }
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        if (error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({
+                message: 'Session Expired',
+                error: error.message,
+            })
+        }
+        if (error instanceof jwt.JsonWebTokenError || error instanceof TokenError) {
+            return res.status(401).json({
+                message: 'Invalid Token',
+                error: error.message,
+            })
+        }
+        res.status(500).json({
+            message: 'Internal server Error',
+            error: error.message,
+            stack: error.stack
+        });
     }
 }
 

@@ -1,7 +1,7 @@
 const express = require("express")
 const expressValidator = require("express-validator");
 const Auth = require("../middleware/auth");
-const uploadSingleImage = require("../middleware/documentUpload");
+const {uploadSingleImage} = require("../middleware/documentUpload");
 const user_document = require("../models/userDocumentSchema");
 const userDocumentRoute = express.Router();
 

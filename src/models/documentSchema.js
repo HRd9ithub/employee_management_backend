@@ -10,9 +10,10 @@ const documentSchema = new mongoose.Schema({
         required:true
     },
     image:{
-        type:String,
-        required:true
+        type:String
     }
+},{
+    timestamps: true
 })
 
 const document = new mongoose.model("document",documentSchema)

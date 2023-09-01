@@ -30,6 +30,6 @@ const timeSheetSchema = new mongoose.Schema({
 )
 
 
-const timeSheet = new mongoose.model("timeSheet",timeSheetSchema)
+const timeSheet = new mongoose.model("timeSheet", timeSheetSchema)
 
 module.exports = timeSheet

@@ -18,6 +18,7 @@ const { swaggerServe, swaggerSetup } = require('./config');
 const emergencyRoute = require('./Routes/emergencyRoute');
 const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
+const leaveRouter = require('./Routes/leaveRoute');
 
 // const swaggerDocument = require('./swagger.json');
 // add database
@@ -48,7 +49,7 @@ app.use(bodyParser.json())
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(express.json())
+app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))
@@ -62,6 +63,7 @@ app.use('/api/designation', designationRoute)
 app.use('/api/menu', menuRoute)
 app.use('/api/holiday', holidayRoute)
 app.use('/api/leaveType', leaveTypeRoute)
+app.use('/api/leave', leaveRouter)
 app.use('/api/timeSheet', timeSheetRoute)
 app.use('/api/document', documentRoute)
 app.use('/api/role', roleRoute)
