@@ -16,6 +16,7 @@ expressValidator.body("city", "city is required. ").notEmpty(),
 expressValidator.body("device", "device is required.").notEmpty(),
 expressValidator.body("browser_name", "browser name is required.").notEmpty(),
 expressValidator.body("ip", "ip is required.").notEmpty(),
+expressValidator.body("otp", "otp is required.").notEmpty().isLength({max:4, min:4}),
 ],verifyOtp )
 
 

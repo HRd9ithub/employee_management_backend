@@ -30,8 +30,8 @@ const createDesignation = async (req, res) => {
         return res.status(201).json({ success: true, message: "Successfully added a new designation." })
 
     } catch (error) {
-        console.log('error =======> ', error);
-         res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -59,15 +59,15 @@ const updateDesignation = async (req, res) => {
         // not exists designation name for update database
         const response = await designation.findByIdAndUpdate({ _id: req.params.id }, req.body)
 
-        if(response){
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully edited a designation." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Designation is not found." })
         }
 
     } catch (error) {
-        console.log('error =======> ', error);
-         res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -76,15 +76,15 @@ const deleteDesignation = async (req, res) => {
     try {
         const response = await designation.findByIdAndDelete({ _id: req.params.id })
         console.log('response', response)
-        if(response){
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a designation." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Designation is not found." })
         }
 
     } catch (error) {
-        console.log('error =======> ', error);
-         res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -95,16 +95,16 @@ const getDesignation = async (req, res) => {
         const data = await designation.find()
         console.log('data', data)
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a designation data.",data:data })
+        return res.status(200).json({ success: true, message: "Successfully fetch a designation data.", data: data ,permissions : req.permissions})
 
     } catch (error) {
-        console.log('error =======> ', error);
-         res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
 // check Designation existing function
-const checkDesignation = async (req, res) => { 
+const checkDesignation = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
         console.log('errors', errors)
@@ -117,12 +117,12 @@ const checkDesignation = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        const response = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }});
+        const response = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if(response){
+        if (response) {
             return res.status(400).json({ success: false, message: "Designation name already exists." })
         }
-        return res.status(200).json({ success: true, message: "Designation name not exist"})
+        return res.status(200).json({ success: true, message: "Designation name not exist" })
     } catch (error) {
         console.log('error', error)
         res.status(500).json({ message: "Internal server error", success: false })
@@ -131,4 +131,4 @@ const checkDesignation = async (req, res) => {
 
 
 
-module.exports = { createDesignation, updateDesignation,deleteDesignation,getDesignation ,checkDesignation}
+module.exports = { createDesignation, updateDesignation, deleteDesignation, getDesignation, checkDesignation }

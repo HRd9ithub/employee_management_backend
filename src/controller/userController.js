@@ -23,8 +23,8 @@ const createUser = async (req, res) => {
         console.log('response', response)
         return res.status(201).json({ success: true, message: "User create successfully." })
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -40,27 +40,27 @@ const activeUser = async (req, res) => {
                 $lookup: {
                     from: "departments", localField: "department_id", foreignField: "_id", as: "department"
                 }
-            }, { $unwind: {path: "$department"}},
-             {
+            },
+            {
                 $lookup: {
                     from: "designations", localField: "designation_id", foreignField: "_id", as: "designation"
                 }
-            },  { $unwind: {path: "$designation"}},
+            },
             {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
-            },  { $unwind: {path: "$role"}},
+            },
             {
                 $lookup: {
-                    from: "users", localField: "report_to", foreignField: "_id", as: "report"
+                    from: "users", localField: "report_by", foreignField: "_id", as: "report"
                 }
-            },  { $unwind: {path: "$report"}},
+            },
             {
                 $lookup: {
                     from: "accounts", localField: "_id", foreignField: "user_id", as: "account_detail"
                 }
-            },  
+            },
             {
                 $lookup: {
                     from: "emergency_contacts", localField: "_id", foreignField: "user_id", as: "emergency_contact"
@@ -74,7 +74,7 @@ const activeUser = async (req, res) => {
                 $lookup: {
                     from: "educations", localField: "_id", foreignField: "user_id", as: "education"
                 }
-            }, 
+            },
             {
                 $project: {
                     "password": 0,
@@ -89,13 +89,11 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
-
-
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0] })
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -109,13 +107,13 @@ const getUser = async (req, res) => {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
             },
-            { $unwind: {path: "$role"}},
+            { $unwind: { path: "$role" } },
             {
                 $lookup: {
-                    from: "users", localField: "report_to", foreignField: "_id", as: "report"
+                    from: "users", localField: "report_by", foreignField: "_id", as: "report"
                 }
             },
-            { $unwind: {path: "$report"}},
+            { $unwind: { path: "$report" } },
             {
                 $project: {
                     "employee_id": 1,
@@ -125,7 +123,7 @@ const getUser = async (req, res) => {
                     "email": 1,
                     "phone": 1,
                     "status": 1,
-                     "role.name":1,
+                    "role.name": 1,
                     // report: {$first: "$report" }
                     // role: {$arrayElemAt:["$role",0]},
                     "report.first_name": 1,
@@ -136,11 +134,11 @@ const getUser = async (req, res) => {
             }
         ])
         console.log('value', value)
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value,permissions : req.permissions })
         // }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -176,8 +174,8 @@ const updateUser = async (req, res) => {
             })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -199,8 +197,8 @@ const deleteUser = async (req, res) => {
             return res.status(200).json({ success: true, message: "User delete successfully." })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -221,8 +219,8 @@ const updateStatusUser = async (req, res) => {
             return res.status(200).json({ success: true, message: "User status update successfully." })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -249,8 +247,8 @@ const checkEmail = async (req, res) => {
             return res.status(200).json({ success: true, message: "Email address not exists." })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -278,8 +276,8 @@ const checkEmployeeId = async (req, res) => {
             return res.status(200).json({ success: true, message: "Employee id not exists." })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -386,8 +384,8 @@ const getLoginInfo = async (req, res) => {
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -395,7 +393,7 @@ const getLoginInfo = async (req, res) => {
 const getUserName = async (req, res) => {
     try {
         let date = new Date().toISOString()
-        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id),date)
+        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id), date)
         const value = await user.aggregate([
             {
                 $match: {
@@ -412,21 +410,21 @@ const getUserName = async (req, res) => {
                     "first_name": 1,
                     "last_name": 1,
                     role: { $first: "$role.name" },
-                    leaveing_date : 1
+                    leaveing_date: 1
                 }
             }
         ])
 
         let data = value.filter((val) => {
-            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date) && val.role.toLowerCase()  !== "admin"
+            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date) && val.role.toLowerCase() !== "admin"
         })
 
 
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data })
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

@@ -94,7 +94,7 @@ const userLogin = async (req, res) => {
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -153,7 +153,7 @@ const verifyOtp = async (req, res) => {
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -208,7 +208,7 @@ const ResendOtp = async (req, res) => {
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -248,14 +248,14 @@ const mailSend = async (req, res) => {
         } else {
             if (!userData) {
                 // email not match send message
-                return res.status(400).json({ message: "Email is not exist.", success: false })
+                return res.status(400).json({ message: "Sorry! Email address not found.", success: false })
             } else {
                 return res.status(400).json({ message: "This user is Inactive.", success: false })
             }
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -310,7 +310,7 @@ const resetPassword = async (req, res) => {
     } catch (error) {
         console.log('error', error)
         if (!verifyUser) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -338,7 +338,7 @@ const checkLink = async (req, res) => {
             return res.status(200).json({ success: true, message: "not expired for link." })
         }
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -346,29 +346,32 @@ const checkLink = async (req, res) => {
 const userLogout = async (req, res) => {
     try {
         if (req.user) {
-            let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD")});
-            console.log(data, "data")
-            if (data) {
+            const roleName = await role.findOne({ _id: req.user.role_id }, { name: 1, _id: 0 })
+            // get menu data in database
+            if (roleName && roleName.name.toLowerCase() !== "admin") {
+                let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD") });
+                console.log(data, "data")
+                // if (data) {
                 let Hours = new Date().getHours();
                 let Minutes = new Date().getMinutes();
                 let second = new Date().getSeconds();
                 let logout_time = Hours + ":" + Minutes + ":" + second;
                 var total = moment.utc(moment(logout_time, "HH:mm:ss").diff(moment(data.login_time, "HH:mm:ss"))).format("HH:mm")
 
-                const response = await timeSheet.findByIdAndUpdate({ _id: data._id }, {logout_time,total}, { new: true })
-
-                await user.findByIdAndUpdate({ _id: req.user._id }, { $unset: { token: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Logout is successfully." })
+                const response = await timeSheet.findByIdAndUpdate({ _id: data._id }, { logout_time, total }, { new: true })
+                // }
+                // else {
+                //     return res.status(404).json({ success: false, message: "Logout is failed." })
+                // }
             }
-            else {
-                return res.status(404).json({ success: false, message: "Logout is failed." })
-            }
+            await user.findByIdAndUpdate({ _id: req.user._id }, { $unset: { token: 1 } }, { new: true })
+            return res.status(200).json({ success: true, message: "Logout is successfully." })
         } else {
             return res.status(404).json({ success: false, message: "Logout is failed." })
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

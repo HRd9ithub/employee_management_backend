@@ -6,7 +6,28 @@ const roleSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    permissions :[Object]
+    permissions :[{
+        menuId: {
+            type : mongoose.Schema.Types.ObjectId,
+            required: true
+        },
+        list: {
+            type : Number,
+            required: true
+        },
+        create: {
+            type : Number,
+            required: true
+        },
+        update: {
+            type : Number,
+            required: true
+        },
+        delete: {
+            type : Number,
+            required: true
+        },
+    }]
 },{
     timestamps:true
 })

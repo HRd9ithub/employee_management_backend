@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require("express")
 var cors = require('cors')
+require("./middleware/CreateFolder")
 const userRoute = require("./Routes/UserRoute");
 var bodyParser = require('body-parser');
 const AuthRoute = require("./Routes/AuthRoute");
@@ -19,6 +20,7 @@ const emergencyRoute = require('./Routes/emergencyRoute');
 const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
+const DashboardRoute = require('./Routes/DashboardRoute');
 
 // const swaggerDocument = require('./swagger.json');
 // add database
@@ -71,6 +73,7 @@ app.use('/api/account', accountRoute)
 app.use('/api/emergency', emergencyRoute)
 app.use('/api/user_document', userDocumentRoute)
 app.use('/api/education', educationRoute)
+app.use('/api/dashboard', DashboardRoute)
 
 
 app.listen(port,() => {

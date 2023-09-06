@@ -22,8 +22,8 @@ const createHoliday = async (req, res) => {
         return res.status(201).json({ success: true, message: "Successfully added a new holiday." })
 
     } catch (error) {
-        console.log('error =======> ', error);
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -49,8 +49,8 @@ const updateHoliday = async (req, res) => {
             return res.status(404).json({ success: false, message: "Holiday is not found." })
         }
     } catch (error) {
-        console.log('error =======> ', error);
-        res.status(500).json({ message: "Internal server error", success: false })
+          console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -65,8 +65,8 @@ const deleteHoliday = async (req, res) => {
             return res.status(404).json({ success: false, message: "Holiday is not found." })
         }
     } catch (error) {
-        console.log('error =======> ', error);
-        res.status(500).json({ message: "Internal server error", success: false })
+          console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -77,11 +77,11 @@ const getHoliday = async (req, res) => {
         const data = await holiday.find()
         console.log('data', data)
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a holiday data.", data: data })
+        return res.status(200).json({ success: true, message: "Successfully fetch a holiday data.", data: data,permissions: req.permissions })
 
     } catch (error) {
-        console.log('error =======> ', error);
-        res.status(500).json({ message: "Internal server error", success: false })
+          console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

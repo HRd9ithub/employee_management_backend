@@ -28,46 +28,89 @@ const addLeave = async (req, res) => {
 // get leave
 const getLeave = async (req, res) => {
     try {
-        const leaveData = await Leave.aggregate([
-            {
-                $lookup:
+        let leaveData = []
+        if (req.permissions.name.toLowerCase() !== "admin") {
+            leaveData = await Leave.aggregate([
+                {$match : {user_id : req.user._id}},
                 {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $lookup:
+                    $lookup:
+                    {
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
                 {
-                    from: "leavetypes",
-                    localField: "leave_type_id",
-                    foreignField: "_id",
-                    as: "leaveType"
+                    $lookup:
+                    {
+                        from: "leavetypes",
+                        localField: "leave_type_id",
+                        foreignField: "_id",
+                        as: "leaveType"
+                    }
+                },
+                {
+                    $project: {
+                        "user_id": 1,
+                        "leave_type_id": 1,
+                        "from_date": 1,
+                        "to_date": 1,
+                        "leave_for": 1,
+                        "duration": 1,
+                        "reason": 1,
+                        "status": 1,
+                        "leaveType": { $first: "$leaveType.name" },
+                        "user.employee_id": 1,
+                        "user.profile_image": 1,
+                        "user.first_name": 1,
+                        "user.last_name": 1,
+                        "user.status": 1,
+                    }
                 }
-            },
-            {
-                $project: {
-                    "user_id": 1,
-                    "leave_type_id": 1,
-                    "from_date": 1,
-                    "to_date": 1,
-                    "leave_for": 1,
-                    "duration": 1,
-                    "reason": 1,
-                    "status": 1,
-                    "leaveType": { $first: "$leaveType.name" },
-                    "user.employee_id": 1,
-                    "user.profile_image": 1,
-                    "user.first_name": 1,
-                    "user.last_name": 1,
-                    "user.status": 1,
+            ])
+        } else {
+            leaveData = await Leave.aggregate([
+                {
+                    $lookup:
+                    {
+                        from: "users",
+                        localField: "user_id",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $lookup:
+                    {
+                        from: "leavetypes",
+                        localField: "leave_type_id",
+                        foreignField: "_id",
+                        as: "leaveType"
+                    }
+                },
+                {
+                    $project: {
+                        "user_id": 1,
+                        "leave_type_id": 1,
+                        "from_date": 1,
+                        "to_date": 1,
+                        "leave_for": 1,
+                        "duration": 1,
+                        "reason": 1,
+                        "status": 1,
+                        "leaveType": { $first: "$leaveType.name" },
+                        "user.employee_id": 1,
+                        "user.profile_image": 1,
+                        "user.first_name": 1,
+                        "user.last_name": 1,
+                        "user.status": 1,
+                    }
                 }
-            }
-        ])
+            ])
+        }
 
-        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData })
+        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData, permissions : req.permissions })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -152,8 +195,8 @@ const changeStatus = async (req, res) => {
 // change status view all
 const allChangeStatus = async (req, res) => {
     try {
-        const leave_detail = await Leave.updateMany({ status : "Pending" }, {
-            status : "Read"
+        const leave_detail = await Leave.updateMany({ status: "Pending" }, {
+            status: "Read"
         }, { new: true })
 
         if (leave_detail.matchedCount !== 0) {
@@ -168,4 +211,4 @@ const allChangeStatus = async (req, res) => {
     }
 }
 
-module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus,allChangeStatus }
+module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus }

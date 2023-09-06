@@ -29,8 +29,8 @@ const createDepartment = async (req, res) => {
         return res.status(201).json({ success: true, message: "Successfully added a new department." })
 
     } catch (error) {
-        console.log('error =======> ', error);
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -65,8 +65,8 @@ const updateDepartment = async (req, res) => {
         }
 
     } catch (error) {
-        console.log('error =======> ', error);
-       res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -81,8 +81,8 @@ const deleteDepartment = async (req, res) => {
             return res.status(404).json({ success: false, message: "Department is not found." })
         }
     } catch (error) {
-        console.log('error =======> ', error);
-       res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -93,11 +93,11 @@ const getDepartment = async (req, res) => {
         const data = await department.find()
         console.log('data', data)
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a department data.", data: data })
+        return res.status(200).json({ success: true, message: "Successfully fetch a department data.", data: data,permissions : req.permissions })
 
     } catch (error) {
-        console.log('error =======> ', error);
-       res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -122,8 +122,8 @@ const checkDepartment = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Department name not exist"})
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

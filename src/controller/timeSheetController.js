@@ -14,14 +14,14 @@ const getTimeSheet = async (req, res) => {
         }
 
         let value = [];
-        if (id) {
+        if (id || req.permissions.name.toLowerCase() !== "admin") {
             value = await timeSheet.aggregate([
                 {
                     $match: {
                         $and: [
                             { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
                             { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
-                        _id: new mongoose.Types.ObjectId(id)
+                        user_id: new mongoose.Types.ObjectId(id || req.user._id)
                     }
                 },
                 {
@@ -75,7 +75,7 @@ const getTimeSheet = async (req, res) => {
                 }
             ])
         }
-        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value })
+        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value})
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

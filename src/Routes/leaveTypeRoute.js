@@ -2,20 +2,21 @@ const express = require("express")
 const expressValidator = require("express-validator");
 const Auth = require("../middleware/auth");
 const { createLeaveType,checkLeaveType ,getLeaveType, deleteLeaveType, updateLeaveType} = require("../controller/leaveTypeController");
+const { leaveTypePermission } = require("../middleware/permission");
 
 const leaveTypeRoute = express.Router();
 
-// create Holiday api
-leaveTypeRoute.post('/', Auth,[expressValidator.body("name","Leave type name is Required.").notEmpty()], createLeaveType);
+// create leave type api
+leaveTypeRoute.post('/', Auth,leaveTypePermission,[expressValidator.body("name","Leave type name is Required.").notEmpty()], createLeaveType);
 
-// update Holiday api
-leaveTypeRoute.patch('/:id',[expressValidator.body("name","Leave type name is Required.").notEmpty()],Auth,updateLeaveType);
+// update leave type api
+leaveTypeRoute.patch('/:id',Auth,leaveTypePermission,[expressValidator.body("name","Leave type name is Required.").notEmpty()],Auth,updateLeaveType);
 
-// delete Holiday api
-leaveTypeRoute.delete('/:id',Auth,deleteLeaveType);
+// delete leave type api
+leaveTypeRoute.delete('/:id',Auth,leaveTypePermission,deleteLeaveType);
 
-// get Holiday api
-leaveTypeRoute.get('/',Auth,getLeaveType);
+// get leave type api
+leaveTypeRoute.get('/',Auth,leaveTypePermission,getLeaveType);
 
 // check DEPARTMENT
 leaveTypeRoute.post('/name', Auth, [expressValidator.body("name","Leave type name is Required.").notEmpty()],checkLeaveType)

@@ -1,11 +1,13 @@
+const { default: mongoose } = require("mongoose");
 const menu = require("../models/menuSchema");
+const role = require("../models/roleSchema");
 
 // create menu function
 const createMenu = async (req, res) => {
     try {
         console.log('req.body', req.body)
         // find menu name in database
-        const data = await menu.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }})
+        const data = await menu.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
         console.log('data', data)
         if (data) {
             // exists menu name for send message
@@ -39,9 +41,9 @@ const updateMenu = async (req, res) => {
         // not exists menu name for update database
         const response = await menu.findByIdAndUpdate({ _id: req.params.id }, req.body)
         console.log('response', response)
-        if(response){
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully edited a menu." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Menu is not found." })
         }
 
@@ -56,9 +58,9 @@ const deleteMenu = async (req, res) => {
     try {
         const response = await menu.findByIdAndDelete({ _id: req.params.id })
         console.log('response', response)
-        if(response){
+        if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a menu." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Menu is not found." })
         }
 
@@ -71,11 +73,35 @@ const deleteMenu = async (req, res) => {
 // get menu function
 const getMenu = async (req, res) => {
     try {
+        let data = ""
+        const roleName = await role.findOne({ _id: req.user.role_id}, { name: 1, _id: 0 })
         // get menu data in database
-        const data = await menu.find()
-        console.log('data', data)
+        if (roleName && roleName.name.toLowerCase() !== "admin") {
+            data = await role.aggregate([
+                { $match: { _id: new mongoose.Types.ObjectId(req.user.role_id) } },
+                { "$unwind": "$permissions" },
+                { $match: { "permissions.list": 1 } },
+                {
+                    $lookup: {
+                        from: "menus",
+                        localField: "permissions.menuId",
+                        foreignField: "_id",
+                        as: "menu"
+                    }
+                }, {
+                    $project: {
+                        "name": { $first: "$menu.name" },
+                        "_id": { $first: "$menu._id" },
+                        "path": { $first: "$menu.path" }
+                    }
+                }
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a menu data.",data:data })
+            ])
+        } else {
+            data = await menu.find({}, { name: 1,path :1 })
+        }
+
+        return res.status(200).json({ success: true, message: "Successfully fetch a menu data.", data: data})
 
     } catch (error) {
         console.log('error =======> ', error);
@@ -85,4 +111,4 @@ const getMenu = async (req, res) => {
 
 
 
-module.exports = { createMenu, updateMenu,deleteMenu,getMenu }
+module.exports = { createMenu, updateMenu, deleteMenu, getMenu }

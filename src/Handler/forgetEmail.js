@@ -6,22 +6,22 @@ const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
 const forgetEmail = async (email, mailsubject, url,name) => {
     try {
-        // const transporter = nodemailer.createTransport({
-        //     host: 'smtp.gmail.com',
-        //     port: 587,
-        //     auth: {
-        //         user: SMTP_EMAIL,
-        //         pass: SMTP_PASSWORD
-        //     }
-        // })
-        var transporter = nodemailer.createTransport({
-            host: "sandbox.smtp.mailtrap.io",
-            port: 2525,
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
             auth: {
                 user: SMTP_EMAIL,
                 pass: SMTP_PASSWORD
             }
-        });
+        })
+        // var transporter = nodemailer.createTransport({
+        //     host: "sandbox.smtp.mailtrap.io",
+        //     port: 2525,
+        //     auth: {
+        //         user: SMTP_EMAIL,
+        //         pass: SMTP_PASSWORD
+        //     }
+        // });
 
         // point to the template folder
         const handlebarOptions = {

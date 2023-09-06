@@ -5,6 +5,7 @@ const upload = require("../middleware/ImageProfile");
 const { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId, changeImage, changePassword, getLoginInfo, getUserName } = require("../controller/userController");
 const Auth = require("../middleware/auth");
 const user = require("../models/UserSchema");
+const { userPermission } = require("../middleware/permission");
 
 const userRoute = express.Router();
 
@@ -13,7 +14,7 @@ userRoute.use(bodyParser.json())
 userRoute.use(bodyParser.urlencoded({ extended: false }));
 
 // user create api
-userRoute.post('/', Auth, [
+userRoute.post('/', Auth,userPermission, [
     expressValidator.body('email').isEmail().withMessage("Enter a valid email.").custom(async (email, { req }) => {
         const data = await user.findOne({ email: { $regex: new RegExp('^' + req.body.email, 'i') } })
 
@@ -43,23 +44,23 @@ userRoute.post('/', Auth, [
     expressValidator.body('role_id', "Please Enter valid roleId.").isMongoId(),
     expressValidator.body('department_id', "Please Enter valid departmentId.").isMongoId(),
     expressValidator.body('designation_id', "Please Enter valid designationId.").isMongoId(),
-    expressValidator.body('report_to', "Please enter valid report to.").isMongoId(),
+    expressValidator.body('report_by', "Please enter valid report By.").isMongoId(),
 ], createUser)
 
 // active user get api
 userRoute.get('/:id', Auth, activeUser);
 
 // user listing api
-userRoute.get('/', Auth, getUser);
+userRoute.get('/', Auth,userPermission, getUser);
 
 // update user api
-userRoute.put('/:id', Auth, updateUser);
+userRoute.put('/:id', Auth,userPermission, updateUser);
 
 // DELETE user api
-userRoute.delete('/:id', Auth, deleteUser)
+userRoute.delete('/:id', Auth,userPermission, deleteUser)
 
 // update user status api
-userRoute.patch('/:id', Auth, updateStatusUser)
+userRoute.patch('/:id', Auth,userPermission, updateStatusUser)
 
 //check email  api
 userRoute.post('/email', Auth, [expressValidator.body('email', "Enter a valid email.").isEmail()], checkEmail)
@@ -93,9 +94,9 @@ userRoute.post('/password', Auth, [
 ], changePassword);
 
 //get login info
-userRoute.post('/loginInfo', Auth, getLoginInfo);
+userRoute.post('/loginInfo', Auth,userPermission, getLoginInfo);
 
 //get only use name
-userRoute.post('/username', Auth, getUserName);
+userRoute.post('/username', Auth,userPermission, getUserName);
 
 module.exports = userRoute

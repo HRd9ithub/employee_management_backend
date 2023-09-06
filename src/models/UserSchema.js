@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    report_to: {
+    report_by: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
