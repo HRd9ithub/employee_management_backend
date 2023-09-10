@@ -105,7 +105,7 @@ const getDepartment = async (req, res) => {
 const checkDepartment = async (req, res) => { 
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
+
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -117,7 +117,7 @@ const checkDepartment = async (req, res) => {
 
         const response = await department.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }});
 
-        if(response){
+        if(response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()){
             return res.status(400).json({ success: false, message: "Department name already exists." })
         }
         return res.status(200).json({ success: true, message: "Department name not exist"})

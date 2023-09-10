@@ -119,7 +119,7 @@ const checkDesignation = async (req, res) => {
 
         const response = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if (response) {
+        if(response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()){
             return res.status(400).json({ success: false, message: "Designation name already exists." })
         }
         return res.status(200).json({ success: true, message: "Designation name not exist" })

@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const role = require('../models/roleSchema');
 const menu = require('../models/menuSchema');
+const { default: mongoose } = require('mongoose');
 
 // add role function
 const addRole = async (req, res) => {
@@ -21,28 +22,28 @@ const addRole = async (req, res) => {
 
         const response = await roleData.save();
 
-        return res.status(200).json({ success: true, message: "Successfully added a new role."})
+        return res.status(200).json({ success: true, message: "Successfully added a new role." })
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
 // update document
 const updateRole = async (req, res) => {
     try {
-         // check error or not
-         const errors = validationResult(req)
+        // check error or not
+        const errors = validationResult(req)
 
-         let err = errors.array().map((val) => {
-             return val.msg
-         })
- 
-         // check data validation error
-         if (!errors.isEmpty()) {
-             return res.status(400).json({ error: err, success: false })
-         }
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
 
         const response = await role.findByIdAndUpdate({ _id: req.params.id }, req.body)
 
@@ -53,8 +54,8 @@ const updateRole = async (req, res) => {
         }
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -76,15 +77,15 @@ const updateRole = async (req, res) => {
 // }
 
 // get function
-const getRole  = async (req, res) => {
+const getRole = async (req, res) => {
     try {
         const response = await role.find().select("-permissions");
 
-        return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })
+        return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response, permissions: req.permissions })
 
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -92,25 +93,38 @@ const getRole  = async (req, res) => {
 const singleRole = async (req, res) => {
     try {
         if (req.params.id !== "static") {
-            const response = await role.findOne({ _id: req.params.id });
+            // const response = await role.findOne({ _id: req.params.id });
+
+            let response = await role.aggregate([
+                { $match: { _id: new mongoose.Types.ObjectId("64f6af2fd94f5c2e334e0af6") } },
+                {$unwind : "$permissions"},
+                {
+                    $lookup: {
+                        "from": "menus",
+                        "localField": "permissions.menuId",
+                        "foreignField": "_id",
+                        "as": "permissions.data"
+                    }
+                }
+            ])
 
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })
         } else {
             const response = await menu.find();
 
             let data = response.map((val) => {
-                return { menuId: val._id, list: 0, create: 0, delete: 0, update: 0 }
+                return { menuId: val._id, list: 0, create: 0, delete: 0, update: 0, name: val.name }
             })
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: data })
         }
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
 // check user role existing function
-const checkRole = async (req, res) => { 
+const checkRole = async (req, res) => {
     try {
         const errors = validationResult(req)
         console.log('errors', errors)
@@ -123,15 +137,15 @@ const checkRole = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        const response = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') }});
+        const response = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if(response){
+        if (response) {
             return res.status(400).json({ success: false, message: "User Role Already Exist." })
         }
-        return res.status(200).json({ success: true, message: "User Role not exist"})
+        return res.status(200).json({ success: true, message: "User Role not exist" })
     } catch (error) {
-        console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        console.log(error);
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

@@ -31,7 +31,6 @@ const createUser = async (req, res) => {
 // single user data fetch function
 const activeUser = async (req, res) => {
     try {
-        console.log('req.params', req.params, new mongoose.Types.ObjectId(req.params.id))
         const value = await user.aggregate([
             {
                 $match: { _id: new mongoose.Types.ObjectId(req.params.id) }
