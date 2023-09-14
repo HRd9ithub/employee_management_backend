@@ -26,9 +26,8 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     report_by: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
+        type: mongoose.Schema.Types.ObjectId
+        },
     age: {
         type: Number,
     },
