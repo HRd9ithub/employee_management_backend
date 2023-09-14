@@ -35,7 +35,7 @@ const addEditEduction = async (req, res) => {
         return res.status(200).json({ success: true, message: "Saved Successfully." })
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 
@@ -64,7 +64,7 @@ const deleteEducation = async (req, res) => {
 
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 

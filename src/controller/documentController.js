@@ -5,21 +5,10 @@ const { importDocument } = require('../middleware/documentUpload');
 // add document function
 const addDocument = async(req,res) => {
     try {
-        const errors = validationResult(req)
-
-        let err = errors.array().map((val) => {
-            return val.msg
-        })
-        // check data validation error
-        if (!errors.isEmpty()) {
-            return res.status(422).json({ error: err, success: false })
-        }
-    
         importDocument(req, res, async function (err) {
             if (err) {
                 return res.status(422).send({ message: err.message })
             }
-            console.log(req.file)
             if(req.file){
                 let {name,description} = req.body;
                 let {filename} = req.file;
@@ -46,16 +35,6 @@ const addDocument = async(req,res) => {
 // update document
 const updateDocument = async(req,res) => {
     try {
-        const errors = validationResult(req)
-
-        let err = errors.array().map((val) => {
-            return val.msg
-        })
-        // check data validation error
-        if (!errors.isEmpty()) {
-            return res.status(422).json({ error: err, success: false })
-        }
-    
         const response = await document.findOne({_id: req.params.id})
         
         if(response){

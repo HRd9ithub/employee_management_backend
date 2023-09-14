@@ -11,7 +11,7 @@ const createLeaveType = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // find leaveType name in database
@@ -44,7 +44,7 @@ const updateLeaveType = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // find leaveType name in database
@@ -57,7 +57,6 @@ const updateLeaveType = async (req, res) => {
 
         // not exists leaveType name for update database
         const response = await leaveType.findByIdAndUpdate({ _id: req.params.id }, req.body)
-        console.log('response', response)
         if (response) {
             return res.status(200).json({ success: true, message: "Successfully edited a leaveType." })
         } else {
@@ -65,7 +64,6 @@ const updateLeaveType = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -118,7 +116,7 @@ const checkLeaveType = async (req, res) => {
 
         const response = await leaveType.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if (response) {
+        if(response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()){
             return res.status(400).json({ success: false, message: "Leave Type already exists.." })
         }
         return res.status(200).json({ success: true, message: "Leave Type not exist" })

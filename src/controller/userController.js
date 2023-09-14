@@ -4,6 +4,7 @@ const expressValidator = require("express-validator");
 const bcrypt = require("bcryptjs");
 const profile_image = require("../middleware/ImageProfile");
 const loginInfo = require("../models/loginInfoSchema");
+const moment = require("moment");
 
 // create user function
 const createUser = async (req, res) => {
@@ -101,6 +102,7 @@ const getUser = async (req, res) => {
     try {
         // if (req.user) {
         const value = await user.aggregate([
+            { $match: { "delete_at": { $exists: false } } },
             {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
@@ -133,7 +135,7 @@ const getUser = async (req, res) => {
             }
         ])
         console.log('value', value)
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value,permissions : req.permissions })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value, permissions: req.permissions })
         // }
     } catch (error) {
         console.log(error);
@@ -161,6 +163,7 @@ const updateUser = async (req, res) => {
                 // Everything went fine.
                 let file = req.file;
                 req.body.profile_image = req.file && req.file.filename
+                console.log(req.body, "hardik")
                 // data update method
                 const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
                 console.log('response', response)
@@ -233,7 +236,7 @@ const checkEmail = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // check email exist or not
@@ -241,7 +244,7 @@ const checkEmail = async (req, res) => {
         console.log(data, "====> check email")
 
         if (data) {
-            return res.status(400).json({ message: "Email address already exists.", success: false })
+            return res.status(400).json({ error: "Email address already exists.", success: false })
         } else {
             return res.status(200).json({ success: true, message: "Email address not exists." })
         }
@@ -262,7 +265,7 @@ const checkEmployeeId = async (req, res) => {
 
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // check email exist or not
@@ -270,7 +273,7 @@ const checkEmployeeId = async (req, res) => {
         console.log(data, "====> check employee id")
 
         if (data) {
-            return res.status(400).json({ message: "Employee id already exists.", success: false })
+            return res.status(400).json({ error: "Employee id already exists.", success: false })
         } else {
             return res.status(200).json({ success: true, message: "Employee id not exists." })
         }
@@ -294,13 +297,13 @@ const changeImage = async (req, res) => {
         try {
             if (req.file) {
                 let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: req.file.filename });
-                return res.status(200).json({ message: "Profile changed successfully.", success: true })
+                return res.status(200).json({ message: "Profile image changed successfully.", success: true })
             } else {
                 return res.status(400).json({ message: "Profile Image is Required.", success: false })
             }
         } catch (error) {
             console.log(error)
-            res.status(500).json({ message: "Internal server error", success: false })
+            res.status(500).json({ message: error.message || 'Internal server Error', success: false })
         }
     })
 }
@@ -331,53 +334,68 @@ const changePassword = async (req, res) => {
         // password convert hash
         let passwordHash = await bcrypt.hash(req.body.new_password, 10)
 
-        let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash, $unset: { token: 1 } })
+        let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash })
 
         res.status(200).json({ message: "Your password has been changed successfully.", success: true })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 // get login information
 const getLoginInfo = async (req, res) => {
     try {
+        let { id, startDate, endDate } = req.body
         console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id))
-        const value = await loginInfo.aggregate([
-            {
-                $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
-            },
-            {
-                $lookup: {
-                    from: "timesheets", localField: "_id", foreignField: "login_id", as: "timesheet"
-                }
-            },
-            {
-                $lookup: {
-                    from: "users", localField: "userId", foreignField: "_id", as: "user"
-                }
-            }, { $sort: { "createdAt": -1 } },
-            {
-                $project: {
-                    "ip": 1,
-                    "city": 1,
-                    "device": 1,
-                    "userId": 1,
-                    "createdAt": 1,
-                    "device_name": 1,
-                    "browser_name": 1,
-                    "timesheet.date": 1,
-                    "timesheet.login_time": 1,
-                    "timesheet.logout_time": 1,
-                    "timesheet.total": 1,
-                    "user.first_name": 1,
-                    "user.last_name": 1,
-                    "user.profile_image": 1,
-                    "user.employee_id": 1,
-                    "user.status": 1
-                }
-            }
-        ])
+        // const value = await loginInfo.aggregate([
+        //     {
+        //         $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "timesheets", localField: "_id", foreignField: "login_id", as: "timesheet"
+        //         }
+        //     },
+        //     {
+        //         $unwind:
+        //         {
+        //             path: "$timesheet",
+        //             preserveNullAndEmptyArrays: true
+        //         }
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "users", localField: "userId", foreignField: "_id", as: "user"
+        //         }
+        //     }, { $sort: { "createdAt": -1 } },
+        //     {
+        //         $project: {
+        //             "ip": 1,
+        //             "city": 1,
+        //             "device": 1,
+        //             "userId": 1,
+        //             "createdAt": 1,
+        //             "device_name": 1,
+        //             "browser_name": 1,
+        //             "timesheet.date": 1,
+        //             "timesheet.login_time": 1,
+        //             "timesheet.logout_time": 1,
+        //             "timesheet.total": 1,
+        //             "user.first_name": 1,
+        //             "user.last_name": 1,
+        //             "user.profile_image": 1,
+        //             "user.employee_id": 1,
+        //             "user.status": 1
+        //         }
+        //     }
+        // ])
+
+        let value = await loginInfo.find({
+            $and: [
+                { userId: { $eq: id } },
+                { $and: [{ createdAt: { $gte: startDate} }, { createdAt: { $lte: endDate } }] },
+            ]
+        }).sort({ createdAt: -1 })
 
 
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
@@ -415,7 +433,7 @@ const getUserName = async (req, res) => {
         ])
 
         let data = value.filter((val) => {
-            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date) && val.role.toLowerCase() !== "admin"
+            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date)
         })
 
 

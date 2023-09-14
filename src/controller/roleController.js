@@ -96,7 +96,7 @@ const singleRole = async (req, res) => {
             // const response = await role.findOne({ _id: req.params.id });
 
             let response = await role.aggregate([
-                { $match: { _id: new mongoose.Types.ObjectId("64f6af2fd94f5c2e334e0af6") } },
+                { $match: { _id: new mongoose.Types.ObjectId(req.params.id) } },
                 {$unwind : "$permissions"},
                 {
                     $lookup: {
@@ -105,7 +105,19 @@ const singleRole = async (req, res) => {
                         "foreignField": "_id",
                         "as": "permissions.data"
                     }
-                }
+                },{
+                    $project : {
+                        name : 1,
+                        "permissions.menuId" :1,
+                        "permissions.list" :1,
+                        "permissions.create" :1,
+                        "permissions.update" :1,
+                        "permissions.delete" :1,
+                        "permissions._id" :1,
+                        "permissions.name" :{$first : "$permissions.data.name" },
+                    }
+                },
+                {$sort: {"permissions.menuId": 1}},
             ])
 
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })

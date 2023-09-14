@@ -10,7 +10,7 @@ const getTimeSheet = async (req, res) => {
     let { id, startDate, endDate } = req.query;
     try {
         if(!startDate || !endDate){
-            res.status(400).json({ message: "Please enter startDate and endDate..", success: false})
+            return res.status(400).json({ message: "Please enter startDate and endDate.", success: false})
         }
 
         let value = [];
@@ -75,7 +75,7 @@ const getTimeSheet = async (req, res) => {
                 }
             ])
         }
-        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value})
+        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value,permissions: req.permissions})
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

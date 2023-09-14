@@ -13,8 +13,8 @@ const sendMail = async (email, mailsubject, content) => {
         //     }
         // })
         var transport = nodemailer.createTransport({
-            host: "sandbox.smtp.mailtrap.io",
-            port: 2525,
+            host: 'smtp.gmail.com',
+            port: 587,
             auth: {
                 user: SMTP_EMAIL,
                 pass: SMTP_PASSWORD

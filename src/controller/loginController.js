@@ -233,11 +233,12 @@ const mailSend = async (req, res) => {
             var token = jwt.sign({ _id: userData._id }, process.env.SECRET_KEY, { expiresIn: "30m" });
             let mailsubject = 'Forget Password Mail';
             // mail content
-            let url = `${process.env.RESET_PASSWORD_URL}/newPassword?email=${req.body.email}&token=${token}`
+            let url = `${process.env.RESET_PASSWORD_URL}/set_new_password?email=${req.body.email}&token=${token}`
             let name = userData.first_name.concat(" ", userData.last_name)
 
             // mail send function
             forgetEmail(req.body.email, mailsubject, url, name);
+            await tokenSchema.deleteMany({email : req.body.email})
             let tokenData = new tokenSchema({
                 email: req.body.email,
                 token,
@@ -281,14 +282,14 @@ const resetPassword = async (req, res) => {
         });
 
 
-        if (!data) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+        if (!data) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff > 0) {
 
-            if (!token) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+            if (!token) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
 
             verifyUser = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -305,11 +306,11 @@ const resetPassword = async (req, res) => {
                 return res.status(400).json({ success: false, message: "Your password has been reset failed." })
             }
         } else {
-            return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+            return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
         }
     } catch (error) {
         console.log('error', error)
-        if (!verifyUser) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+        if (!verifyUser) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -320,20 +321,20 @@ const checkLink = async (req, res) => {
         let TokenArray = req.headers['authorization'];
         let token = TokenArray.split(" ")[1];
 
-        if (!token) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+        if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
 
         const data = await tokenSchema.findOne({
             token: token,
         });
         console.log(data)
 
-        if (!data) return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+        if (!data) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff < 0) {
-            return res.status(400).json({ success: false, message: "Your Link has expired! please check your email." })
+            return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
         } else {
             return res.status(200).json({ success: true, message: "not expired for link." })
         }

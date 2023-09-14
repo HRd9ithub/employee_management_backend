@@ -16,13 +16,16 @@ async function Auth(req, res, next) {
         }
         const decode = jwt.verify(token, SECRET_KEY);
         if (decode.date === new Date().toLocaleDateString()) {
+            // console.log("authorization",decode)
             const data = await user.findOne({ _id: decode._id }).select("-password")
             if (data) {
+                console.log("authorization",data)
                 if (data.token == token && data.status === "Active" && !data.delete_at) {
+                    console.log("authorization",data.token)
                     req.user = data
                     next()
                 } else {
-                    return res.status(401).json({ message: "Unauthenticated.", success: false })
+                    return res.status(401).json({ message: "Unauthentffficated.", success: false })
                 }
             } else {
                 return res.status(401).json({ message: "Unauthenticated.", success: false })

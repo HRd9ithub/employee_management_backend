@@ -39,7 +39,7 @@ userRoute.post('/', Auth,userPermission, [
             throw new Error('Employee id already exists.')
         }
     }),
-    expressValidator.body('joining_date', "Invalid Joining Date format.Please enter the date in the format 'DD-MM-YYYY'.").isDate({ format: 'DD-MM-YYYY' }),
+    expressValidator.body('joining_date', "Invalid Joining Date format.Please enter the date in the format 'YYYY-MM-DD'.").isDate({ format: 'YYYY-MM-DD' }),
     expressValidator.body('status', "Please Enter valid status.").isIn(["Active", "Inactive"]),
     expressValidator.body('role_id', "Please Enter valid roleId.").isMongoId(),
     expressValidator.body('department_id', "Please Enter valid departmentId.").isMongoId(),

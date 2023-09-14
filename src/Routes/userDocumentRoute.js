@@ -6,7 +6,7 @@ const user_document = require("../models/userDocumentSchema");
 const userDocumentRoute = express.Router();
 
 
-userDocumentRoute.post('/',Auth,[expressValidator.body('user_id', "User id is Required.").isMongoId()], function (req, res) {
+userDocumentRoute.post('/',Auth, function (req, res) {
     console.log(req.body)
     const errors = expressValidator.validationResult(req)
 

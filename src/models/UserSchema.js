@@ -118,7 +118,7 @@ userSchema.methods.generateToken = async function () {
         var token = jwt.sign({ _id: this._id,date: new Date().toLocaleDateString()}, process.env.SECRET_KEY);
         console.log('token :>> ', token);
         this.token = token
-        console.log('this.Tokens :>> ', this.Token);
+        console.log('this.Tokens :>> ', this.token);
         await this.save();
         return token
 

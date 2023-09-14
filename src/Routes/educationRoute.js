@@ -23,9 +23,7 @@ educationRoute.post('/', Auth, [
 ], addEditEduction)
 
 // eduction detail delete api
-educationRoute.delete('/:id', Auth, [
-    expressValidator.body('id', "id is Required.").isMongoId(),
-], deleteEducation)
+educationRoute.delete('/:id', Auth, deleteEducation)
 
 
 module.exports = educationRoute

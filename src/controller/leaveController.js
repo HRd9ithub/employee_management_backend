@@ -31,7 +31,7 @@ const getLeave = async (req, res) => {
         let leaveData = []
         if (req.permissions.name.toLowerCase() !== "admin") {
             leaveData = await Leave.aggregate([
-                {$match : {user_id : req.user._id}},
+                { $match: { user_id: req.user._id } },
                 {
                     $lookup:
                     {
@@ -48,6 +48,13 @@ const getLeave = async (req, res) => {
                         localField: "leave_type_id",
                         foreignField: "_id",
                         as: "leaveType"
+                    }
+                },
+                {
+                    $unwind:
+                    {
+                        path: "$user",
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
@@ -90,6 +97,13 @@ const getLeave = async (req, res) => {
                     }
                 },
                 {
+                    $unwind:
+                    {
+                        path: "$user",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
                     $project: {
                         "user_id": 1,
                         "leave_type_id": 1,
@@ -110,7 +124,7 @@ const getLeave = async (req, res) => {
             ])
         }
 
-        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData, permissions : req.permissions })
+        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData, permissions: req.permissions })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -211,4 +225,59 @@ const allChangeStatus = async (req, res) => {
     }
 }
 
-module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus }
+const getNotifications = async (req, res) => {
+    try {
+        let leaveData = await Leave.aggregate([
+            {$match : {status : "Pending"}},
+            {
+                $lookup:
+                {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $lookup:
+                {
+                    from: "leavetypes",
+                    localField: "leave_type_id",
+                    foreignField: "_id",
+                    as: "leaveType"
+                }
+            },
+            {
+                $unwind:
+                {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    "user_id": 1,
+                    "leave_type_id": 1,
+                    "from_date": 1,
+                    "to_date": 1,
+                    "leave_for": 1,
+                    "duration": 1,
+                    "reason": 1,
+                    "status": 1,
+                    "leaveType": { $first: "$leaveType.name" },
+                    "user.employee_id": 1,
+                    "user.profile_image": 1,
+                    "user.first_name": 1,
+                    "user.last_name": 1,
+                    "user.status": 1,
+                }
+            }
+        ])
+        res.status(200).json({ message: "Notification data fetch successfully.", success: true, data: leaveData})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    }
+}
+
+    module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus ,getNotifications}

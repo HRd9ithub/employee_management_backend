@@ -4,7 +4,6 @@ const account = require("../models/accountSchema");
 // create ACCOUNT detail function
 const addAccount = async (req, res) => {
     try {
-        console.log('req.body', req.body)
         const errors = expressValidator.validationResult(req)
 
         let err = errors.array().map((val) => {
@@ -36,7 +35,7 @@ const addAccount = async (req, res) => {
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 

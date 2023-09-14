@@ -2,7 +2,7 @@ const { Router } = require('express');
 const leaveRouter = Router(); 
 const Auth = require('../middleware/auth');
 const { body } = require('express-validator');
-const { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus } = require('../controller/leaveController');
+const { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus, getNotifications } = require('../controller/leaveController');
 const { leavePermission } = require('../middleware/permission');
 
 // Get all leave
@@ -38,5 +38,7 @@ leaveRouter.patch('/:id', Auth,leavePermission,[ body('status', "Status field is
 
 // all record status
 leaveRouter.post('/status', Auth,leavePermission,allChangeStatus)
+
+leaveRouter.post('/notification', Auth,getNotifications)
 
 module.exports = leaveRouter

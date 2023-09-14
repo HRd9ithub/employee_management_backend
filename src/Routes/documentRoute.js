@@ -7,15 +7,11 @@ const documentRoute = express.Router();
 
 
 // add document api
-documentRoute.post('/',Auth,documentPermission,[body('name', "File name field is Required.").notEmpty(),
-body('description', "File name field is Required.").notEmpty()
-], addDocument)
+documentRoute.post('/',Auth,documentPermission, addDocument)
 
 
 // update document api
-documentRoute.put('/:id', Auth,documentPermission, [body("name", "name is required.").notEmpty(),
-body("description", "description is required.").notEmpty()
-],updateDocument)
+documentRoute.put('/:id', Auth,documentPermission,updateDocument)
 
 // get api
 documentRoute.get('/',Auth,documentPermission,getDocument)
