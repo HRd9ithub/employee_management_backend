@@ -21,7 +21,7 @@ and and env file
 ```bash
   # some env variables
 
- PORT = 
+PORT = 
 SECRET_KEY = 
 SMTP_EMAIL =
 SMTP_PASSWORD = 
