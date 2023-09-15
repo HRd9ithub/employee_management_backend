@@ -25,7 +25,6 @@ const addRole = async (req, res) => {
         return res.status(200).json({ success: true, message: "Successfully added a new role." })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -54,7 +53,6 @@ const updateRole = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -71,7 +69,6 @@ const updateRole = async (req, res) => {
 //         }
 
 //     } catch (error) {
-//         console.log('error', error)
 //         res.status(500).json({ message: "Internal server error", success: false })
 //     }
 // }
@@ -84,7 +81,6 @@ const getRole = async (req, res) => {
         return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response, permissions: req.permissions })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -130,7 +126,6 @@ const singleRole = async (req, res) => {
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: data })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -139,7 +134,6 @@ const singleRole = async (req, res) => {
 const checkRole = async (req, res) => {
     try {
         const errors = validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -156,7 +150,6 @@ const checkRole = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "User Role not exist" })
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

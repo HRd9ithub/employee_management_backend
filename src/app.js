@@ -2,8 +2,9 @@ require('dotenv').config()
 const express = require("express")
 var cors = require('cors')
 require("./middleware/CreateFolder")
-const userRoute = require("./Routes/UserRoute");
+const path = require("path")
 var bodyParser = require('body-parser');
+const userRoute = require("./Routes/UserRoute");
 const AuthRoute = require("./Routes/AuthRoute");
 const departmentRoute = require('./Routes/DepartmentRoute');
 const designationRoute = require('./Routes/DesignationRoute');
@@ -14,32 +15,14 @@ const accountRoute = require('./Routes/AccountRoute');
 const timeSheetRoute = require('./Routes/timesheetRoute');
 const documentRoute = require('./Routes/documentRoute');
 const roleRoute = require('./Routes/roleRoute');
-const path = require("path")
-const { swaggerServe, swaggerSetup } = require('./config');
 const emergencyRoute = require('./Routes/emergencyRoute');
 const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
 
-// const swaggerDocument = require('./swagger.json');
 // add database
 require("./DB/conn")
-// var options = {
-//     explorer: true,
-//     swaggerOptions: {
-//       urls: [
-//         {
-//           url: 'http://petstore.swagger.io/v2/swagger.json',
-//           name: 'Spec1'
-//         },
-//         {
-//           url: 'http://petstore.swagger.io/v2/swagger.json',
-//           name: 'Spec2'
-//         }
-//       ]
-//     },
-//   }
 
 const app = express();
 
@@ -53,11 +36,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 
+// image get route
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))
+app.use('/uploads', express.static(path.join(__dirname, '../')))
 
-app.use("/api-docs", swaggerServe, swaggerSetup);
-
+// apiu route
 app.use('/api/auth', AuthRoute)
 app.use('/api/user', userRoute)
 app.use('/api/department', departmentRoute)
@@ -76,7 +60,7 @@ app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
 
 
-app.listen(port,() => {
+app.listen(port, () => {
     console.log(`server is running for ${port}.`)
 })
 

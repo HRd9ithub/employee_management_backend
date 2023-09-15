@@ -9,7 +9,8 @@ const timeSheet = require("../models/timeSheetSchema");
 const forgetEmail = require("../Handler/forgetEmail");
 const tokenSchema = require("../models/TokenSchema");
 const role = require("../models/roleSchema");
-const moment = require("moment")
+const moment = require("moment");
+const Leave = require("../models/leaveSchema");
 
 const addTime = async (id, login) => {
     try {
@@ -53,10 +54,22 @@ const userLogin = async (req, res) => {
 
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
-        if (userData && userData.status !== 'Inactive' && !userData.delete_at) {
+        if (userData && userData.status !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
             // password compare
             let isMatch = await bcrypt.compare(req.body.password, userData.password);
             if (isMatch) {
+
+                let leaveUser = await Leave.findOne({
+                    user_id: userData._id, $and: [
+                        { "status": { $eq: "Approved" } },
+                        { $and: [{ from_date: { $lte: moment(new Date()).format("YYYY-MM-DD") } }, { to_date: { $gte: moment(new Date()).format("YYYY-MM-DD") } }] },
+                    ]
+                })
+
+                if(leaveUser){
+                    return res.status(400).json({ message: "You are on leave", success: false })
+                }
+
                 let mailsubject = 'Mail Verification';
                 // let otp = Math.random().toString().slice(3, 5);
                 // otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
@@ -93,7 +106,6 @@ const userLogin = async (req, res) => {
             return res.status(404).json({ message: "Invalid email or password.", success: false })
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -152,7 +164,6 @@ const verifyOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid OTP entered.", success: false })
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -172,7 +183,6 @@ const ResendOtp = async (req, res) => {
 
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
-        console.log(userData)
         if (userData && userData.status !== 'Inactive' && !userData.delete_at) {
             let mailsubject = 'Mail Verification';
 
@@ -207,7 +217,6 @@ const ResendOtp = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -228,7 +237,7 @@ const mailSend = async (req, res) => {
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
 
-        if (userData && userData.status === "Active") {
+        if (userData && userData.status === "Active" && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
             // generate token
             var token = jwt.sign({ _id: userData._id }, process.env.SECRET_KEY, { expiresIn: "30m" });
             let mailsubject = 'Forget Password Mail';
@@ -238,7 +247,7 @@ const mailSend = async (req, res) => {
 
             // mail send function
             forgetEmail(req.body.email, mailsubject, url, name);
-            await tokenSchema.deleteMany({email : req.body.email})
+            await tokenSchema.deleteMany({ email: req.body.email })
             let tokenData = new tokenSchema({
                 email: req.body.email,
                 token,
@@ -251,11 +260,14 @@ const mailSend = async (req, res) => {
                 // email not match send message
                 return res.status(400).json({ message: "Sorry! Email address not found.", success: false })
             } else {
-                return res.status(400).json({ message: "This user is Inactive.", success: false })
+                if( (moment(userData.leaveing_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD"))){
+                    return res.status(400).json({ message: "Sorry! but you are no longer an employee.", success: false })
+                }else{
+                    return res.status(400).json({ message: "This user is Inactive.", success: false })
+                }
             }
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -309,7 +321,6 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
         }
     } catch (error) {
-        console.log('error', error)
         if (!verifyUser) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -326,7 +337,6 @@ const checkLink = async (req, res) => {
         const data = await tokenSchema.findOne({
             token: token,
         });
-        console.log(data)
 
         if (!data) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
 
@@ -351,7 +361,6 @@ const userLogout = async (req, res) => {
             // get menu data in database
             if (roleName && roleName.name.toLowerCase() !== "admin") {
                 let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD") });
-                console.log(data, "data")
                 // if (data) {
                 let Hours = new Date().getHours();
                 let Minutes = new Date().getMinutes();
@@ -371,7 +380,6 @@ const userLogout = async (req, res) => {
             return res.status(404).json({ success: false, message: "Logout is failed." })
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

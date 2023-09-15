@@ -1,3 +1,6 @@
+# floder ignore
+uploads/
+
 # Logs
 logs
 *.log

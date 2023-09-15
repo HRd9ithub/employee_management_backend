@@ -25,11 +25,9 @@ const createLeaveType = async (req, res) => {
         // not exists leaveType name for add database
         const leaveTypeData = new leaveType(req.body);
         const response = await leaveTypeData.save();
-        console.log('response', response)
         return res.status(201).json({ success: true, message: "Successfully added a new leaveType." })
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -72,7 +70,6 @@ const updateLeaveType = async (req, res) => {
 const deleteLeaveType = async (req, res) => {
     try {
         const response = await leaveType.findByIdAndDelete({ _id: req.params.id })
-        console.log('response', response)
         if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a leaveType." })
         } else {
@@ -80,7 +77,6 @@ const deleteLeaveType = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -90,12 +86,10 @@ const getLeaveType = async (req, res) => {
     try {
         // get leaveType data in database
         const data = await leaveType.find()
-        console.log('data', data)
 
         return res.status(200).json({ success: true, message: "Successfully fetch a leaveType data.", data: data ,permissions: req.permissions})
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -104,7 +98,6 @@ const getLeaveType = async (req, res) => {
 const checkLeaveType = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -121,7 +114,6 @@ const checkLeaveType = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Leave Type not exist" })
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }

@@ -4,7 +4,6 @@ const education = require("../models/educationSchema");
 // create and edit education detail function
 const addEditEduction = async (req, res) => {
     try {
-        console.log('req.body', req.body)
         const errors = expressValidator.validationResult(req)
 
         let err = errors.array().map((val) => {
@@ -34,7 +33,6 @@ const addEditEduction = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Saved Successfully." })
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
@@ -63,7 +61,6 @@ const deleteEducation = async (req, res) => {
         }
 
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }

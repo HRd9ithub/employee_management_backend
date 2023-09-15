@@ -20,7 +20,6 @@ const addLeave = async (req, res) => {
 
         res.status(201).json({ message: "Leave create successfully.", success: true })
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -126,7 +125,6 @@ const getLeave = async (req, res) => {
 
         res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData, permissions: req.permissions })
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -140,7 +138,6 @@ const singleGetLeave = async (req, res) => {
 
         res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData })
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -170,7 +167,6 @@ const updateLeave = async (req, res) => {
             return res.status(404).json({ message: "Leave is not found.", success: false })
         }
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -201,7 +197,6 @@ const changeStatus = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -220,7 +215,6 @@ const allChangeStatus = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -275,7 +269,6 @@ const getNotifications = async (req, res) => {
         ])
         res.status(200).json({ message: "Notification data fetch successfully.", success: true, data: leaveData})
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

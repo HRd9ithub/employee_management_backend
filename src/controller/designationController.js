@@ -17,7 +17,6 @@ const createDesignation = async (req, res) => {
         // find designation name in database
         const data = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        console.log('data', data)
         if (data) {
             // exists designation name for send message
             return res.status(400).json({ message: "Designation name already exists.", success: false })
@@ -26,11 +25,9 @@ const createDesignation = async (req, res) => {
         // not exists designation name for add database
         const designationData = new designation(req.body);
         const response = await designationData.save();
-        console.log('response', response)
         return res.status(201).json({ success: true, message: "Successfully added a new designation." })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -66,7 +63,6 @@ const updateDesignation = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -75,7 +71,6 @@ const updateDesignation = async (req, res) => {
 const deleteDesignation = async (req, res) => {
     try {
         const response = await designation.findByIdAndDelete({ _id: req.params.id })
-        console.log('response', response)
         if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a designation." })
         } else {
@@ -83,7 +78,6 @@ const deleteDesignation = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -93,12 +87,10 @@ const getDesignation = async (req, res) => {
     try {
         // get designation data in database
         const data = await designation.find()
-        console.log('data', data)
 
         return res.status(200).json({ success: true, message: "Successfully fetch a designation data.", data: data ,permissions : req.permissions})
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -107,7 +99,6 @@ const getDesignation = async (req, res) => {
 const checkDesignation = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -124,7 +115,6 @@ const checkDesignation = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Designation name not exist" })
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }

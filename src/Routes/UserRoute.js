@@ -48,13 +48,13 @@ userRoute.post('/', Auth,userPermission, [
 ], createUser)
 
 // active user get api
-userRoute.get('/:id', Auth, activeUser);
+userRoute.get('/:id', Auth,userPermission, activeUser);
 
 // user listing api
 userRoute.get('/', Auth,userPermission, getUser);
 
 // update user api
-userRoute.put('/:id', Auth,userPermission, updateUser);
+userRoute.put('/:id', Auth, updateUser);
 
 // DELETE user api
 userRoute.delete('/:id', Auth,userPermission, deleteUser)
@@ -97,6 +97,6 @@ userRoute.post('/password', Auth, [
 userRoute.post('/loginInfo', Auth,userPermission, getLoginInfo);
 
 //get only use name
-userRoute.post('/username', Auth,userPermission, getUserName);
+userRoute.post('/username', Auth, getUserName);
 
 module.exports = userRoute

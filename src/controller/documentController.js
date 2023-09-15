@@ -27,7 +27,6 @@ const addDocument = async(req,res) => {
             }
         })
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -63,7 +62,6 @@ const updateDocument = async(req,res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -80,7 +78,6 @@ const deleteDocument = async(req,res) => {
         }
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -93,7 +90,6 @@ const getDocument = async(req,res) => {
         return res.status(200).json({success:true,message:"successfully fetch for document.",data:response,permissions: req.permissions})
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

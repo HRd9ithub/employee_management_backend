@@ -4,7 +4,7 @@ const expressValidator = require("express-validator");
 const bcrypt = require("bcryptjs");
 const profile_image = require("../middleware/ImageProfile");
 const loginInfo = require("../models/loginInfoSchema");
-const moment = require("moment");
+const path = require("path");
 
 // create user function
 const createUser = async (req, res) => {
@@ -19,12 +19,12 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
+        req.body.profile_image = "uploads/default.jpg"
+
         const userData = new user(req.body);
         const response = await userData.save();
-        console.log('response', response)
         return res.status(201).json({ success: true, message: "User create successfully." })
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -89,10 +89,9 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0] })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0],permissions: req.permissions  })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -114,7 +113,7 @@ const getUser = async (req, res) => {
                     from: "users", localField: "report_by", foreignField: "_id", as: "report"
                 }
             },
-            { $unwind: { path: "$report" } },
+            { $unwind: { path: "$report",preserveNullAndEmptyArrays : true } },
             {
                 $project: {
                     "employee_id": 1,
@@ -134,11 +133,9 @@ const getUser = async (req, res) => {
                 }
             }
         ])
-        console.log('value', value)
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value, permissions: req.permissions })
         // }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -146,11 +143,8 @@ const getUser = async (req, res) => {
 // update user data function
 const updateUser = async (req, res) => {
     try {
-        console.log('req.body', req.params)
-
         // check email exist or not
         const data = await user.findOne({ email: req.body.email })
-        console.log(data, "====> email")
 
         if (data && data._id != req.params.id) {
             return res.status(400).json({ message: "email address already exists.", success: false })
@@ -163,10 +157,8 @@ const updateUser = async (req, res) => {
                 // Everything went fine.
                 let file = req.file;
                 req.body.profile_image = req.file && req.file.filename
-                console.log(req.body, "hardik")
                 // data update method
                 const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
-                console.log('response', response)
 
                 if (response) {
                     return res.status(200).json({ success: true, message: "User update successfully." })
@@ -176,7 +168,6 @@ const updateUser = async (req, res) => {
             })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -184,10 +175,8 @@ const updateUser = async (req, res) => {
 // delete user data function
 const deleteUser = async (req, res) => {
     try {
-        console.log('req.body', req.params)
         // check email exist or not
         const data = await user.findOne({ _id: req.params.id })
-        console.log(data, "====> delete")
 
         if (!data) {
             return res.status(404).json({ message: "User are not found.", success: false })
@@ -195,11 +184,9 @@ const deleteUser = async (req, res) => {
             // req.body.deleteAt = Date.now()
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_at: Date.now() });
-            console.log('response', response)
             return res.status(200).json({ success: true, message: "User delete successfully." })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -207,21 +194,17 @@ const deleteUser = async (req, res) => {
 // update user status function
 const updateStatusUser = async (req, res) => {
     try {
-        console.log('req.body', req.params)
         // check email exist or not
         const data = await user.findOne({ _id: req.params.id })
-        console.log(data, "====> staus")
 
         if (!data) {
             return res.status(404).json({ message: "User are not found.", success: false })
         } else {
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { status: data.status === 'Active' ? 'Inactive' : "Active" });
-            console.log('response', response)
             return res.status(200).json({ success: true, message: "User status update successfully." })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -230,7 +213,6 @@ const updateStatusUser = async (req, res) => {
 const checkEmail = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -241,7 +223,6 @@ const checkEmail = async (req, res) => {
 
         // check email exist or not
         const data = await user.findOne({ email: { $regex: new RegExp('^' + req.body.email, 'i') } })
-        console.log(data, "====> check email")
 
         if (data) {
             return res.status(400).json({ error: "Email address already exists.", success: false })
@@ -249,7 +230,6 @@ const checkEmail = async (req, res) => {
             return res.status(200).json({ success: true, message: "Email address not exists." })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -258,7 +238,6 @@ const checkEmail = async (req, res) => {
 const checkEmployeeId = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -270,7 +249,6 @@ const checkEmployeeId = async (req, res) => {
 
         // check email exist or not
         const data = await user.findOne({ employee_id: { $regex: new RegExp('^' + req.body.employee_id, 'i') } })
-        console.log(data, "====> check employee id")
 
         if (data) {
             return res.status(400).json({ error: "Employee id already exists.", success: false })
@@ -278,14 +256,12 @@ const checkEmployeeId = async (req, res) => {
             return res.status(200).json({ success: true, message: "Employee id not exists." })
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
 // change profile image
 const changeImage = async (req, res) => {
-    console.log(req.file)
     profile_image(req, res, async function (err) {
         if (err) {
             return res.status(400).send({ message: err.message })
@@ -296,13 +272,12 @@ const changeImage = async (req, res) => {
 
         try {
             if (req.file) {
-                let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: req.file.filename });
+                let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: `uploads/${req.file.filename}` });
                 return res.status(200).json({ message: "Profile image changed successfully.", success: true })
             } else {
                 return res.status(400).json({ message: "Profile Image is Required.", success: false })
             }
         } catch (error) {
-            console.log(error)
             res.status(500).json({ message: error.message || 'Internal server Error', success: false })
         }
     })
@@ -312,7 +287,6 @@ const changeImage = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
-        console.log('errors', errors)
         let err = errors.array().map((val) => {
             return val.msg
         })
@@ -338,7 +312,6 @@ const changePassword = async (req, res) => {
 
         res.status(200).json({ message: "Your password has been changed successfully.", success: true })
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -346,7 +319,6 @@ const changePassword = async (req, res) => {
 const getLoginInfo = async (req, res) => {
     try {
         let { id, startDate, endDate } = req.body
-        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id))
         // const value = await loginInfo.aggregate([
         //     {
         //         $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
@@ -401,7 +373,6 @@ const getLoginInfo = async (req, res) => {
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -410,7 +381,6 @@ const getLoginInfo = async (req, res) => {
 const getUserName = async (req, res) => {
     try {
         let date = new Date().toISOString()
-        console.log('req.params', req.body, new mongoose.Types.ObjectId(req.body.id), date)
         const value = await user.aggregate([
             {
                 $match: {
@@ -440,7 +410,6 @@ const getUserName = async (req, res) => {
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data })
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

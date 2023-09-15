@@ -5,10 +5,8 @@ const role = require("../models/roleSchema");
 // create menu function
 const createMenu = async (req, res) => {
     try {
-        console.log('req.body', req.body)
         // find menu name in database
         const data = await menu.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
-        console.log('data', data)
         if (data) {
             // exists menu name for send message
             return res.status(400).json({ message: "Menu name already exists.", success: false })
@@ -17,11 +15,9 @@ const createMenu = async (req, res) => {
         // not exists menu name for add database
         const menuData = new menu(req.body);
         const response = await menuData.save();
-        console.log('response', response)
         return res.status(201).json({ success: true, message: "Successfully added a new menu." })
 
     } catch (error) {
-        console.log('error =======> ', error);
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }
@@ -29,10 +25,8 @@ const createMenu = async (req, res) => {
 // update menu function
 const updateMenu = async (req, res) => {
     try {
-        console.log('req.body', req.body)
         // find menu name in database
         const data = await menu.findOne({ name: req.body.name })
-        console.log('data', data)
         if (data && data._id != req.params.id) {
             // exists menu name for send message
             return res.status(400).json({ message: "The menu name already exists.", success: false })
@@ -40,7 +34,6 @@ const updateMenu = async (req, res) => {
 
         // not exists menu name for update database
         const response = await menu.findByIdAndUpdate({ _id: req.params.id }, req.body)
-        console.log('response', response)
         if (response) {
             return res.status(200).json({ success: true, message: "Successfully edited a menu." })
         } else {
@@ -48,7 +41,6 @@ const updateMenu = async (req, res) => {
         }
 
     } catch (error) {
-        console.log('error =======> ', error);
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }
@@ -57,7 +49,6 @@ const updateMenu = async (req, res) => {
 const deleteMenu = async (req, res) => {
     try {
         const response = await menu.findByIdAndDelete({ _id: req.params.id })
-        console.log('response', response)
         if (response) {
             return res.status(200).json({ success: true, message: "Successfully deleted a menu." })
         } else {
@@ -65,7 +56,6 @@ const deleteMenu = async (req, res) => {
         }
 
     } catch (error) {
-        console.log('error =======> ', error);
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }
@@ -104,7 +94,6 @@ const getMenu = async (req, res) => {
         return res.status(200).json({ success: true, message: "Successfully fetch a menu data.", data: data})
 
     } catch (error) {
-        console.log('error =======> ', error);
         res.status(500).json({ message: "Internal server error", success: false })
     }
 }

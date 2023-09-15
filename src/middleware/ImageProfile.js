@@ -18,7 +18,6 @@ const upload = multer({
     storage: imgConfig,
     fileFilter: (req, file, cb) => {
         var ext = path.extname(file.originalname)
-        console.log(ext, "ext")
         if (ext === '.png' || ext === '.jpg' || ext === '.svg' || ext === '.jpeg' ) {
             cb(null, true);
         } else {

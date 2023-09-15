@@ -4,7 +4,12 @@ const role = require("../models/roleSchema")
 const getRoleData = async (id) => {
     let value = await role.aggregate([
         { $match: { _id: id } },
-        { $unwind: "$permissions" },
+        {
+            $unwind: {
+                path: '$permissions',
+                preserveNullAndEmptyArrays: true
+            }
+        },
         {
             $lookup: {
                 from: "menus",
@@ -15,7 +20,8 @@ const getRoleData = async (id) => {
         },
         {
             $unwind: {
-                path: '$permissions.menu'
+                path: '$permissions.menu',
+                preserveNullAndEmptyArrays: true
             }
         }
     ])
@@ -29,28 +35,30 @@ const userPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "employee"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "employees"
+            }))
         }
+
         req.permissions = permission;
 
-
-        if (!permission || permission.name.toLowerCase() === "admin") {
+        if (permission && permission.name.toLowerCase() === "admin") {
             next()
         } else {
             if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create user." })
+                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create Employee." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view user list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing employee to the Employee Data. please contact admin.", permissions: req.permissions })
             } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update user." })
+                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update Employee." })
             } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete user." })
-            } else if (req.method === "POST" && (req.route.path == "/loginInfo" || req.route.path == "/username")) {
+                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete Employee." })
+            } else if (req.method === "GET" && req.route.path == "/:id") {
+                next();
+            } else if (req.method === "POST" && req.route.path == "/loginInfo") {
                 permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "access denied." })
             }
         }
@@ -65,12 +73,12 @@ const departmentPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "department"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "department"
+            }))
         }
         req.permissions = permission;
 
@@ -80,7 +88,7 @@ const departmentPermission = async (req, res, next) => {
             if (req.method === "POST" && req.route.path == "/") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create department." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view department list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing department to the Department Data. please contact admin.", permissions: req.permissions })
             } else if (req.method === "PATCH") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update department." })
             } else if (req.method === "DELETE") {
@@ -98,13 +106,14 @@ const designationtPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "designation"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "designation"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
@@ -113,7 +122,7 @@ const designationtPermission = async (req, res, next) => {
             if (req.method === "POST" && req.route.path == "/") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create designation." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view designation list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing designation to the Designation Data. please contact admin.", permissions: req.permissions })
             } else if (req.method === "PATCH") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update designation." })
             } else if (req.method === "DELETE") {
@@ -130,24 +139,23 @@ const leavePermission = async (req, res, next) => {
     try {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "leaves"
-        }))
-
-        console.log(permission, "permission")
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "leaves"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
             next()
         } else {
-            console.log(req.route)
             if (req.method === "POST" && req.route.path == "/") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view leave list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing leave to the leave Data. please contact admin." })
             } else if (req.method === "PATCH" || req.method === "PUT" || (req.method === "POST" && req.route.path === "/status")) {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave." })
             }
@@ -163,13 +171,14 @@ const leaveTypePermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "leave type"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "leave type"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
@@ -178,8 +187,7 @@ const leaveTypePermission = async (req, res, next) => {
             if (req.method === "POST" && req.route.path == "/") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave type." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                next()
-                // permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view leave type list." })
+                permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing leave type to the leave type Data. please contact admin." })
             } else if (req.method === "PATCH") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave type." })
             } else if (req.method === "DELETE") {
@@ -198,13 +206,14 @@ const holidayPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "holiday"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "holiday"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
@@ -213,7 +222,7 @@ const holidayPermission = async (req, res, next) => {
             if (req.method === "POST" && req.baseUrl == "/api/holiday") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create holiday." })
             } else if (req.method === "GET" && req.baseUrl == "/api/holiday") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view holiday list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing holiday to the Holiday Data. please contact admin." })
             } else if (req.method === "PUT") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update holiday." })
             } else if (req.method === "DELETE") {
@@ -231,20 +240,21 @@ const timesheetPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "timesheet"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "timesheet"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
             next()
         } else {
             if (req.method === "GET") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view timeSheet list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing timesheet to the Timesheet Data. please contact admin." })
             }
         }
     } catch (error) {
@@ -258,13 +268,14 @@ const documentPermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "document"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "document"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
@@ -273,7 +284,7 @@ const documentPermission = async (req, res, next) => {
             if (req.method === "POST" && req.baseUrl == "/api/document") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create document." })
             } else if (req.method === "GET" && req.baseUrl == "/api/document") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view document list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing document to the Document Data. please contact admin." })
             } else if (req.method === "PUT") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update document." })
             } else if (req.method === "DELETE") {
@@ -291,13 +302,14 @@ const rolePermission = async (req, res, next) => {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
 
-        permission = data.find((val => {
-            return val.permissions.menu.name.toLowerCase() == "user role"
-        }))
-
-        if (!permission) {
-            permission = await role.findById({ _id: req.user.role_id })
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "user role"
+            }))
         }
+
         req.permissions = permission;
 
         if (permission.name.toLowerCase() === "admin") {
@@ -306,7 +318,7 @@ const rolePermission = async (req, res, next) => {
             if (req.method === "POST" && req.baseUrl == "/api/role") {
                 permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create user role." })
             } else if (req.method === "GET" && req.baseUrl == "/api/role") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You do not have permission to view user role list." })
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing user role to the User Role Data. please contact admin." })
             } else if (req.method === "PUT") {
                 permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update user role." })
             } else if (req.method === "DELETE") {

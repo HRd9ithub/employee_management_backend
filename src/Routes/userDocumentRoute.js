@@ -7,7 +7,6 @@ const userDocumentRoute = express.Router();
 
 
 userDocumentRoute.post('/',Auth, function (req, res) {
-    console.log(req.body)
     const errors = expressValidator.validationResult(req)
 
     let err = errors.array().map((val) => {
@@ -34,7 +33,6 @@ userDocumentRoute.post('/',Auth, function (req, res) {
         try {
              // check data exist or not
         const data = await user_document.findOne({ user_id: req.body.user_id })
-        console.log(data, "====> email")
 
         if (data) {
             let response = await user_document.findByIdAndUpdate({ _id: data._id }, {resume,joining_letter,offer_letter,other});
@@ -46,11 +44,9 @@ userDocumentRoute.post('/',Auth, function (req, res) {
         } else {
             const documentData = new user_document({resume,joining_letter,offer_letter,other,user_id: req.body.user_id});
             const response = await documentData.save();
-            console.log('response', response)
             return res.status(201).json({ success: true, message: "Added Successfully." })
         }
         } catch (error) {
-            console.log('error', error)
             res.status(500).json({ message: "Internal server error", success: false })
         }
     })

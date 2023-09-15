@@ -86,11 +86,9 @@ const userSchema = new mongoose.Schema({
     },
     department_id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
     },
     designation_id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
     },
     otp: {
         type: Number
@@ -113,14 +111,10 @@ const userSchema = new mongoose.Schema({
 // generate token
 userSchema.methods.generateToken = async function () {
     try {
-        console.log('this._id :>> ', this._id);
         var token = jwt.sign({ _id: this._id,date: new Date().toLocaleDateString()}, process.env.SECRET_KEY);
-        console.log('token :>> ', token);
         this.token = token
-        console.log('this.Tokens :>> ', this.token);
         await this.save();
         return token
-
     } catch (error) {
         console.log('error :>> ', error);
     }
@@ -129,9 +123,7 @@ userSchema.methods.generateToken = async function () {
 // password convert
 userSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
-        console.log('this.password', this.password)
         this.password = await bcrypt.hash(this.password, 10)
-        // console.log('this.password', this.password)
     }
     next()
 })

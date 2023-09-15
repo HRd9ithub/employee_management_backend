@@ -14,11 +14,8 @@ const addAccount = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        console.log(req.user)
-
         // check data exist or not
         const data = await account.findOne({ user_id: req.body.user_id })
-        console.log(data, "====> email")
 
         if (data) {
             let response = await account.findByIdAndUpdate({ _id: data._id }, req.body);
@@ -30,11 +27,9 @@ const addAccount = async (req, res) => {
         } else {
             const accountData = new account(req.body);
             const response = await accountData.save();
-            console.log('response', response)
             return res.status(201).json({ success: true, message: "Added Successfully." })
         }
     } catch (error) {
-        console.log('error', error)
         res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }

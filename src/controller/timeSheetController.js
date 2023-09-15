@@ -6,7 +6,6 @@ const { default: mongoose } = require("mongoose");
 
 // get time sheet 
 const getTimeSheet = async (req, res) => {
-    console.log(req.query)
     let { id, startDate, endDate } = req.query;
     try {
         if(!startDate || !endDate){
@@ -77,7 +76,6 @@ const getTimeSheet = async (req, res) => {
         }
         res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value,permissions: req.permissions})
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
