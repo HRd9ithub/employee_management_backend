@@ -40,7 +40,7 @@ app.use(express.json());
 
 // Register `hbs.engine` with the Express app.
 app.set('view engine', 'handlebars');
-app.set('views', './views');
+app.set('views', path.join(__dirname, '../views'));
 
 
 
