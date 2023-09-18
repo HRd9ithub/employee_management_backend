@@ -20,6 +20,8 @@ const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
+var handlebars  = require('express-handlebars');
+
 
 // add database
 require("./DB/conn")
@@ -35,6 +37,12 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
+
+// Register `hbs.engine` with the Express app.
+app.set('view engine', 'handlebars');
+app.set('views', './views');
+
+
 
 // image get route
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
@@ -60,7 +68,7 @@ app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
 
 
-app.listen(port, () => {
+app.listen(port,"127.0.0.1", () => {
     console.log(`server is running for ${port}.`)
 })
 

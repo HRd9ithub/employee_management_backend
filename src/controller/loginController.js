@@ -92,7 +92,7 @@ const userLogin = async (req, res) => {
 
                 // update data for otp
                 const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
+                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email})
             } else {
                 // password not match send message
                 return res.status(400).json({ message: "Invalid email or password.", success: false })

@@ -41,16 +41,19 @@ const activeUser = async (req, res) => {
                     from: "departments", localField: "department_id", foreignField: "_id", as: "department"
                 }
             },
+            { $unwind: { path: "$department", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "designations", localField: "designation_id", foreignField: "_id", as: "designation"
                 }
             },
+            { $unwind: { path: "$designation", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
             },
+            { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "users", localField: "report_by", foreignField: "_id", as: "report"
@@ -89,7 +92,7 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0],permissions: req.permissions  })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0], permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -107,13 +110,13 @@ const getUser = async (req, res) => {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
             },
-            { $unwind: { path: "$role" } },
+            { $unwind: { path: "$role",preserveNullAndEmptyArrays: true  } },
             {
                 $lookup: {
                     from: "users", localField: "report_by", foreignField: "_id", as: "report"
                 }
             },
-            { $unwind: { path: "$report",preserveNullAndEmptyArrays : true } },
+            { $unwind: { path: "$report", preserveNullAndEmptyArrays: true } },
             {
                 $project: {
                     "employee_id": 1,
@@ -124,8 +127,6 @@ const getUser = async (req, res) => {
                     "phone": 1,
                     "status": 1,
                     "role.name": 1,
-                    // report: {$first: "$report" }
-                    // role: {$arrayElemAt:["$role",0]},
                     "report.first_name": 1,
                     "report.last_name": 1,
                     "report._id": 1,
@@ -365,7 +366,7 @@ const getLoginInfo = async (req, res) => {
         let value = await loginInfo.find({
             $and: [
                 { userId: { $eq: id } },
-                { $and: [{ createdAt: { $gte: startDate} }, { createdAt: { $lte: endDate } }] },
+                { $and: [{ createdAt: { $gte: startDate } }, { createdAt: { $lte: endDate } }] },
             ]
         }).sort({ createdAt: -1 })
 
