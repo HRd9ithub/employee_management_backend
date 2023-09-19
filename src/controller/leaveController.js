@@ -66,6 +66,7 @@ const getLeave = async (req, res) => {
                         "duration": 1,
                         "reason": 1,
                         "status": 1,
+                        "createdAt":1,
                         "leaveType": { $first: "$leaveType.name" },
                         "user.employee_id": 1,
                         "user.profile_image": 1,
@@ -118,6 +119,7 @@ const getLeave = async (req, res) => {
                         "user.first_name": 1,
                         "user.last_name": 1,
                         "user.status": 1,
+                        "createdAt":1,
                     }
                 }
             ])

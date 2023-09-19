@@ -20,8 +20,8 @@ const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
-var handlebars  = require('express-handlebars');
-
+var handlebars = require('express-handlebars');
+const user = require('./models/UserSchema')
 
 // add database
 require("./DB/conn")
@@ -35,6 +35,10 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.use(bodyParser.urlencoded({ extended: true }));
+
+
+const http = require("http").Server(app);
+
 
 app.use(express.json());
 
@@ -68,7 +72,62 @@ app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
 
 
-app.listen(port,"127.0.0.1", () => {
-    console.log(`server is running for ${port}.`)
-})
+//  app.listen(port, () => {
+//     console.log(`server is running for ${port}.`)
+// })
 
+const socketIO = require('socket.io')(http, {
+    cors: {
+        origin: "http://localhost:3000"
+    }
+});
+let users = [];
+
+socketIO.on('connection', (socket) => {
+    socket.on("set", (data) => {
+        let record = users.filter((val) => {
+            return val.email === data.userId
+        })
+
+        if (record.length > 0) {
+            users = users.filter((elem) => elem.email != data.userId)
+        }
+        users.push({ key: socket.id, email: data.userId })
+    })
+    socket.on('login', function (data) {
+        let record = users.find((val) => {
+            return val.email === data.userId
+        })
+
+        if (record) {
+            socket.to(record.key).emit('receive', { isAuth: true })
+            users = users.filter((elem) => elem.email != data.userId)
+        }
+        users.push({ key: socket.id, email: data.userId })
+    });
+
+    socket.on('status', async function (data) {
+        let record = users.find((val) => {
+            return val.email === data.userId
+        })
+        let userRecord = await user.findOne({ email: data.userId });
+
+        if (userRecord.status === "Inactive") {
+            socket.to(record.key).emit('receive', { isAuth: true })
+        }
+    });
+    socket.on('disconnect', () => {
+        users = users.filter((elem) => elem.key != socket.id)
+        console.log('🔥: A user disconnected');
+    });
+});
+
+
+
+// io.on("connection", socket => {
+//     console.log(socket)
+// })
+
+http.listen(port, () => {
+    console.log(`Server listening on ${port}`);
+});
