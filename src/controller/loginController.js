@@ -95,7 +95,7 @@ const userLogin = async (req, res) => {
                 return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email})
             } else {
                 // password not match send message
-                return res.status(400).json({ message: "Invalid email or password.", success: false })
+                return res.status(404).json({ message: "Invalid email or password.", success: false })
             }
         }
 
@@ -258,7 +258,7 @@ const mailSend = async (req, res) => {
         } else {
             if (!userData) {
                 // email not match send message
-                return res.status(400).json({ message: "Sorry! Email address not found.", success: false })
+                return res.status(404).json({ message: "Sorry! Email address not found.", success: false })
             } else {
                 if( (moment(userData.leaveing_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD"))){
                     return res.status(400).json({ message: "Sorry! but you are no longer an employee.", success: false })
@@ -286,6 +286,7 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
         let TokenArray = req.headers['authorization'];
+        if(!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
         const data = await tokenSchema.findOne({
@@ -315,7 +316,7 @@ const resetPassword = async (req, res) => {
                 await tokenSchema.deleteOne({ _id: data._id })
                 return res.status(200).json({ success: true, message: "Password reset successfully." })
             } else {
-                return res.status(400).json({ success: false, message: "Your password has been reset failed." })
+                return res.status(404).json({ success: false, message: "Your password has been reset failed." })
             }
         } else {
             return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
@@ -330,6 +331,7 @@ const resetPassword = async (req, res) => {
 const checkLink = async (req, res) => {
     try {
         let TokenArray = req.headers['authorization'];
+        if(!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
         if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })

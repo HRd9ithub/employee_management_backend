@@ -57,7 +57,7 @@ const deleteEducation = async (req, res) => {
         if (response) {
             return res.status(200).json({ success: true, message: "Deleted Successfully." })
         } else {
-            return res.status(400).json({ success: false, message: "Record Not found." })
+            return res.status(404).json({ success: false, message: "Record Not found." })
         }
 
     } catch (error) {

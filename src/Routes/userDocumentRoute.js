@@ -39,7 +39,7 @@ userDocumentRoute.post('/',Auth, function (req, res) {
             if (response) {
                 return res.status(200).json({ success: true, message: "Saved Successfully." })
             } else {
-                return res.status(400).json({ success: false, message: "Record Not found." })
+                return res.status(404).json({ success: false, message: "Record Not found." })
             }
         } else {
             const documentData = new user_document({resume,joining_letter,offer_letter,other,user_id: req.body.user_id});
@@ -47,7 +47,7 @@ userDocumentRoute.post('/',Auth, function (req, res) {
             return res.status(201).json({ success: true, message: "Added Successfully." })
         }
         } catch (error) {
-            res.status(500).json({ message: "Internal server error", success: false })
+            res.status(500).json({ message: error.message || "Internal server error", success: false })
         }
     })
 })

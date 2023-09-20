@@ -1,0 +1,1463 @@
+openapi: 3.0.0
+info:
+  title: Employee management system API
+  description: Api Testing.
+  version: 1.0 
+  
+
+servers:
+  - url: http://localhost:8000/
+    description:  Local server 
+  # - url: https://prod.com/
+  #   description:  Pre Production server
+  # - url: https://test.com/
+  #   description:  Production server
+  
+
+ 
+components:
+  securitySchemes:
+    token:        # arbitrary name for the security scheme
+          
+      type: http
+      scheme: bearer
+    
+    # ApiKey:        # arbitrary name for the security scheme
+    #   type: apiKey
+    #   in: header       # can be "header", "query" or "cookie"
+    #   name: apikey
+
+# ----------------------------------- Authentication swagger api --------------------------- #
+
+#login api
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Authetication 
+      summary: Returns a success message.      
+      post:
+      requestBody:
+        required: true
+        content:
+           application/json:
+            schema:
+              properties: 
+               email:         
+                  type: String
+                  default : ''
+               password:       
+                  type: string
+                  default : ''
+              required:
+                - email
+                - password
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '500':
+          description: Server error.
+
+# otp verify api 
+  paths:
+  /api/auth/otp:
+    patch:
+      tags:
+        - Authetication 
+      summary: Returns a success message and token.       
+      patch:
+      requestBody:
+        required: true
+        content:
+           application/json:
+            schema:
+              properties: 
+               email:         
+                  type: String
+                  default : ''
+               otp:         
+                  type: integer
+                  default : ''
+               ip:         
+                  type: String
+                  default : ''
+               city:       
+                  type: string
+                  default : ''
+               device:       
+                  type: string
+                  default : ''
+               device_name:       
+                  type: string
+                  default : ''
+               browser_name:       
+                  type: string
+                  default : ''
+              required:
+                - email
+                - otp
+                - ip
+                - city
+                - device
+                - browser_name
+                - device_name
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '500':
+          description: Server error.
+
+# resend otp
+  paths:
+  /api/auth/resendOtp:
+    patch:
+      tags:
+        - Authetication 
+      summary: Returns a success message.       
+      patch:
+      requestBody:
+        required: true
+        content:
+           application/json:
+            schema:
+              properties: 
+               email:         
+                  type: String
+                  default : ''
+              required:
+                - email
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '500':
+          description: Server error.
+
+# forget password send email
+  paths:
+  /api/auth/forgotPassword:
+    post:
+      tags:
+        - Authetication 
+      summary: Returns a success message.       
+      post:
+      requestBody:
+        required: true
+        content:
+           application/json:
+            schema:
+              properties: 
+               email:         
+                  type: String
+                  default : ''
+              required:
+                - email
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '500':
+          description: Server error.
+
+#check Link
+  paths:
+  /api/auth/checklink:
+    get:
+      tags:
+        - Authetication 
+      security:
+       - token: []
+      summary: check forget password link.
+      responses: 
+        '200':
+          description: OK
+
+# reset password api
+  paths:
+  /api/auth/resetpassword:
+    post:
+      tags:
+        - Authetication 
+      security:
+        - token: []
+      summary: Returns a success message.       
+      post:
+      requestBody:
+        required: true
+        content:
+           application/json:
+            schema:
+              properties: 
+               email:         
+                  type: String
+                  default : ''
+               password:         
+                  type: String
+                  default : ''
+              required:
+                - email
+                - password
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '500':
+          description: Server error.
+
+# user logout
+  paths:
+  /api/auth/logout:
+    post:
+      tags:
+        - Authetication 
+      security:
+        - token: []
+      summary: Returns a success message.       
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '500':
+          description: Server error.
+
+##--------------------------------------------  employeee CRUD -----------------------------------------##
+# add user
+  paths:
+  /api/user:
+    post:
+      tags:
+        - user
+      security:
+       - token: []
+      summary: Returns a success message.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                employee_id:         
+                  type: String
+                  example : "D9-1"
+                first_name:       
+                  type: string
+                  example : "abc"
+                last_name:       
+                  type: string
+                  example : "xyz"
+                email:       
+                  type: string
+                  example : "xyz@gmail.com"
+                password:       
+                  type: string
+                  example : ""
+                phone:
+                  type: integer
+                  example : "1234567890"
+                report_by:       
+                  type: string
+                  example : ""
+                role_id:       
+                  type: string
+                  example : ""
+                department_id:       
+                  type: string
+                  example : ""
+                designation_id:   
+                  type: string
+                  example : ""
+                joining_date:       
+                    type: string
+                    format: date
+                    example : "2023-09-01"
+                status:
+                    type: "string"
+                    enum: ['Active', 'Inactive']
+              required:
+                - employee_id
+                - first_name
+                - last_name
+                - email
+                - phone
+                - report_by
+                - joining_date
+                - status
+                - password
+                - role_id
+                - department_id
+                - designation_id
+         
+      responses:
+        '201':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+# all user get
+  paths:
+  /api/user/:
+    get:
+      tags: ["user"]
+      security:
+       - token: []
+      summary: Returns a user details.
+      responses: 
+        '200':
+          description: Success message
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description:  Server error.
+
+# get single user
+  paths:
+  /api/user/{id}:
+    get:
+      tags: ["user"]
+      security:
+       - token: []
+      summary: Returns a user details by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+      responses: 
+        '200':
+          description: Success message
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description:  Server error.
+ #  update user
+    put:
+      tags: ["user"]
+      security:
+       - token: []
+      summary: user detail update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+      put:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                address:         
+                  type: String
+                  example : ""
+
+      responses: 
+        '200':
+          description: Success message
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description:  Server error.
+
+ #  delete user
+    delete:
+      tags: ["user"]
+      security:
+       - token: []
+      summary: user detail delete.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+  
+      responses: 
+        '200':
+          description: Success message
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description:  Server error.
+ #  update status user
+    patch:
+      tags: ["user"]
+      security:
+       - token: []
+      summary: user status update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+  
+      responses: 
+        '200':
+          description: Success message
+        '404':
+          description: Not found
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description:  Server error.
+
+#  check email
+  paths:
+  /api/user/email:
+    post:
+      tags:
+        - user
+      security:
+       - token: []
+      summary: check email.     
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                email:       
+                  type: string
+                  example : "xyz@gmail.com"
+              required:
+                - email
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+#  check employee id
+  paths:
+  /api/user/employeeId:
+    post:
+      tags:
+        - user
+      security:
+       - token: []
+      summary: check employeeId.     
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                employee_id:       
+                  type: string
+                  example : "D9-1"
+              required:
+                - email
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+#  get login info.
+  paths:
+  /api/user/loginInfo:
+    post:
+      tags:
+        - user
+      security:
+       - token: []
+      summary:  return login info by id.     
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                id:       
+                  type: string
+                  example : "6503e8ac937cf7d6982ba97f"
+                startDate:       
+                  type: string
+                  example : "2023-09-19T00:00:00.999Z"
+                endDate:       
+                  type: string
+                  example : "2023-09-20T18:29:59.999Z"
+              required:
+                - id
+                - startDate
+                - endDate
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+#  get USERNAME.
+  paths:
+  /api/user/username:
+    post:
+      tags:
+        - user
+      security:
+       - token: []
+      summary:  return username     
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+
+##--------------------------------------------  user profile api -----------------------------------------##
+# change image
+
+  paths:
+  /api/user/image:
+    post:
+      tags:
+        - Profile
+      security:
+       - token: []
+      summary:  change image.     
+      post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profile_image:
+                  type: string
+                  format: binary
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+#  change password
+  paths:
+  /api/user/password:
+    post:
+      tags:
+        - Profile
+      security:
+       - token: []
+      summary: Change password.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                current_password:         
+                  type: String
+                  example : ""
+                new_password:       
+                  type: string
+                  example : ""
+                confirm_password:       
+                  type: string
+                  example : ""
+              required:
+                - current_password
+                - new_password
+                - confirm_password
+         
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+##--------------------------------------------  account api -----------------------------------------##
+
+  paths:
+  /api/account:
+    post:
+      tags:
+        - Account
+      security:
+       - token: []
+      summary: add and edit account.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                bank_name:         
+                  type: String
+                  example : ""
+                branch_name:       
+                  type: string
+                  example : ""
+                name:       
+                  type: string
+                  example : ""
+                user_id:       
+                  type: string
+                  example : ""
+                account_number:       
+                  type: string
+                  example : ""
+                ifsc_code:       
+                  type: string
+                  example : ""
+              required:
+                - bank_name
+                - branch_name
+                - name
+                - user_id
+                - account_number
+                - ifsc_code
+         
+      responses:
+        '200':
+          description: Success message. 
+        '201':
+          description: created sucess. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '500':
+          description: Server error.
+
+
+##--------------------------------------------  EDUCATION api -----------------------------------------##
+# add and edit
+  paths:
+  /api/education:
+    post:
+      tags:
+        - Education
+      security:
+       - token: []
+      summary: add and edit education.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                user_id:       
+                  type: string
+                  example : ""
+                info:       
+                  type: array
+                  example : [{
+                                "id": 0,
+                                "university_name": "L.E",
+                                "degree" : "Diploma",
+                                "percentage": 63,
+                                "year" : 2023,
+                            }]
+              required:
+                - info
+                - user_id
+         
+      responses:
+        '200':
+          description: Success message. 
+        '201':
+          description: created sucess. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '500':
+          description: Server error.
+
+# delete
+  paths:
+  /api/education/{id}:
+    delete:
+      tags:
+        - Education
+      security:
+       - token: []
+      summary: delete education.        
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.
+      responses:
+        '200':
+          description: Success message. 
+        '400':
+          description: Bad Request.
+        '404':
+          description:  Not found.
+        '401':
+          description:  Unauthorized.
+        '500':
+          description: Server error.
+
+##--------------------------------------------  user document api -----------------------------------------##
+
+  paths:
+  /api/user_document:
+    post:
+      tags:
+        - User document
+      security:
+       - token: []
+      summary:  upload document for user.     
+      post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                resume:
+                  type: string
+                  format: binary
+                offer_letter:
+                  type: string
+                  format: binary
+                joining_letter:
+                  type: string
+                  format: binary
+                other:
+                  type: string
+                  format: binary
+                user_id:
+                  type: string
+         
+      responses:
+        '200':
+          description: Success message. 
+        '201':
+          description: created successfully. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+##--------------------------------------------  emergency contact api -----------------------------------------##
+
+  paths:
+  /api/emergency:
+    post:
+      tags:
+        -  emergency contact
+      security:
+       - token: []
+      summary: add and edit  emergency contact.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                name:       
+                  type: string
+                  example : ""
+                relationship:       
+                  type: string
+                  example : ""
+                address:       
+                  type: string
+                  example : ""
+                email:       
+                  type: string
+                  example : ""
+                phone:       
+                  type: string
+                  example : ""
+                user_id:       
+                  type: string
+                  example : ""
+              required:
+                - relationship
+                - address
+                - name
+                - user_id
+                - email
+                - phone
+         
+      responses:
+        '200':
+          description: Success message. 
+        '201':
+          description: created sucess. 
+        '400':
+          description: Bad Request.
+        '404':
+          description: Not Found.
+        '401':
+          description:  Unauthorized.
+        '500':
+          description: Server error.
+
+# -------------------------------------------  Department api ---------------------------------------------------#
+
+# add  api
+ 
+  paths:
+  /api/department:
+      post:
+        tags:
+          -  Department
+        security:
+        - token: []
+        summary: add department.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+# get department
+      get:
+        tags:
+          -  Department
+        security:
+        - token: []
+        summary: list department.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/department/{id}:
+      patch:
+        tags:
+          -  Department
+        security:
+        - token: []
+        summary: update department.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        patch:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# delete  department
+      delete:
+        tags:
+          -  Department
+        security:
+        - token: []
+        summary: update department.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.  
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '403':
+            description: Access Denied.
+          '404':
+            description: Not Found.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# check department
+  paths:
+  /api/department/name:
+      post:
+        tags:
+          -  Department
+        security:
+        - token: []
+        summary: check department name.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+# -------------------------------------------  Designation api ---------------------------------------------------#
+
+# add  api
+ 
+  paths:
+  /api/designation:
+      post:
+        tags:
+          -  Designation
+        security:
+        - token: []
+        summary: add designation.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+# get designation
+      get:
+        tags:
+          -  Designation
+        security:
+        - token: []
+        summary: list designation.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/designation/{id}:
+      patch:
+        tags:
+          -  Designation
+        security:
+        - token: []
+        summary: update designation.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        patch:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# delete  designation
+      delete:
+        tags:
+          -  Designation
+        security:
+        - token: []
+        summary: update designation.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.  
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# check designation
+  paths:
+  /api/designation/name:
+      post:
+        tags:
+          -  Designation
+        security:
+        - token: []
+        summary: check designation name.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+
+
+# -------------------------------------------  leave type api ---------------------------------------------------#
+
+# add  api
+ 
+  paths:
+  /api/leavetype:
+      post:
+        tags:
+          -  leave type
+        security:
+        - token: []
+        summary: add leave type.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+# get leave type
+      get:
+        tags:
+          -  leave type
+        security:
+        - token: []
+        summary: list leave type.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/leavetype/{id}:
+      patch:
+        tags:
+          -  leave type
+        security:
+        - token: []
+        summary: update leave type.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        patch:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# delete  leave type
+      delete:
+        tags:
+          -  leave type
+        security:
+        - token: []
+        summary: update leave type.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.  
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# check leave type
+  paths:
+  /api/leavetype/name:
+      post:
+        tags:
+          -  leave type
+        security:
+        - token: []
+        summary: check leave type name.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+
+
+
+
+
+
+
+
+
+
+  # paths:
+  # /api/user:
+  #   post:
+  #     tags:
+  #       - Add user
+  #     security:
+  #      - token: []
+  #     summary: Returns a user list. 
+  #     # description: <b> Request :- </b> <br /> <br />
+  #     #         <b> page_no* </b>  is required <br /> 
+  #     #         <b> status* </b>  is required <br /> 
+  #     #         <b> type* </b>  is required <br /> 
+
+    
+  #     #   - in: query
+  #     #     name: month_year
+  #     #     schema:
+  #     #       #type: integer
+  #     #       example: 2022-10        
+  #     post:
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         # multipart/form-data:
+  #          application/json:
+  #           schema:
+  #             properties: 
+  #               employee_id:         
+  #                 type: String
+  #               first_name:       
+  #                 type: string
+  #               last_name:       
+  #                 type: string
+  #               email:       
+  #                 type: string
+  #               password:       
+  #                 type: string
+  #               phone:
+  #                 type: integer
+  #               report_by:       
+  #                 type: string
+  #               role_id:       
+  #                 type: string
+  #               department_id:       
+  #                 type: string
+  #               designation_id:   
+  #                 type: string
+  #               joining_date:       
+  #                   type: string
+  #                   format: date
+  #               status:
+  #                   type: "string"
+  #                   enum: ['Active', 'Inactive']
+  #             required:
+  #               - employee_id
+  #               - first_name
+  #               - last_name
+  #               - email
+  #               - phone
+  #               - report_by
+  #               - joining_date
+  #               - status
+  #               - password
+  #               - role_id
+  #               - department_id
+  #               - designation_id
+         
+  #     responses:
+  #       '201':
+  #         description: Success message. 
+  #       '400':
+  #         description: Bad Request.
+  #       '500':
+  #         description: Server error.
+  
+  

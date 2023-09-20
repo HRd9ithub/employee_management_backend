@@ -21,7 +21,8 @@ const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
 var handlebars = require('express-handlebars');
-const user = require('./models/UserSchema')
+const user = require('./models/UserSchema');
+const { swaggerServe, swaggerSetup } = require('./config');
 
 // add database
 require("./DB/conn")
@@ -51,7 +52,10 @@ app.set('views', path.join(__dirname, '../views'));
 // image get route
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))
-app.use('/uploads', express.static(path.join(__dirname, '../')))
+app.use('/uploads', express.static(path.join(__dirname, '../')));
+
+// swagger route
+app.use("/api-docs", swaggerServe, swaggerSetup);
 
 // apiu route
 app.use('/api/auth', AuthRoute)

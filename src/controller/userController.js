@@ -92,6 +92,7 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
+        
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0], permissions: req.permissions })
 
     } catch (error) {
@@ -320,6 +321,16 @@ const changePassword = async (req, res) => {
 const getLoginInfo = async (req, res) => {
     try {
         let { id, startDate, endDate } = req.body
+
+        const errors = expressValidator.validationResult(req)
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
         // const value = await loginInfo.aggregate([
         //     {
         //         $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
@@ -371,7 +382,7 @@ const getLoginInfo = async (req, res) => {
         }).sort({ createdAt: -1 })
 
 
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value })
+        return res.status(200).json({ success: true, message: "User login info data fetch successfully.", data: value })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

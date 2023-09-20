@@ -94,7 +94,10 @@ userRoute.post('/password', Auth, [
 ], changePassword);
 
 //get login info
-userRoute.post('/loginInfo', Auth,userPermission, getLoginInfo);
+userRoute.post('/loginInfo', Auth,userPermission,[expressValidator.body('startDate', "Start date is required.").notEmpty(),
+expressValidator.body('endDate', "End date is required.").notEmpty(),
+expressValidator.body('id', "Please Enter valid userId.").isMongoId(),
+], getLoginInfo);
 
 //get only use name
 userRoute.post('/username', Auth, getUserName);

@@ -22,7 +22,7 @@ const addEmergency = async (req, res) => {
             if (response) {
                 return res.status(200).json({ success: true, message: "Saved Successfully." })
             } else {
-                return res.status(400).json({ success: false, message: "Record Not found." })
+                return res.status(404).json({ success: false, message: "Record Not found." })
             }
         } else {
             const emergency_contactData = new emergency_contact(req.body);
