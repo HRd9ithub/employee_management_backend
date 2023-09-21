@@ -75,18 +75,49 @@ const userLogin = async (req, res) => {
                 // otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
                 let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
                 // mail content
-                let content = `<div style="font-family: Helvetica,Arial,sans-serif;line-height:2">
-                <div style="margin:50px auto;width:70%;padding:20px 0">
-                  <div style="border-bottom:1px solid #eee">
-                    <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">D9ithub</a>
-                  </div>
-                  <p style="font-size:1.1em">Hi,</p>
-                  <p>Thank you for choosing Your Brand. Use the following OTP to complete your Sign in procedures. OTP is valid for 5 minutes</p>
-                  <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
-                  <p style="font-size:0.9em;">Regards,<br />D9ithub</p>
-                </div>
-              </div>
-                    `
+                let content = `<table width="100%" cellpadding="0" cellspacing="0" align="center" style="text-align: left;font-family: 'Philosopher', sans-serif;margin: 1.875rem auto;">
+                <tr>
+                  <td width="100%" valign="top" bgcolor="#fff">
+                    <table width="550" cellpadding="0" cellspacing="0" align="center" style="padding:1rem 1.2rem; margin:0 auto; border: 1px solid lightgray;">
+                        <tr>
+                            <td style="text-align: center;">
+                                <img src="https://i.ibb.co/bBgvFbJ/email-otp-1.png" style="height: 6.875rem;padding: .625rem 0;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
+                              <h2 style="margin-top: 0px">Verification Code</h2>
+                            </td>
+                        </tr>
+                        <tr style="width: 100%; text-align:center;">
+                            <table style="width: 100%;">
+                                <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                    <td style="padding: .625rem;">
+                                        <p style="color: #000000;font-size: .9375rem;font-weight: 500;text-align:justify;">
+                                            <strong>It seems you are login and tring to verify. Here is your One Time Password to validate your user login with D9ithub.</strong>
+                                        </p>
+                                        <a href={{action_url}} style="font-size:1.2rem;box-sizing: border-box;border-radius: .25rem;color: #fff;display: inline-block;overflow: hidden;text-decoration: none;background-color: #084c89;border-bottom: .5rem solid #084c89;border-left: 1.125rem solid #084c89;border-right: 1.125rem solid #084c89;border-top: .5rem solid #084c89;">${otp}</a>
+                                        <p style="color: #000000;font-size: .9375rem;font-weight: 500; margin-bottom: 0;">
+                                            <strong>OTP is valid for 5 min only.</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-top:1px solid #e5e5e5"></td>
+                                </tr>
+                                <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                    <td style="padding: .625rem 0 0;">
+                                        <p style="text-align: center;color: #000000;font-size: .9375rem;font-weight: 500; margin: 0px">
+                                            If you have not try to login, please contact your administrator.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </tr>
+                    </table>
+                  </td>
+                </tr>
+            </table>`
                 // mail send function
                 sendMail(req.body.email, mailsubject, content);
 

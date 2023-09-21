@@ -20,8 +20,9 @@ const sendMail = async (email, mailsubject, content) => {
                 pass: SMTP_PASSWORD
             }
         });
+        let from = `D9ithub <${SMTP_EMAIL}>`
         var mailOptions = {
-            from: SMTP_EMAIL,
+            from: from,
             to: email,
             subject: mailsubject,
             html: content

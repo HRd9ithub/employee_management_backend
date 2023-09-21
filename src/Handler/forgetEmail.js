@@ -35,8 +35,9 @@ const forgetEmail = async (email, mailsubject, url,name) => {
         // use a template file with nodemailer
         transporter.use('compile', hbs(handlebarOptions))
 
+        let from = `D9ithub <${SMTP_EMAIL}>`
         var mailOptions = {
-            from: SMTP_EMAIL,
+            from: from,
             to: email,
             subject: mailsubject,
             template: 'email', // the name of the template file i.e email.handlebars
