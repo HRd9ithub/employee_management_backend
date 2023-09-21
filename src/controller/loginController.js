@@ -66,64 +66,66 @@ const userLogin = async (req, res) => {
                     ]
                 })
 
-                if(leaveUser){
+                if (leaveUser) {
                     return res.status(400).json({ message: "You are on leave", success: false })
                 }
 
-                let mailsubject = 'Mail Verification';
+                let mailsubject = 'Verification Code';
                 // let otp = Math.random().toString().slice(3, 5);
                 // otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
                 let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
+
                 // mail content
                 let content = `<table width="100%" cellpadding="0" cellspacing="0" align="center" style="text-align: left;font-family: 'Philosopher', sans-serif;margin: 1.875rem auto;">
-                <tr>
-                  <td width="100%" valign="top" bgcolor="#fff">
-                    <table width="550" cellpadding="0" cellspacing="0" align="center" style="padding:1rem 1.2rem; margin:0 auto; border: 1px solid lightgray;">
-                        <tr>
-                            <td style="text-align: center;">
-                                <img src="https://i.ibb.co/bBgvFbJ/email-otp-1.png" style="height: 6.875rem;padding: .625rem 0;">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="text-align: center;">
-                              <h2 style="margin-top: 0px">Verification Code</h2>
-                            </td>
-                        </tr>
-                        <tr style="width: 100%; text-align:center;">
-                            <table style="width: 100%;">
-                                <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
-                                    <td style="padding: .625rem;">
-                                        <p style="color: #000000;font-size: .9375rem;font-weight: 500;text-align:justify;">
-                                            <strong>It seems you are login and tring to verify. Here is your One Time Password to validate your user login with D9ithub.</strong>
-                                        </p>
-                                        <a href={{action_url}} style="font-size:1.2rem;box-sizing: border-box;border-radius: .25rem;color: #fff;display: inline-block;overflow: hidden;text-decoration: none;background-color: #084c89;border-bottom: .5rem solid #084c89;border-left: 1.125rem solid #084c89;border-right: 1.125rem solid #084c89;border-top: .5rem solid #084c89;">${otp}</a>
-                                        <p style="color: #000000;font-size: .9375rem;font-weight: 500; margin-bottom: 0;">
-                                            <strong>OTP is valid for 5 min only.</strong>
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="border-top:1px solid #e5e5e5"></td>
-                                </tr>
-                                <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
-                                    <td style="padding: .625rem 0 0;">
-                                        <p style="text-align: center;color: #000000;font-size: .9375rem;font-weight: 500; margin: 0px">
-                                            If you have not try to login, please contact your administrator.
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </tr>
-                    </table>
-                  </td>
-                </tr>
-            </table>`
+            <tr>
+              <td width="100%" valign="top" bgcolor="#fff">
+                <table width="550" cellpadding="0" cellspacing="0" align="center" style="padding:1rem 1.2rem; margin:0 auto; border: 1px solid lightgray;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <img src="https://i.ibb.co/bBgvFbJ/email-otp-1.png" style="height: 6.875rem;padding: .625rem 0;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">
+                          <h2 style="margin-top: 0px">Verification Code</h2>
+                        </td>
+                    </tr>
+                    <tr style="width: 100%; text-align:center;">
+                        <table style="width: 100%;">
+                            <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                <td style="padding: .625rem;">
+                                    <p style="color: #000000;font-size: .9375rem;font-weight: 500;text-align:justify;">
+                                        <strong>It seems you are login and tring to verify. Here is your One Time Password to validate your user login with D9ithub.</strong>
+                                    </p>
+                                    <a href={{action_url}} style="font-size:1.2rem;box-sizing: border-box;border-radius: .25rem;color: #fff;display: inline-block;overflow: hidden;text-decoration: none;background-color: #084c89;border-bottom: .5rem solid #084c89;border-left: 1.125rem solid #084c89;border-right: 1.125rem solid #084c89;border-top: .5rem solid #084c89;">${otp}</a>
+                                    <p style="color: #000000;font-size: .9375rem;font-weight: 500; margin-bottom: 0;">
+                                        <strong>OTP is valid for 5 min only.</strong>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border-top:1px solid #e5e5e5"></td>
+                            </tr>
+                            <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                <td style="padding: .625rem 0 0;">
+                                    <p style="text-align: center;color: #000000;font-size: .9375rem;font-weight: 500; margin: 0px">
+                                        If you have not try to login, please contact your administrator.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </tr>
+                </table>
+              </td>
+            </tr>
+        </table>`
+
                 // mail send function
                 sendMail(req.body.email, mailsubject, content);
 
                 // update data for otp
                 const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email})
+                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
             } else {
                 // password not match send message
                 return res.status(404).json({ message: "Invalid email or password.", success: false })
@@ -215,23 +217,53 @@ const ResendOtp = async (req, res) => {
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email })
         if (userData && userData.status !== 'Inactive' && !userData.delete_at) {
-            let mailsubject = 'Mail Verification';
+            let mailsubject = 'Verification Code';
 
             let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
-
             // mail content
-            let content = `<div style="font-family: Helvetica,Arial,sans-serif;line-height:2">
-            <div style="margin:50px auto;width:70%;padding:20px 0">
-              <div style="border-bottom:1px solid #eee">
-                <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">D9ithub</a>
-              </div>
-              <p style="font-size:1.1em">Hi,</p>
-              <p>Thank you for choosing Your Brand. Use the following OTP to complete your Sign in procedures. OTP is valid for 5 minutes</p>
-              <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
-              <p style="font-size:0.9em;">Regards,<br />D9ithub</p>
-            </div>
-          </div>
-                `
+            let content = `<table width="100%" cellpadding="0" cellspacing="0" align="center" style="text-align: left;font-family: 'Philosopher', sans-serif;margin: 1.875rem auto;">
+            <tr>
+              <td width="100%" valign="top" bgcolor="#fff">
+                <table width="550" cellpadding="0" cellspacing="0" align="center" style="padding:1rem 1.2rem; margin:0 auto; border: 1px solid lightgray;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <img src="https://i.ibb.co/bBgvFbJ/email-otp-1.png" style="height: 6.875rem;padding: .625rem 0;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">
+                          <h2 style="margin-top: 0px">Verification Code</h2>
+                        </td>
+                    </tr>
+                    <tr style="width: 100%; text-align:center;">
+                        <table style="width: 100%;">
+                            <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                <td style="padding: .625rem;">
+                                    <p style="color: #000000;font-size: .9375rem;font-weight: 500;text-align:justify;">
+                                        <strong>It seems you are login and tring to verify. Here is your One Time Password to validate your user login with D9ithub.</strong>
+                                    </p>
+                                    <a href={{action_url}} style="font-size:1.2rem;box-sizing: border-box;border-radius: .25rem;color: #fff;display: inline-block;overflow: hidden;text-decoration: none;background-color: #084c89;border-bottom: .5rem solid #084c89;border-left: 1.125rem solid #084c89;border-right: 1.125rem solid #084c89;border-top: .5rem solid #084c89;">${otp}</a>
+                                    <p style="color: #000000;font-size: .9375rem;font-weight: 500; margin-bottom: 0;">
+                                        <strong>OTP is valid for 5 min only.</strong>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border-top:1px solid #e5e5e5"></td>
+                            </tr>
+                            <tr style="font-size: 1rem;padding-left: 1.25rem;font-weight: 600;">
+                                <td style="padding: .625rem 0 0;">
+                                    <p style="text-align: center;color: #000000;font-size: .9375rem;font-weight: 500; margin: 0px">
+                                        If you have not try to login, please contact your administrator.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </tr>
+                </table>
+              </td>
+            </tr>
+        </table>`
             // mail send function
             sendMail(req.body.email, mailsubject, content);
 
@@ -291,9 +323,9 @@ const mailSend = async (req, res) => {
                 // email not match send message
                 return res.status(404).json({ message: "Sorry! Email address not found.", success: false })
             } else {
-                if( (moment(userData.leaveing_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD"))){
+                if ((moment(userData.leaveing_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD"))) {
                     return res.status(400).json({ message: "Sorry! but you are no longer an employee.", success: false })
-                }else{
+                } else {
                     return res.status(400).json({ message: "This user is Inactive.", success: false })
                 }
             }
@@ -317,7 +349,7 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
         let TokenArray = req.headers['authorization'];
-        if(!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
+        if (!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
         const data = await tokenSchema.findOne({
@@ -362,7 +394,7 @@ const resetPassword = async (req, res) => {
 const checkLink = async (req, res) => {
     try {
         let TokenArray = req.headers['authorization'];
-        if(!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
+        if (!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
         if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
