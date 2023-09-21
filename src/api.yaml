@@ -1161,7 +1161,7 @@ paths:
           -  Designation
         security:
         - token: []
-        summary: update designation.
+        summary: delete designation.
         parameters:
         - name: id
           in: path
@@ -1321,7 +1321,7 @@ paths:
           -  leave type
         security:
         - token: []
-        summary: update leave type.
+        summary: delete leave type.
         parameters:
         - name: id
           in: path
@@ -1376,9 +1376,839 @@ paths:
             description: Access Denied.
 
 
+# -------------------------------------------  Holiday api ---------------------------------------------------#
+
+# add  api
+ 
+  paths:
+  /api/holiday:
+      post:
+        tags:
+          -  Holiday
+        security:
+        - token: []
+        summary: add Holiday.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                  date:       
+                    type: string
+                    example : ""
+                  day:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+                  - day
+                  - date
+          
+        responses:
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+
+# get holiday
+      get:
+        tags:
+          -  Holiday
+        security:
+        - token: []
+        summary: list holiday.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/holiday/{id}:
+      put:
+        tags:
+          -  Holiday
+        security:
+        - token: []
+        summary: update Holiday.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        put:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                 name:       
+                    type: string
+                    example : ""
+                 date:       
+                    type: string
+                    example : ""
+                 day:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+                  - day
+                  - date
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# delete  holiday
+      delete:
+        tags:
+          -  Holiday
+        security:
+        - token: []
+        summary: delete holiday.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.  
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
 
 
+# -------------------------------------------  Timesheet  api ---------------------------------------------------#
 
+# get
+  paths:
+  /api/timeSheet/:
+      get:
+        tags:
+          -  Timesheet
+        security:
+        - token: []
+        summary: list time sheet.   
+        parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: the user id or empty
+        - in: query
+          name: startDate
+          schema:
+            type: string
+          description: start date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+          description: end date
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# -------------------------------------------  leave  api ---------------------------------------------------#
+
+# add leave
+  paths:
+  /api/leave:
+      post:
+        tags:
+          -  Leave
+        security:
+        - token: []
+        summary: add leave.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  user_id:       
+                    type: string
+                    example : ""
+                  leave_type_id:       
+                    type: string
+                    example : ""
+                  from_date:       
+                    type: string
+                    example : ""
+                  to_date:       
+                    type: string
+                    example : ""
+                  leave_for:       
+                    type: string
+                    example : ""
+                  duration:       
+                    type: string
+                    example : ""
+                  reason:       
+                    type: string
+                    example : ""
+                  status:       
+                    type: string
+                    example : ""
+                required:
+                  - leave_type_id
+                  - from_date
+                  - to_date
+                  - leave_for
+                  - duration
+                  - reason
+                  - status
+          
+        responses:
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
+# get holiday
+      get:
+        tags:
+          -  Leave
+        security:
+        - token: []
+        summary: list leave.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/leave/{id}:
+      put:
+        tags:
+          -  Leave
+        security:
+        - token: []
+        summary: update leave.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        put:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                  user_id:       
+                    type: string
+                    example : ""
+                  leave_type_id:       
+                    type: string
+                    example : ""
+                  from_date:       
+                    type: string
+                    example : ""
+                  to_date:       
+                    type: string
+                    example : ""
+                  leave_for:       
+                    type: string
+                    example : ""
+                  duration:       
+                    type: string
+                    example : ""
+                  reason:       
+                    type: string
+                    example : ""
+                  status:       
+                    type: string
+                    example : ""
+                required:
+                  - leave_type_id
+                  - from_date
+                  - to_date
+                  - leave_for
+                  - duration
+                  - reason
+                  - status
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# status update
+      patch:
+        tags:
+          -  Leave
+        security:
+        - token: []
+        summary: status change leave.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        patch:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                properties: 
+                  status:       
+                    type: string
+                    example : ""
+                required:
+                  - status
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# all status update
+  paths:
+  /api/leave/status:
+        post:
+          tags:
+            -  Leave
+          security:
+          - token: []
+          summary: all status change for leave.
+          responses:
+            '200':
+              description: created sucess. 
+            '400':
+              description: Bad Request.
+            '404':
+              description: Not Found.
+            '403':
+              description: Access Denied.
+            '401':
+              description:  Unauthorized.
+            '500':
+              description: Server error.
+
+#  ------------------------------------------------ Document api ----------------------------------------------#
+
+# add document
+
+  paths:
+  /api/document:
+    post:
+      tags:
+        - document
+      security:
+       - token: []
+      summary:  add document.     
+      post:
+      requestBody:
+        required : true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                name:
+                  type: string
+                  example : ""
+                description:
+                  type: string
+                  example : ""
+         
+      responses:
+        '201':
+          description: created successfully. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '403':
+          description: Access Denied.
+        '500':
+          description: Server error.
+
+# get holiday
+    get:
+        tags:
+         -  document
+        security:
+        - token: []
+        summary: list document.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/document/{id}:
+      put:
+        tags:
+          -  document
+        security:
+        - token: []
+        summary: update document.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        put:
+        requestBody:
+          required : true
+          content:
+            multipart/form-data:
+                  schema:
+                    type: object
+                    properties:
+                      image:
+                        type: string
+                        format: binary
+                      name:
+                        type: string
+                        example : ""
+                      description:
+                        type: string
+                        example : ""
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+            # delete docuement
+      delete:
+        tags:
+          -  document
+        security:
+        - token: []
+        summary: delete document.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.     
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+
+#  ------------------------------------------------ Dashboard api ----------------------------------------------#
+
+  paths:
+  /api/dashboard:
+      get:
+        tags:
+         -  Dashboard
+        security:
+        - token: []
+        summary: list document.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+
+#  ------------------------------------------------ user role api ---------------------------------------------- ------- #
+
+# add 
+  paths:
+  /api/role:
+    post:
+      tags:
+        - user role
+      security:
+       - token: []
+      summary: add user role.        
+      post:
+      requestBody:
+        required: true
+        content:
+          # multipart/form-data:
+           application/json:
+            schema:
+              properties: 
+                name:       
+                  type: string
+                  example : ""
+                permissions:       
+                  type: array
+                  example : [{
+                                  "menuId": "64f5c3fac742a9d98546e2e9",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c4cbc742a9d98546e2ed",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c4dac742a9d98546e2f1",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c4e2c742a9d98546e2f5",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c4f6c742a9d98546e2f9",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c4fbc742a9d98546e2fd",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f5c500c742a9d98546e301",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "64f6e7d9de634a7f7c48a2cb",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                              },
+                              {
+                                  "menuId": "6503e4540f87047dfd98ecb0",
+                                  "list": 0,
+                                  "create": 0,
+                                  "delete": 0,
+                                  "update": 0,
+                          }]
+              required:
+                - name
+                - permissions
+         
+      responses: 
+        '201':
+          description: created sucess. 
+        '400':
+          description: Bad Request.
+        '401':
+          description:  Unauthorized.
+        '500':
+          description: Server error.
+
+# get user role
+    get:
+        tags:
+         -  user role
+        security:
+        - token: []
+        summary: list user role.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/role/{id}:
+      put:
+        tags:
+          -  user role
+        security:
+        - token: []
+        summary: update user role.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        put:
+        requestBody:
+          required: true
+          content:
+          # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                  permissions:       
+                    type: array
+                    example : [{
+                                    "menuId": "64f5c3fac742a9d98546e2e9",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c4cbc742a9d98546e2ed",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c4dac742a9d98546e2f1",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c4e2c742a9d98546e2f5",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c4f6c742a9d98546e2f9",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c4fbc742a9d98546e2fd",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f5c500c742a9d98546e301",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "64f6e7d9de634a7f7c48a2cb",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                                },
+                                {
+                                    "menuId": "6503e4540f87047dfd98ecb0",
+                                    "list": 0,
+                                    "create": 0,
+                                    "delete": 0,
+                                    "update": 0,
+                            }]
+                required:
+                  - name
+                  - permissions
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# get holiday
+      get:
+          tags:
+          -  user role
+          security:
+          - token: []
+          summary: user role get by id.  
+          parameters:
+            - name: id
+              in: path
+              required: true
+              example : "static"
+              description: Parameter description in CommonMark or HTML.       
+              
+          responses:
+            '200':
+              description: Success message. 
+            '401':
+              description:  Unauthorized.
+            '403':
+              description: Access Denied.
+            '500':
+              description: Server error.
+
+# check department
+  paths:
+  /api/role/name:
+      post:
+        tags:
+          -  user role
+        security:
+        - token: []
+        summary: check user role name.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  name:       
+                    type: string
+                    example : ""
+                required:
+                  - name
+          
+        responses:
+          '200':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+          '403':
+            description: Access Denied.
 
 
 

@@ -326,14 +326,14 @@ const resetPassword = async (req, res) => {
         });
 
 
-        if (!data) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+        if (!data) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff > 0) {
 
-            if (!token) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+            if (!token) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
 
             verifyUser = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -350,10 +350,10 @@ const resetPassword = async (req, res) => {
                 return res.status(404).json({ success: false, message: "Your password has been reset failed." })
             }
         } else {
-            return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+            return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
         }
     } catch (error) {
-        if (!verifyUser) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+        if (!verifyUser) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -365,19 +365,19 @@ const checkLink = async (req, res) => {
         if(!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
-        if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+        if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
 
         const data = await tokenSchema.findOne({
             token: token,
         });
 
-        if (!data) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+        if (!data) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff < 0) {
-            return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Reset Password' to send a new email." })
+            return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
         } else {
             return res.status(200).json({ success: true, message: "not expired for link." })
         }
