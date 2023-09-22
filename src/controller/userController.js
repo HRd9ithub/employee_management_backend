@@ -5,6 +5,9 @@ const bcrypt = require("bcryptjs");
 const profile_image = require("../middleware/ImageProfile");
 const loginInfo = require("../models/loginInfoSchema");
 const path = require("path");
+const role = require("../models/roleSchema");
+const department = require("../models/departmentSchema");
+const designation = require("../models/designationSchema");
 
 // create user function
 const createUser = async (req, res) => {
@@ -16,10 +19,27 @@ const createUser = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(422).json({ error: err, success: false })
         }
+        
+        let error = []
+        // role id check 
+        let roles = await role.findOne({_id : req.body.role_id})
+        if (!roles) {error.push("Role id is not exists.") }
 
-        req.body.profile_image = "uploads/default.jpg"
+        // department id check
+        let departments = await department.findOne({_id : req.body.department_id})
+        if (!departments) {error.push("Department id is not exists.")}
+
+        // designation id check
+        let designations = await designation.findOne({_id : req.body.designation_id})
+        if (!designations) {error.push("Designation id is not exists.")}
+
+        // report by id check
+        let report = await user.findOne({_id : req.body.report_by})
+        if (!report) {error.push("report by id is not exists." )}
+
+        if(error.length !== 0 ) return res.status(422).json({ error: error, success: false }) 
 
         const userData = new user(req.body);
         const response = await userData.save();
@@ -149,11 +169,11 @@ const updateUser = async (req, res) => {
         const data = await user.findOne({ email: req.body.email })
 
         if (data && data._id != req.params.id) {
-            return res.status(400).json({ message: "email address already exists.", success: false })
+            return res.status(422).json({ message: "email address already exists.", success: false })
         } else {
             profile_image(req, res, async function (err) {
                 if (err) {
-                    return res.status(400).send({ message: err.message })
+                    return res.status(422).send({ message: err.message })
                 }
 
                 // Everything went fine.
@@ -295,7 +315,7 @@ const changePassword = async (req, res) => {
 
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(422).json({ error: err, success: false })
         }
 
         const userData = await user.findOne({ _id: req.user._id }).select("-token")

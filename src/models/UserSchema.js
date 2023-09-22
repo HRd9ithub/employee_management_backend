@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     report_by: {
-        type: mongoose.Schema.Types.ObjectId
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user"
         },
     age: {
         type: Number,
@@ -58,7 +59,7 @@ const userSchema = new mongoose.Schema({
     },
     profile_image: {
         type: String,
-        default: "image_1692858235397.jpg"
+        default: "uploads/default.jpg"
     },
     country: {
         type: String,
@@ -82,13 +83,16 @@ const userSchema = new mongoose.Schema({
     },
     role_id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: true,
+        ref: "role"
     },
     department_id: {
         type: mongoose.Schema.Types.ObjectId,
+        ref : "department"
     },
     designation_id: {
         type: mongoose.Schema.Types.ObjectId,
+        ref : "designation"
     },
     otp: {
         type: Number
