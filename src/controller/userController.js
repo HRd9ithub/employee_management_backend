@@ -8,6 +8,7 @@ const path = require("path");
 const role = require("../models/roleSchema");
 const department = require("../models/departmentSchema");
 const designation = require("../models/designationSchema");
+const moment = require("moment");
 
 // create user function
 const createUser = async (req, res) => {
@@ -21,25 +22,25 @@ const createUser = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(422).json({ error: err, success: false })
         }
-        
+
         let error = []
         // role id check 
-        let roles = await role.findOne({_id : req.body.role_id})
-        if (!roles) {error.push("Role id is not exists.") }
+        let roles = await role.findOne({ _id: req.body.role_id })
+        if (!roles) { error.push("Role id is not exists.") }
 
         // department id check
-        let departments = await department.findOne({_id : req.body.department_id})
-        if (!departments) {error.push("Department id is not exists.")}
+        let departments = await department.findOne({ _id: req.body.department_id })
+        if (!departments) { error.push("Department id is not exists.") }
 
         // designation id check
-        let designations = await designation.findOne({_id : req.body.designation_id})
-        if (!designations) {error.push("Designation id is not exists.")}
+        let designations = await designation.findOne({ _id: req.body.designation_id })
+        if (!designations) { error.push("Designation id is not exists.") }
 
         // report by id check
-        let report = await user.findOne({_id : req.body.report_by})
-        if (!report) {error.push("report by id is not exists." )}
+        let report = await user.findOne({ _id: req.body.report_by })
+        if (!report) { error.push("report by id is not exists.") }
 
-        if(error.length !== 0 ) return res.status(422).json({ error: error, success: false }) 
+        if (error.length !== 0) return res.status(422).json({ error: error, success: false })
 
         const userData = new user(req.body);
         const response = await userData.save();
@@ -112,7 +113,7 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
-        
+
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0], permissions: req.permissions })
 
     } catch (error) {
@@ -125,13 +126,24 @@ const getUser = async (req, res) => {
     try {
         // if (req.user) {
         const value = await user.aggregate([
-            { $match: { "delete_at": { $exists: false } } },
+            {
+                $match: {
+                    "delete_at": { $exists: false },
+                    // leaveing_date: {$exists: false, $gt: [ "leaveing_date", moment(new Date()).format("YYYY-MM-DD") ]}
+                    // $expr: {
+                    //     $and: [
+                    //         { $gt : ["leaveing_date", moment(new Date()).format("YYYY-MM-DD")] },
+                    //     ]
+                    // },
+                }
+
+            },
             {
                 $lookup: {
                     from: "roles", localField: "role_id", foreignField: "_id", as: "role"
                 }
             },
-            { $unwind: { path: "$role",preserveNullAndEmptyArrays: true  } },
+            { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "users", localField: "report_by", foreignField: "_id", as: "report"
@@ -148,6 +160,7 @@ const getUser = async (req, res) => {
                     "phone": 1,
                     "status": 1,
                     "role.name": 1,
+                    "leaveing_date":1,
                     "report.first_name": 1,
                     "report.last_name": 1,
                     "report._id": 1,
@@ -155,7 +168,11 @@ const getUser = async (req, res) => {
                 }
             }
         ])
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value, permissions: req.permissions })
+
+        let data = value.filter((val) => {
+            return !val.leaveing_date || moment(val.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD")
+        })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data, permissions: req.permissions })
         // }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
