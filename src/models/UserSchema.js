@@ -86,10 +86,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         ref: "role"
     },
-    department_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref : "department"
-    },
+    // department_id: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref : "department"
+    // },
     designation_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref : "designation"

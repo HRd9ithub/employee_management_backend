@@ -31,7 +31,6 @@ exports.userValidation = [
     check("joining_date", "Invalid Joining Date format.Please enter the date in the format 'YYYY-MM-DD'.").isDate({ format: "YYYY-MM-DD" }),
     check('status', "Invalid status.Please enter the status value for Active or Inactive.").isIn(["Active", "Inactive"]),
     check('role_id', "Role id is Required.").isMongoId(),
-    check('department_id', "Department id is Required.").isMongoId(),
     check('designation_id', "Designation id is Required.").isMongoId(),
     check('report_by', "Report by id is Required.").isMongoId(),
 ] 
