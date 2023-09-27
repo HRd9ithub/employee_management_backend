@@ -64,7 +64,7 @@ DashboardRoute.get('/', Auth, async (req, res) => {
                 from: "users", localField: "user_id", foreignField: "_id", as: "user"
             }
         },
-        { $unwind: { path: "$user" } },
+        { $unwind: { path: "$user",preserveNullAndEmptyArrays: true } },
         {
             $project: {
                 user_id: 1,

@@ -6,7 +6,6 @@ const profile_image = require("../middleware/ImageProfile");
 const loginInfo = require("../models/loginInfoSchema");
 const path = require("path");
 const role = require("../models/roleSchema");
-const department = require("../models/departmentSchema");
 const designation = require("../models/designationSchema");
 const moment = require("moment");
 
@@ -28,10 +27,6 @@ const createUser = async (req, res) => {
         let roles = await role.findOne({ _id: req.body.role_id })
         if (!roles) { error.push("Role id is not exists.") }
 
-        // department id check
-        let departments = await department.findOne({ _id: req.body.department_id })
-        if (!departments) { error.push("Department id is not exists.") }
-
         // designation id check
         let designations = await designation.findOne({ _id: req.body.designation_id })
         if (!designations) { error.push("Designation id is not exists.") }
@@ -44,7 +39,7 @@ const createUser = async (req, res) => {
 
         const userData = new user(req.body);
         const response = await userData.save();
-        return res.status(201).json({ success: true, message: "User create successfully." })
+        return res.status(201).json({ success: true, message: "Data added successfully." })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -57,12 +52,6 @@ const activeUser = async (req, res) => {
             {
                 $match: { _id: new mongoose.Types.ObjectId(req.params.id) }
             },
-            {
-                $lookup: {
-                    from: "departments", localField: "department_id", foreignField: "_id", as: "department"
-                }
-            },
-            { $unwind: { path: "$department", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "designations", localField: "designation_id", foreignField: "_id", as: "designation"
@@ -223,7 +212,7 @@ const deleteUser = async (req, res) => {
             // req.body.deleteAt = Date.now()
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_at: Date.now() });
-            return res.status(200).json({ success: true, message: "User delete successfully." })
+            return res.status(200).json({ success: true, message: "Data has been successfully deleted." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -241,7 +230,7 @@ const updateStatusUser = async (req, res) => {
         } else {
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { status: data.status === 'Active' ? 'Inactive' : "Active" });
-            return res.status(200).json({ success: true, message: "User status update successfully." })
+            return res.status(200).json({ success: true, message: "Status update successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

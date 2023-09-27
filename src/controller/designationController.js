@@ -11,7 +11,7 @@ const createDesignation = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // find designation name in database
@@ -19,13 +19,13 @@ const createDesignation = async (req, res) => {
 
         if (data) {
             // exists designation name for send message
-            return res.status(400).json({ message: "Designation name already exists.", success: false })
+            return res.status(400).json({ error: "Designation name already exists.", success: false })
         }
 
         // not exists designation name for add database
         const designationData = new designation(req.body);
         const response = await designationData.save();
-        return res.status(201).json({ success: true, message: "Successfully added a new designation." })
+        return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -42,7 +42,7 @@ const updateDesignation = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // find designation name in database
@@ -50,16 +50,16 @@ const updateDesignation = async (req, res) => {
 
         if (data && data._id != req.params.id) {
             // exists designation name for send message
-            return res.status(400).json({ message: "Designation name already exists.", success: false })
+            return res.status(400).json({ error: "Designation name already exists.", success: false })
         }
 
         // not exists designation name for update database
         const response = await designation.findByIdAndUpdate({ _id: req.params.id }, req.body)
 
         if (response) {
-            return res.status(200).json({ success: true, message: "Successfully edited a designation." })
+            return res.status(200).json({ success: true, message: "Data updated successfully." })
         } else {
-            return res.status(404).json({ success: false, message: "Designation is not found." })
+            return res.status(404).json({ success: false, message: "Designation name is not found." })
         }
 
     } catch (error) {
