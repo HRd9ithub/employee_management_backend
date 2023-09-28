@@ -20,7 +20,7 @@ const addDocument = async(req,res) => {
         
                 const response = await documentData.save();
         
-                return res.status(200).json({success:true,message:"successfully added a new document."})
+                return res.status(200).json({success:true,message:"Data added successfully."})
                 
             }else{
                 return res.status(400).send({ message: "File is Required."})
@@ -51,7 +51,7 @@ const updateDocument = async(req,res) => {
             
                     const response = await document.findByIdAndUpdate({_id: req.params.id},documentData)
             
-                    return res.status(200).json({success:true,message:"successfully edited a document."})
+                    return res.status(200).json({success:true,message:"Data updated successfully."})
                     
                 }else{
                     return res.status(400).send({ message: "File is Required."})
@@ -72,7 +72,7 @@ const deleteDocument = async(req,res) => {
         const response = await document.findByIdAndDelete({_id: req.params.id},req.body)
         
         if(response){
-            return res.status(200).json({success:true,message:"successfully deleted a document."})
+            return res.status(200).json({success:true,message:"Data deleted successfully."})
         }else{
             return res.status(404).json({success:false,message:"Document not found."})
         }

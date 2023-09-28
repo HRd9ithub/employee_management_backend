@@ -77,8 +77,8 @@ DashboardRoute.get('/', Auth, async (req, res) => {
         ])
 
         // today present list
-        let presentToday = await timeSheet.find({ date: moment(new Date()).format("YYYY-MM-DD") }).count();
-
+        // let presentToday = await timeSheet.find({ date: moment(new Date()).format("YYYY-MM-DD") }).count();
+        
 
         let data = value.filter((val) => {
             return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date)
@@ -133,7 +133,7 @@ DashboardRoute.get('/', Auth, async (req, res) => {
         })
         // const reportBy = await user.find({report_by : req.user._id },{first_name :1,last_name :1})
 
-        res.status(200).json({ totalEmployee: data.length, leaveRequest, presentToday, absentToday, holidayDay, birthDay ,reportBy :repobyFilter ,success : true})
+        res.status(200).json({ totalEmployee: data.length, leaveRequest, presentToday:data.length - absentToday.length, absentToday, holidayDay, birthDay ,reportBy :repobyFilter ,success : true})
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

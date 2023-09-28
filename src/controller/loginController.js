@@ -53,30 +53,21 @@ const userLogin = async (req, res) => {
         }
 
         // email check exist or not
-        const userData = await user.findOne({ email: req.body.email })
-        if (userData && userData.status !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
+        const userData = await user.findOne({ email: req.body.email , joining_date: {$lte: moment(new Date()).format("YYYY-MM-DD")}})
+        if (userData) {
             // password compare
             let isMatch = await bcrypt.compare(req.body.password, userData.password);
             if (isMatch) {
 
-                let leaveUser = await Leave.findOne({
-                    user_id: userData._id, $and: [
-                        { "status": { $eq: "Approved" } },
-                        { $and: [{ from_date: { $lte: moment(new Date()).format("YYYY-MM-DD") } }, { to_date: { $gte: moment(new Date()).format("YYYY-MM-DD") } }] },
-                    ]
-                })
+                if (userData.status !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
 
-                if (leaveUser) {
-                    return res.status(400).json({ message: "You are on leave", success: false })
-                }
+                    let mailsubject = 'Verification Code';
+                    // let otp = Math.random().toString().slice(3, 5);
+                    // otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
+                    let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
 
-                let mailsubject = 'Verification Code';
-                // let otp = Math.random().toString().slice(3, 5);
-                // otp.length < 4 ? otp = otp.padEnd(4, "0") : otp;
-                let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
-
-                // mail content
-                let content = `<table width="100%" cellpadding="0" cellspacing="0" align="center" style="text-align: left;font-family: 'Philosopher', sans-serif;margin: 1.875rem auto;">
+                    // mail content
+                    let content = `<table width="100%" cellpadding="0" cellspacing="0" align="center" style="text-align: left;font-family: 'Philosopher', sans-serif;margin: 1.875rem auto;">
             <tr>
               <td width="100%" valign="top" bgcolor="#fff">
                 <table width="550" cellpadding="0" cellspacing="0" align="center" style="padding:1rem 1.2rem; margin:0 auto; border: 1px solid lightgray;">
@@ -120,16 +111,20 @@ const userLogin = async (req, res) => {
             </tr>
         </table>`
 
-                // mail send function
-                sendMail(req.body.email, mailsubject, content);
+                    // mail send function
+                    sendMail(req.body.email, mailsubject, content);
 
-                // update data for otp
-                const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
+                    // update data for otp
+                    const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
+                    return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
+                }
             } else {
                 // password not match send message
                 return res.status(404).json({ message: "Invalid email or password.", success: false })
             }
+        }else {
+            // email not match send message
+            return res.status(404).json({ message: "Invalid email or password.", success: false })
         }
 
         if (userData && userData.status === 'Inactive' && !userData.delete_at) {

@@ -19,13 +19,13 @@ const createLeaveType = async (req, res) => {
 
         if (data) {
             // exists leaveType name for send message
-            return res.status(400).json({ message: "Leave Type already exists.", success: false })
+            return res.status(400).json({ error: "Leave Type already exists.", success: false })
         }
 
         // not exists leaveType name for add database
         const leaveTypeData = new leaveType(req.body);
         const response = await leaveTypeData.save();
-        return res.status(201).json({ success: true, message: "Successfully added a new leaveType." })
+        return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -50,13 +50,13 @@ const updateLeaveType = async (req, res) => {
 
         if (data && data._id != req.params.id) {
             // exists leaveType name for send message
-            return res.status(400).json({ message: "Leave Type already exists.", success: false })
+            return res.status(400).json({ error: "Leave Type already exists.", success: false })
         }
 
         // not exists leaveType name for update database
         const response = await leaveType.findByIdAndUpdate({ _id: req.params.id }, req.body)
         if (response) {
-            return res.status(200).json({ success: true, message: "Successfully edited a leaveType." })
+            return res.status(200).json({ success: true, message: "Data updated successfully." })
         } else {
             return res.status(404).json({ success: false, message: "LeaveType is not found." })
         }
