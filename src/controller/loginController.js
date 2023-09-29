@@ -116,7 +116,7 @@ const userLogin = async (req, res) => {
 
                     // update data for otp
                     const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                    return res.status(200).json({ success: true, message: "Otp send successfully.", data: response.email })
+                    return res.status(200).json({ success: true, message: "OTP sent successfully.", data: response.email })
                 }
             } else {
                 // password not match send message
@@ -128,7 +128,7 @@ const userLogin = async (req, res) => {
         }
 
         if (userData && userData.status === 'Inactive' && !userData.delete_at) {
-            return res.status(400).json({ message: "Sorry, your account is inactive. Please Contact your Administrator.", success: false })
+            return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
         } else {
             // email not match send message
             return res.status(404).json({ message: "Invalid email or password.", success: false })
@@ -185,11 +185,11 @@ const verifyOtp = async (req, res) => {
             if (role_detail.name.toLowerCase() === "admin" || (login && time)) {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Login successfully.", token: token, id: response._id })
+                return res.status(200).json({ success: true, message: "You have successfully logged in.", token: token, id: response._id })
             }
         } else {
             // not match send message
-            return res.status(400).json({ message: "Invalid OTP entered.", success: false })
+            return res.status(400).json({ message: "OTP is invalid.", success: false })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -210,7 +210,7 @@ const ResendOtp = async (req, res) => {
         }
 
         // email check exist or not
-        const userData = await user.findOne({ email: req.body.email })
+        const userData = await user.findOne({ email: req.body.email ,joining_date: {$lte: moment(new Date()).format("YYYY-MM-DD")}})
         if (userData && userData.status !== 'Inactive' && !userData.delete_at) {
             let mailsubject = 'Verification Code';
 
@@ -264,14 +264,14 @@ const ResendOtp = async (req, res) => {
 
             // update data for otp
             const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000 }, { new: true })
-            return res.status(200).json({ success: true, message: "Otp send successfully." })
+            return res.status(200).json({ success: true, message: "OTP sent successfully." })
         } else {
             // email not match send message
             if (userData && userData.status === 'Inactive' && !userData.delete_at) {
-                return res.status(400).json({ message: "Sorry, your account is inactive. Please Contact your Administrator.", success: false })
+                return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
             } else {
                 // email not match send message
-                return res.status(404).json({ message: "No account found with that email address.", success: false })
+                return res.status(404).json({ message: "Account not found with the provided email.", success: false })
             }
         }
     } catch (error) {
@@ -298,7 +298,7 @@ const mailSend = async (req, res) => {
         if (userData && userData.status === "Active" && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
             // generate token
             var token = jwt.sign({ _id: userData._id }, process.env.SECRET_KEY, { expiresIn: "30m" });
-            let mailsubject = 'Forget Password Mail';
+            let mailsubject = 'Password Reset Request';
             // mail content
             let url = `${process.env.RESET_PASSWORD_URL}/set_new_password?email=${req.body.email}&token=${token}`
             let name = userData.first_name.concat(" ", userData.last_name)
@@ -312,16 +312,16 @@ const mailSend = async (req, res) => {
                 expireIn: new Date().getTime() + 30 * 60000
             })
             await tokenData.save();
-            return res.status(200).json({ success: true, message: "Password reset link sent to your email account." })
+            return res.status(200).json({ success: true, message: "A password reset link has been emailed to you." })
         } else {
             if (!userData) {
                 // email not match send message
-                return res.status(404).json({ message: "Sorry! Email address not found.", success: false })
+                return res.status(404).json({ message: "Account not found with the provided email.", success: false })
             } else {
                 if ((moment(userData.leaveing_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD"))) {
-                    return res.status(400).json({ message: "Sorry! but you are no longer an employee.", success: false })
+                    return res.status(400).json({ message: "You are no longer an employee. I'm sorry.", success: false })
                 } else {
-                    return res.status(400).json({ message: "This user is Inactive.", success: false })
+                    return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
                 }
             }
         }
@@ -344,7 +344,7 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
         let TokenArray = req.headers['authorization'];
-        if (!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
+        if (!TokenArray) return res.status(400).json({ success: false, message: "Token is a required field." })
         let token = TokenArray.split(" ")[1];
 
         const data = await tokenSchema.findOne({
@@ -353,14 +353,14 @@ const resetPassword = async (req, res) => {
         });
 
 
-        if (!data) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+        if (!data) return res.status(400).json({ success: false, message: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff > 0) {
 
-            if (!token) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+            if (!token) return res.status(400).json({ success: false, message: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
 
             verifyUser = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -374,13 +374,13 @@ const resetPassword = async (req, res) => {
                 await tokenSchema.deleteOne({ _id: data._id })
                 return res.status(200).json({ success: true, message: "Password reset successfully." })
             } else {
-                return res.status(404).json({ success: false, message: "Your password has been reset failed." })
+                return res.status(404).json({ success: false, message: "Your password reset has failed." })
             }
         } else {
-            return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+            return res.status(400).json({ success: false, message: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
         }
     } catch (error) {
-        if (!verifyUser) return res.status(400).json({ success: false, message: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+        if (!verifyUser) return res.status(400).json({ success: false, message: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
@@ -392,21 +392,21 @@ const checkLink = async (req, res) => {
         if (!TokenArray) return res.status(400).json({ success: false, message: "Token is Required." })
         let token = TokenArray.split(" ")[1];
 
-        if (!token) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+        if (!token) return res.status(400).json({ success: false, error: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
 
         const data = await tokenSchema.findOne({
             token: token,
         });
 
-        if (!data) return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+        if (!data) return res.status(400).json({ success: false, error: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
 
         let currTime = new Date().getTime()
         let diff = data.expireIn - currTime
 
         if (diff < 0) {
-            return res.status(400).json({ success: false, error: "To reset your password, return to the login page and select 'Forgot Password' to send a new email." })
+            return res.status(400).json({ success: false, error: "The reset password link has expired. To reset your password, return to the login page and select 'Forgot Password' to have a new email sent." })
         } else {
-            return res.status(200).json({ success: true, message: "not expired for link." })
+            return res.status(200).json({ success: true, message: "The password reset link has not expired." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -435,9 +435,9 @@ const userLogout = async (req, res) => {
                 // }
             }
             await user.findByIdAndUpdate({ _id: req.user._id }, { $unset: { token: 1 } }, { new: true })
-            return res.status(200).json({ success: true, message: "Logout is successfully." })
+            return res.status(200).json({ success: true, message: "You have successfully logged out." })
         } else {
-            return res.status(404).json({ success: false, message: "Logout is failed." })
+            return res.status(404).json({ success: false, message: "The logout has failed." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

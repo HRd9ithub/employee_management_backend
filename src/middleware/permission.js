@@ -67,8 +67,8 @@ const userPermission = async (req, res, next) => {
     }
 }
 
-// department route check permission
-const departmentPermission = async (req, res, next) => {
+// project route check permission
+const projectPermission = async (req, res, next) => {
     try {
         let permission = ""
         let data = await getRoleData(req.user.role_id)
@@ -77,7 +77,7 @@ const departmentPermission = async (req, res, next) => {
             permission = data[0]
         } else {
             permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "department"
+                return val.permissions.menu.name.toLowerCase() == "project"
             }))
         }
         req.permissions = permission;
@@ -86,13 +86,45 @@ const departmentPermission = async (req, res, next) => {
             next()
         } else {
             if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create department." })
+                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create project." })
             } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing department to the Department Data. please contact admin.", permissions: req.permissions })
+                permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing project to the Project Data. please contact admin.", permissions: req.permissions })
             } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update department." })
+                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update project." })
             } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete department." })
+                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete project." })
+            }
+        }
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+}
+// report permission
+const reportPermission = async (req, res, next) => {
+    try {
+        let permission = ""
+        let data = await getRoleData(req.user.role_id)
+
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "work report"
+            }))
+        }
+        req.permissions = permission;
+
+        if (permission.name.toLowerCase() === "admin") {
+            next()
+        } else {
+            if (req.method === "POST" && req.route.path == "/") {
+                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create work report." })
+            } else if (req.method === "GET" && req.route.path == "/") {
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing work report to the work report Data. please contact admin.", permissions: req.permissions })
+            } else if (req.method === "PATCH") {
+                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update work report." })
+            } else if (req.method === "DELETE") {
+                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete work report." })
             }
         }
     } catch (error) {
@@ -330,4 +362,4 @@ const rolePermission = async (req, res, next) => {
     }
 }
 
-module.exports = { userPermission, rolePermission, departmentPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
+module.exports = { userPermission, rolePermission, projectPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }

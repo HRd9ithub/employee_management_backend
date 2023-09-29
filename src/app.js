@@ -6,7 +6,6 @@ const path = require("path")
 var bodyParser = require('body-parser');
 const userRoute = require("./Routes/UserRoute");
 const AuthRoute = require("./Routes/AuthRoute");
-const departmentRoute = require('./Routes/DepartmentRoute');
 const designationRoute = require('./Routes/DesignationRoute');
 const menuRoute = require('./Routes/MenuRoute');
 const holidayRoute = require('./Routes/HolidayRoute');
@@ -23,6 +22,8 @@ const DashboardRoute = require('./Routes/DashboardRoute');
 var handlebars = require('express-handlebars');
 const user = require('./models/UserSchema');
 const { swaggerServe, swaggerSetup } = require('./config');
+const projectRoute = require('./Routes/ProjectRoute')
+const workReportRoute = require('./Routes/WorkReportRoute')
 
 // add database
 require("./DB/conn")
@@ -36,9 +37,6 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.use(bodyParser.urlencoded({ extended: true }));
-
-
-const http = require("http").Server(app);
 
 
 app.use(express.json());
@@ -60,7 +58,7 @@ app.use("/api-docs", swaggerServe, swaggerSetup);
 // apiu route
 app.use('/api/auth', AuthRoute)
 app.use('/api/user', userRoute)
-app.use('/api/department', departmentRoute)
+app.use('/api/project', projectRoute)
 app.use('/api/designation', designationRoute)
 app.use('/api/menu', menuRoute)
 app.use('/api/holiday', holidayRoute)
@@ -74,6 +72,7 @@ app.use('/api/emergency', emergencyRoute)
 app.use('/api/user_document', userDocumentRoute)
 app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
+app.use('/api/report', workReportRoute)
 
 app.all("*",(req,res,next) => {
     let err = new Error(`Can't find ${req.originalUrl} on the server.`);
@@ -87,65 +86,6 @@ app.use(function(err, req, res, next) {
    res.status(err.statusCode);
    res.json({message : err.message,statusCode : err.statusCode})
 });
-//  app.listen(port, () => {
-//     console.log(`server is running for ${port}.`)
-// })
-
-const socketIO = require('socket.io')(http, {
-    cors: {
-        origin: "http://localhost:3000"
-    }
-});
-let users = [];
-
-try {
-    socketIO.on('connection', (socket) => {
-        socket.on("set", (data) => {
-            let record = users.filter((val) => {
-                return val.email === data.userId
-            })
-    
-            if (record.length > 0) {
-                users = users.filter((elem) => elem.email != data.userId)
-            }
-            users.push({ key: socket.id, email: data.userId })
-        })
-        socket.on('login', function (data) {
-            let record = users.find((val) => {
-                return val.email === data.userId
-            })
-    
-            if (record) {
-                socket.to(record.key).emit('receive', { isAuth: true })
-                users = users.filter((elem) => elem.email != data.userId)
-            }
-            users.push({ key: socket.id, email: data.userId })
-        });
-    
-        socket.on('status', async function (data) {
-            let record = users.find((val) => {
-                return val.email === data.userId
-            })
-            let userRecord = await user.findOne({ email: data.userId });
-    
-            if (userRecord.status === "Inactive") {
-                socket.to(record.key).emit('receive', { isAuth: true })
-            }
-        });
-        socket.on('disconnect', () => {
-            users = users.filter((elem) => elem.key != socket.id)
-            console.log('🔥: A user disconnected');
-        });
-    });
-} catch (error) {
-    console.log(error)
-}
-
-
-// io.on("connection", socket => {
-//     console.log(socket)
-// })
-
-http.listen(port, () => {
-    console.log(`Server listening on ${port}`);
-});
+ app.listen(port, () => {
+    console.log(`server is running for ${port}.`)
+})
