@@ -118,12 +118,10 @@ const getUser = async (req, res) => {
             {
                 $match: {
                     "delete_at": { $exists: false },
-                    // leaveing_date: {$exists: false, $gt: [ "leaveing_date", moment(new Date()).format("YYYY-MM-DD") ]}
-                    // $expr: {
-                    //     $and: [
-                    //         { $gt : ["leaveing_date", moment(new Date()).format("YYYY-MM-DD")] },
-                    //     ]
-                    // },
+                    $or: [ 
+                        {"leaveing_date": {$eq: null}}, 
+                        {"leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    ]
                 }
 
             },
@@ -422,7 +420,12 @@ const getUserName = async (req, res) => {
         const value = await user.aggregate([
             {
                 $match: {
-                    status: "Active", "delete_at": null
+                    status: "Active", "delete_at": null,
+                    joining_date : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                    $or: [ 
+                        {leaveing_date: {$eq: null}}, 
+                        {leaveing_date: {$gte: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    ]
                 }
             },
             {
