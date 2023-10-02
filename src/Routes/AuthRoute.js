@@ -7,7 +7,7 @@ const AuthRoute = express.Router();
 // login api 
 AuthRoute.post('/login', [
     expressValidator.body('email', "Email must be a valid email.").isEmail(),
-    expressValidator.body("password", "Password must be at least 8 character ").notEmpty()
+    expressValidator.body("password", "Password is a required field. ").notEmpty()
 ],userLogin)
 
 // otp verification api
@@ -37,7 +37,13 @@ AuthRoute.post('/forgotPassword', [
 // reset password api
 AuthRoute.post('/resetpassword', [
     expressValidator.body('email', "Email must be a valid email.").isEmail(),
-    expressValidator.body("password", "Password must be at least 6 character ").isLength({ min: 6 })
+    expressValidator.body("password", "Password is Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.").isStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1
+    })
 ],resetPassword)
 
 // reset password api
