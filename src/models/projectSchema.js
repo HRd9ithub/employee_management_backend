@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // document structure define 
-const departmentSchema = new mongoose.Schema({
+const projectSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -12,6 +12,6 @@ const departmentSchema = new mongoose.Schema({
 
 
 // create collection
-const department = new mongoose.model("department", departmentSchema)
+const project = new mongoose.model("project", projectSchema)
 
-module.exports = department
+module.exports = project

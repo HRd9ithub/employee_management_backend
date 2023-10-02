@@ -7,7 +7,7 @@ const AuthRoute = express.Router();
 // login api 
 AuthRoute.post('/login', [
     expressValidator.body('email', "Enter a valid email.").isEmail(),
-    expressValidator.body("password", "Password must be at least 8 character ").isLength({ min: 8 })
+    expressValidator.body("password", "Password must be at least 8 character ").notEmpty()
 ],userLogin)
 
 // otp verification api
