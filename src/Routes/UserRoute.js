@@ -33,7 +33,7 @@ userRoute.delete('/:id', Auth,userPermission, deleteUser)
 userRoute.patch('/:id', Auth,userPermission, updateStatusUser)
 
 //check email  api
-userRoute.post('/email', Auth, [expressValidator.body('email', "Enter a valid email.").isEmail()], checkEmail)
+userRoute.post('/email', Auth, [expressValidator.body('email', "Email must be a valid email.").isEmail()], checkEmail)
 
 // check employee id
 userRoute.post('/employeeId', Auth, [expressValidator.body('employee_id', "Employee Id is Required.").notEmpty()], checkEmployeeId)
