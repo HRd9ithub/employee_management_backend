@@ -6,12 +6,12 @@ const AuthRoute = express.Router();
 
 // login api 
 AuthRoute.post('/login', [
-    expressValidator.body('email', "Enter a valid email.").isEmail(),
+    expressValidator.body('email', "Email must be a valid email.").isEmail(),
     expressValidator.body("password", "Password must be at least 8 character ").notEmpty()
 ],userLogin)
 
 // otp verification api
-AuthRoute.patch('/otp', [expressValidator.body('email', "Enter a valid email.").isEmail(),
+AuthRoute.patch('/otp', [expressValidator.body('email', "Email must be a valid email.").isEmail(),
 expressValidator.body("city", "city is required. ").notEmpty(),
 expressValidator.body("device", "device is required.").notEmpty(),
 expressValidator.body("browser_name", "browser name is required.").notEmpty(),
@@ -26,17 +26,17 @@ expressValidator.body("otp", "otp is required.").notEmpty().custom(async (otp, {
 
 // resend otp api 
 AuthRoute.patch('/resendOtp', [
-    expressValidator.body('email', "Enter a valid email.").isEmail(),
+    expressValidator.body('email', "Email must be a valid email.").isEmail(),
 ],ResendOtp)
 
 // forget password for email verification and send reset link for email api
 AuthRoute.post('/forgotPassword', [
-    expressValidator.body('email', "Enter a valid email.").isEmail()
+    expressValidator.body('email', "Email must be a valid email.").isEmail()
 ],mailSend)
 
 // reset password api
 AuthRoute.post('/resetpassword', [
-    expressValidator.body('email', "Enter a valid email.").isEmail(),
+    expressValidator.body('email', "Email must be a valid email.").isEmail(),
     expressValidator.body("password", "Password must be at least 6 character ").isLength({ min: 6 })
 ],resetPassword)
 

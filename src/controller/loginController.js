@@ -300,7 +300,7 @@ const mailSend = async (req, res) => {
             var token = jwt.sign({ _id: userData._id }, process.env.SECRET_KEY, { expiresIn: "30m" });
             let mailsubject = 'Password Reset Request';
             // mail content
-            let url = `${process.env.RESET_PASSWORD_URL}/set_new_password?email=${req.body.email}&token=${token}`
+            let url = `${process.env.RESET_PASSWORD_URL}/reset-password?email=${req.body.email}&token=${token}`
             let name = userData.first_name.concat(" ", userData.last_name)
 
             // mail send function
