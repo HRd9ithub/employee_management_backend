@@ -20,7 +20,7 @@ async function Auth(req, res, next) {
         if (decode.date === new Date().toLocaleDateString()) {
             const data = await user.findOne({ _id: decode._id }).select("-password")
             if (data) {
-                if (data.token == token && data.status === "Active" && !data.delete_at && (!data.leaveing_date || moment(data.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
+                if (data.token == token && data.status === "Active" && !data.delete_at && (!data.leaveing_date || moment(data.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD")) && moment(data.joining_date).format("YYYY-MM-DD") <= moment(new Date()).format("YYYY-MM-DD")) {
                     req.user = data
                     next()
                 } else {
