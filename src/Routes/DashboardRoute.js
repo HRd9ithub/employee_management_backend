@@ -12,36 +12,41 @@ const DashboardRoute = Router();
 DashboardRoute.get('/', Auth, async (req, res) => {
     try {
         let date = new Date().toISOString()
-
+        // total employee count
         const value = await user.aggregate([
             {
                 $match: {
                     status: "Active",
                     delete_at: { $exists: false },
+                    joining_date : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                    $or: [ 
+                        {leaveing_date: {$eq: null}}, 
+                        {leaveing_date: {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    ]
                 }
             },
-            {
-                $lookup: {
-                    from: "roles", localField: "role_id", foreignField: "_id", as: "role"
-                }
+    {
+        $lookup: {
+            from: "roles", localField: "role_id", foreignField: "_id", as: "role"
+        }
+    },
+    { $unwind: { path: "$role" } },
+    {
+        $match: {
+            $expr: {
+                $and: [
+                    { $ne: ["$role.name", "admin"] },
+                    { $ne: ["$role.name", "Admin"] },
+                ],
             },
-            { $unwind: { path: "$role" } },
-            {
-                $match: {
-                    $expr: {
-                        $and: [
-                            { $ne: ["$role.name", "admin"] },
-                            { $ne: ["$role.name", "Admin"] },
-                        ],
-                    },
-                }
-            },
-            {
-                $project: {
-                    "leaveing_date": 1,
-                    "_id": 1
-                }
-            }
+        }
+    },
+    {
+        $project: {
+            "leaveing_date": 1,
+            "_id": 1
+        }
+    }
         ])
 
         // leave request count
@@ -64,7 +69,18 @@ DashboardRoute.get('/', Auth, async (req, res) => {
                 from: "users", localField: "user_id", foreignField: "_id", as: "user"
             }
         },
-        { $unwind: { path: "$user",preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        {
+            $match: {
+                "user.status": "Active",
+                "user.delete_at": { $exists: false },
+                "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                $or: [ 
+                    {"user.leaveing_date": {$eq: null}}, 
+                    {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                ]
+            }
+        },
         {
             $project: {
                 user_id: 1,
@@ -76,14 +92,6 @@ DashboardRoute.get('/', Auth, async (req, res) => {
         },
         ])
 
-        // today present list
-        // let presentToday = await timeSheet.find({ date: moment(new Date()).format("YYYY-MM-DD") }).count();
-        
-
-        let data = value.filter((val) => {
-            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date)
-        })
-
         // holiday list get
         let holidayDay = await holiday.find();
 
@@ -93,51 +101,13 @@ DashboardRoute.get('/', Auth, async (req, res) => {
             delete_at: { $exists: false },
             date_of_birth: { $exists: true },
             $or: [{ leaveing_date: { $exists: false } }, { leaveing_date: { $gt: new Date() } }],
-        },
-            { employee_id: 1, first_name: 1, last_name: 1, profile_image: 1, date_of_birth: 1 })
+        },{ employee_id: 1, first_name: 1, last_name: 1, profile_image: 1, date_of_birth: 1 });
 
-        // report by find
-        const reportBy = await user.aggregate([
-            {
-                $match: {report_by : new mongoose.Types.ObjectId(req.user._id)}
-            },
-            {
-                $lookup: {
-                    from: "users", localField: "report_by", foreignField: "_id", as: "report_by"
-                }
-            },
-            { $unwind: { path: "$report_by",preserveNullAndEmptyArrays: true  } },
-            {
-                $match: {
-                    "delete_at" : { $exists: false },
-                    $expr: {
-                        $and: [
-                            { $eq: ["$report_by.status", "Active"] },
-                        ],
-                    },
-                }
-            },
-            {
-                $project: {
-                    "employee_id": 1,
-                    "first_name": 1,
-                    "last_name": 1,
-                    "leaveing_date":1,
-                    "report_by._id": 1,
-                }
-            }
-        ])
-
-        let repobyFilter = reportBy.filter((val) => {
-            return !val.leaveing_date || moment(val.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD")
-        })
-        // const reportBy = await user.find({report_by : req.user._id },{first_name :1,last_name :1})
-
-        res.status(200).json({ totalEmployee: data.length, leaveRequest, presentToday:data.length - absentToday.length, absentToday, holidayDay, birthDay ,reportBy :repobyFilter ,success : true})
+        res.status(200).json({ totalEmployee: value.length, leaveRequest, presentToday: value.length - absentToday.length, absentToday, holidayDay, birthDay, success: true })
 
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
-    }
+    res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+}
 })
 
 

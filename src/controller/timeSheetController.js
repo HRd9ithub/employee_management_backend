@@ -58,6 +58,16 @@ const getTimeSheet = async (req, res) => {
                         from: "users", localField: "user_id", foreignField: "_id", as: "user"
                     }
                 },
+                {
+                    $match: {
+                        "user.delete_at": { $exists: false },
+                        $or: [ 
+                            {"user.leaveing_date": {$eq: null}}, 
+                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        ]
+                    }
+    
+                },
                 { $unwind: { path: "$user" } },
                 {
                     $project: {

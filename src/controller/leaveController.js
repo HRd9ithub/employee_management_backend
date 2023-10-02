@@ -1,5 +1,6 @@
 let expressValidator = require("express-validator");
 const Leave = require("../models/leaveSchema");
+const moment = require("moment");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -102,6 +103,16 @@ const getLeave = async (req, res) => {
                         foreignField: "_id",
                         as: "user"
                     }
+                },
+                {
+                    $match: {
+                        "user.delete_at": { $exists: false },
+                        $or: [ 
+                            {"user.leaveing_date": {$eq: null}}, 
+                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        ]
+                    }
+    
                 },
                 {
                     $lookup:
