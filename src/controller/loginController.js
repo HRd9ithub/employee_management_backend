@@ -289,7 +289,7 @@ const mailSend = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(400).json({ error: err, success: false })
+            return res.status(400).json({ error: err[0], success: false })
         }
 
         // email check exist or not
