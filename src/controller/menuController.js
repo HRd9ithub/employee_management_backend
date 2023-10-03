@@ -94,7 +94,7 @@ const getMenu = async (req, res) => {
         return res.status(200).json({ success: true, message: "Successfully fetch a menu data.", data: data})
 
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 

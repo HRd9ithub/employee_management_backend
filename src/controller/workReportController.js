@@ -25,7 +25,7 @@ const createReport = async (req, res) => {
 
         let error = []
         // user id check 
-        let users = await user.findOne({ _id: req.body.userId })
+        let users = await user.findOne({ _id: req.body.userId || req.user._id })
         if (!users) { error.push("User is not exists.") }
 
         // project id check
@@ -47,6 +47,45 @@ const createReport = async (req, res) => {
         const reportData = new report({ userId: userId || req.user._id, projectId, description, hours, date: moment(new Date()).format("YYYY-MM-DD") });
         const response = await reportData.save();
         return res.status(201).json({ success: true, message: "Data added successfully." })
+
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    }
+}
+
+// update report 
+const updateReport = async(req,res) => {
+    try {
+        let { userId, projectId, description, hours } = req.body;
+
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ error: err, success: false })
+        }
+
+        let error = []
+        // user id check 
+        let users = await user.findOne({ _id: req.body.userId })
+        if (!users) { error.push("User is not exists.") }
+
+        // project id check
+        let projects = await project.findOne({ _id: req.body.projectId })
+        if (!projects) { error.push("The project does not exist.") }
+
+        if (error.length !== 0) return res.status(422).json({ error: error, success: false });
+
+        let updateData = await report.findByIdAndUpdate({_id : req.params.id},{userId, projectId, description, hours},{new : true})
+
+        if(updateData){
+            return res.status(200).json({ success: true, message: "Data updated successfully." })
+        }else{
+            return res.status(404).json({ success: false, message: "Record is not found." })
+        }
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -166,4 +205,4 @@ const getReport = async (req, res) => {
 }
 
 
-module.exports = { createReport, getReport }
+module.exports = { createReport, getReport,updateReport }

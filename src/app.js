@@ -20,7 +20,6 @@ const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
 var handlebars = require('express-handlebars');
-const user = require('./models/UserSchema');
 const { swaggerServe, swaggerSetup } = require('./config');
 const projectRoute = require('./Routes/ProjectRoute')
 const workReportRoute = require('./Routes/WorkReportRoute')
@@ -74,17 +73,17 @@ app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
 app.use('/api/report', workReportRoute)
 
-app.all("*",(req,res,next) => {
-    let err = new Error(`Can't find ${req.originalUrl} on the server.`);
-    err.status = "fail";
-    err.statusCode = 404;
+app.all("*", (req, res, next) => {
+   let err = new Error(`Can't find ${req.originalUrl} on the server.`);
+   err.status = "fail";
+   err.statusCode = 404;
    next(err);
 });
 
 //An error handling middleware
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
    res.status(err.statusCode);
-   res.json({message : err.message,statusCode : err.statusCode})
+   res.json({ message: err.message, statusCode: err.statusCode })
 });
  app.listen(port, () => {
     console.log(`server is running for ${port}.`)
