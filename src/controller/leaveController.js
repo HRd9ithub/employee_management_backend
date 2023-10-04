@@ -17,25 +17,29 @@ const addLeave = async (req, res) => {
         }
 
         let checkData = await Leave.find({
-            user_id : user_id || req.user._id,
+            user_id: user_id || req.user._id,
             $or: [
-                {$and : [
-                    { 'from_date': { $gte: from_date } },
-                    { 'from_date': { $lte: to_date } },
-                ]},
-                {$and : [
-                    { 'to_date': { $gte: from_date } },
-                    { 'to_date': { $lte: to_date } },
-                ]}
+                {
+                    $and: [
+                        { 'from_date': { $gte: from_date } },
+                        { 'from_date': { $lte: to_date } },
+                    ]
+                },
+                {
+                    $and: [
+                        { 'to_date': { $gte: from_date } },
+                        { 'to_date': { $lte: to_date } },
+                    ]
+                }
             ]
         })
 
-        if(checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false})
-         
+        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false })
+
         let leaveRoute = new Leave({ user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status })
         let response = await leaveRoute.save()
 
-        res.status(201).json({ message: "Leave create successfully.", success: true,checkData:checkData})
+        res.status(201).json({ message: "Leave create successfully.", success: true, checkData: checkData })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -107,13 +111,13 @@ const getLeave = async (req, res) => {
                 {
                     $match: {
                         "user.delete_at": { $exists: false },
-                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
-                        $or: [ 
-                            {"user.leaveing_date": {$eq: null}}, 
-                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
+                        $or: [
+                            { "user.leaveing_date": { $eq: null } },
+                            { "user.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
                         ]
                     }
-    
+
                 },
                 {
                     $lookup:
@@ -188,24 +192,28 @@ const updateLeave = async (req, res) => {
         }
 
         let checkData = await Leave.find({
-            user_id : user_id || req.user._id,
+            user_id: user_id || req.user._id,
             $or: [
-                {$and : [
-                    { 'from_date': { $gte: from_date } },
-                    { 'from_date': { $lte: to_date } },
-                    {"_id" : {$ne : id}}
-                ]},
-                {$and : [
-                    { 'to_date': { $gte: from_date } },
-                    { 'to_date': { $lte: to_date } },
-                    {"_id" : {$ne : id}}
-                ]}
+                {
+                    $and: [
+                        { 'from_date': { $gte: from_date } },
+                        { 'from_date': { $lte: to_date } },
+                        { "_id": { $ne: id } }
+                    ]
+                },
+                {
+                    $and: [
+                        { 'to_date': { $gte: from_date } },
+                        { 'to_date': { $lte: to_date } },
+                        { "_id": { $ne: id } }
+                    ]
+                }
             ],
-            
+
         });
 
-        if(checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false})
-         
+        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false })
+
 
         const leave_detail = await Leave.findByIdAndUpdate({ _id: id }, {
             user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status
@@ -258,11 +266,7 @@ const allChangeStatus = async (req, res) => {
             status: "Read"
         }, { new: true })
 
-        if (leave_detail.matchedCount !== 0) {
-            return res.status(200).json({ message: "Status Updated successfully.", success: true })
-        } else {
-            return res.status(404).json({ message: "Leave is not found.", success: false })
-        }
+        return res.status(200).json({ message: "Status Updated successfully.", success: true })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -286,10 +290,10 @@ const getNotifications = async (req, res) => {
                 $match: {
                     // "user.status": "Active",
                     "user.delete_at": { $exists: false },
-                    "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
-                    $or: [ 
-                        {"user.leaveing_date": {$eq: null}}, 
-                        {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
+                    $or: [
+                        { "user.leaveing_date": { $eq: null } },
+                        { "user.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
                     ]
                 }
 
@@ -314,6 +318,7 @@ const getNotifications = async (req, res) => {
                 $project: {
                     "user_id": 1,
                     "leave_type_id": 1,
+                    "createdAt": 1,
                     "from_date": 1,
                     "to_date": 1,
                     "leave_for": 1,

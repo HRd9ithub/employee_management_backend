@@ -1,6 +1,6 @@
-const { validationResult } = require('express-validator');
 const document = require('../models/documentSchema');
 const { importDocument } = require('../middleware/documentUpload');
+const path = require("path");
 
 // add document function
 const addDocument = async(req,res) => {
@@ -30,7 +30,7 @@ const addDocument = async(req,res) => {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
-
+;
 // update document
 const updateDocument = async(req,res) => {
     try {
@@ -94,4 +94,20 @@ const getDocument = async(req,res) => {
     }
 }
 
-module.exports = {addDocument,getDocument,updateDocument,deleteDocument}
+
+// downloadFile
+const downloadFile = async(req,res) => {
+    let filePath = path.join(__dirname,"../../uploads/document");
+    try {
+        let {file}  = req.query;
+        if(!file){
+            return res.status(400).json({ message: "File name is required.", success: false })
+        }
+        let route = path.join(filePath,file);
+        res.download(route)
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    }
+}
+
+module.exports = {addDocument,getDocument,updateDocument,deleteDocument,downloadFile}
