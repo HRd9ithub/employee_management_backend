@@ -123,7 +123,6 @@ const getUser = async (req, res) => {
                         {"leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
                     ]
                 }
-
             },
             {
                 $lookup: {
@@ -138,6 +137,15 @@ const getUser = async (req, res) => {
             },
             { $unwind: { path: "$report", preserveNullAndEmptyArrays: true } },
             {
+                $match: {
+                    "report.delete_at": { $exists: false },
+                    $or: [ 
+                        {"report.leaveing_date": {$eq: null}}, 
+                        {"report.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    ]
+                }
+            },
+            {
                 $project: {
                     "employee_id": 1,
                     "profile_image": 1,
@@ -150,6 +158,7 @@ const getUser = async (req, res) => {
                     "leaveing_date":1,
                     "report.first_name": 1,
                     "report.last_name": 1,
+                    "report.status": 1,
                     "report._id": 1,
                     "report.profile_image": 1
                 }
