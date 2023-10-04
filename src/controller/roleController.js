@@ -22,7 +22,7 @@ const addRole = async (req, res) => {
 
         const response = await roleData.save();
 
-        return res.status(200).json({ success: true, message: "Successfully added a new role." })
+        return res.status(200).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -47,7 +47,7 @@ const updateRole = async (req, res) => {
         const response = await role.findByIdAndUpdate({ _id: req.params.id }, req.body)
 
         if (response) {
-            return res.status(200).json({ success: true, message: "successfully edited user role." })
+            return res.status(200).json({ success: true, message: "Data updated successfully." })
         } else {
             return res.status(404).json({ success: false, message: "Record is not found." })
         }

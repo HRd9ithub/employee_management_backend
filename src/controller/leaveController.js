@@ -107,6 +107,7 @@ const getLeave = async (req, res) => {
                 {
                     $match: {
                         "user.delete_at": { $exists: false },
+                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
                         $or: [ 
                             {"user.leaveing_date": {$eq: null}}, 
                             {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
@@ -201,11 +202,7 @@ const updateLeave = async (req, res) => {
                 ]}
             ],
             
-        })
-         
-        if(checkData.length !== 0){
-
-        }
+        });
 
         if(checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false})
          
@@ -284,6 +281,18 @@ const getNotifications = async (req, res) => {
                     foreignField: "_id",
                     as: "user"
                 }
+            },
+            {
+                $match: {
+                    // "user.status": "Active",
+                    "user.delete_at": { $exists: false },
+                    "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                    $or: [ 
+                        {"user.leaveing_date": {$eq: null}}, 
+                        {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    ]
+                }
+
             },
             {
                 $lookup:
