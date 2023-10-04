@@ -113,7 +113,6 @@ const singleRole = async (req, res) => {
                         "permissions.name": { $first: "$permissions.data.name" },
                     }
                 },
-                { $sort: { "permissions.menuId": 1 } },
             ])
 
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })

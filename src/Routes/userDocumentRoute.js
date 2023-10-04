@@ -44,7 +44,7 @@ userDocumentRoute.post('/',Auth, function (req, res) {
         } else {
             const documentData = new user_document({resume,joining_letter,offer_letter,other,user_id: req.body.user_id});
             const response = await documentData.save();
-            return res.status(201).json({ success: true, message: "Added Successfully." })
+            return res.status(201).json({ success: true, message: "Data added Successfully." })
         }
         } catch (error) {
             res.status(500).json({ message: error.message || "Internal server error", success: false })

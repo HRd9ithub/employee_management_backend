@@ -27,7 +27,7 @@ const addEmergency = async (req, res) => {
         } else {
             const emergency_contactData = new emergency_contact(req.body);
             const response = await emergency_contactData.save();
-            return res.status(201).json({ success: true, message: "Added Successfully." })
+            return res.status(201).json({ success: true, message: "Data added Successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: "Internal server error", success: false })

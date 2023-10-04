@@ -27,7 +27,7 @@ const addAccount = async (req, res) => {
         } else {
             const accountData = new account(req.body);
             const response = await accountData.save();
-            return res.status(201).json({ success: true, message: "Added Successfully." })
+            return res.status(201).json({ success: true, message: "Data added Successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || "Internal server error", success: false })
