@@ -179,10 +179,12 @@ const verifyOtp = async (req, res) => {
                     browser_name: req.body.browser_name
                 });
                 login = await loginData.save();
-                time = await addTime(data._id, login._id)
+                if(req.body.device === "desktop"){
+                    time = await addTime(data._id, login._id)
+                }
             }
 
-            if (role_detail.name.toLowerCase() === "admin" || (login && time)) {
+            if (role_detail.name.toLowerCase() === "admin" || (login && time) || req.body.device !== "desktop") {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
                 return res.status(200).json({ success: true, message: "You have successfully logged in.", token: token, id: response._id })
