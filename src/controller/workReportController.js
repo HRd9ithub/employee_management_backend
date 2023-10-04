@@ -132,6 +132,7 @@ const getReport = async (req, res) => {
                     "user.employee_id": 1,
                     "user.profile_image": 1,
                     "user.first_name": 1,
+                    "user.status": 1,
                     "user.last_name": 1,
                     "project.name": 1
                 }

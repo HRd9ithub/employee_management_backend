@@ -30,10 +30,22 @@ const getTimeSheet = async (req, res) => {
                 },
                 { $unwind: { path: "$user" } },
                 {
+                    $match: {
+                        // "user.status": "Active",
+                        "user.delete_at": { $exists: false },
+                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                        $or: [ 
+                            {"user.leaveing_date": {$eq: null}}, 
+                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        ]
+                    }
+                },
+                {
                     $project: {
                         "user.employee_id": 1,
                         "user.first_name": 1,
                         "user.last_name": 1,
+                        "user.status": 1,
                         "user.profile_image": 1,
                         "user_id": 1,
                         "date": 1,
@@ -60,13 +72,14 @@ const getTimeSheet = async (req, res) => {
                 },
                 {
                     $match: {
+                        // "user.status": "Active",
                         "user.delete_at": { $exists: false },
+                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
                         $or: [ 
                             {"user.leaveing_date": {$eq: null}}, 
                             {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
                         ]
                     }
-    
                 },
                 { $unwind: { path: "$user" } },
                 {
@@ -74,6 +87,7 @@ const getTimeSheet = async (req, res) => {
                         "user.employee_id": 1,
                         "user.first_name": 1,
                         "user.last_name": 1,
+                        "user.status": 1,
                         "user.profile_image": 1,
                         "user_id": 1,
                         "date": 1,
