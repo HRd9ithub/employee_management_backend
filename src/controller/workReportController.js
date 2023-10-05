@@ -41,7 +41,7 @@ const createReport = async (req, res) => {
             ]
         })
         if(reports){
-            return res.status(400).json({ success: true, message: "Please note that you are only able to submit one report per day." })
+            return res.status(400).json({ success: true, error: ["Please note that you are only able to submit one report per day."] })
         }
 
         const reportData = new report({ userId: userId || req.user._id, projectId, description, hours, date: moment(new Date()).format("YYYY-MM-DD") });
