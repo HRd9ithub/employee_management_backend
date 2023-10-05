@@ -179,12 +179,12 @@ const verifyOtp = async (req, res) => {
                     browser_name: req.body.browser_name
                 });
                 login = await loginData.save();
-                if(req.body.device === "desktop"){
+                if(req.body.isDesktop){
                     time = await addTime(data._id, login._id)
                 }
             }
 
-            if (role_detail.name.toLowerCase() === "admin" || (login && time) || req.body.device !== "desktop") {
+            if (role_detail.name.toLowerCase() === "admin" || (login && time) || !req.body.isDesktop) {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
                 return res.status(200).json({ success: true, message: "You have successfully logged in.", token: token, id: response._id })
@@ -419,11 +419,9 @@ const checkLink = async (req, res) => {
 const userLogout = async (req, res) => {
     try {
         if (req.user) {
-            const roleName = await role.findOne({ _id: req.user.role_id }, { name: 1, _id: 0 })
+            let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD") });
             // get menu data in database
-            if (roleName && roleName.name.toLowerCase() !== "admin") {
-                let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD") });
-                // if (data) {
+            if (data) {
                 let Hours = new Date().getHours();
                 let Minutes = new Date().getMinutes();
                 let second = new Date().getSeconds();
@@ -431,10 +429,6 @@ const userLogout = async (req, res) => {
                 var total = moment.utc(moment(logout_time, "HH:mm:ss").diff(moment(data.login_time, "HH:mm:ss"))).format("HH:mm")
 
                 const response = await timeSheet.findByIdAndUpdate({ _id: data._id }, { logout_time, total }, { new: true })
-                // }
-                // else {
-                //     return res.status(404).json({ success: false, message: "Logout is failed." })
-                // }
             }
             await user.findByIdAndUpdate({ _id: req.user._id }, { $unset: { token: 1 } }, { new: true })
             return res.status(200).json({ success: true, message: "You have successfully logged out." })
