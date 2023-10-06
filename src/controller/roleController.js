@@ -101,7 +101,9 @@ const singleRole = async (req, res) => {
                         "foreignField": "_id",
                         "as": "permissions.data"
                     }
-                }, {
+                },
+                { $sort : { "permissions.data.createdAt" : 1 } },
+                {
                     $project: {
                         name: 1,
                         "permissions.menuId": 1,
@@ -117,7 +119,7 @@ const singleRole = async (req, res) => {
 
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })
         } else {
-            const response = await menu.find();
+            const response = await menu.find({}, { name: 1,path :1 }).sort({createdAt : 1});
 
             let data = response.map((val) => {
                 return { menuId: val._id, list: 0, create: 0, delete: 0, update: 0, name: val.name }
