@@ -34,7 +34,7 @@ const addLeave = async (req, res) => {
             ]
         })
 
-        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false })
+        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for leave has already been used."], success: false })
 
         let leaveRoute = new Leave({ user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status })
         let response = await leaveRoute.save()
@@ -212,7 +212,7 @@ const updateLeave = async (req, res) => {
 
         });
 
-        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for your leave has already been used."], success: false })
+        if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for leave has already been used."], success: false })
 
 
         const leave_detail = await Leave.findByIdAndUpdate({ _id: id }, {
