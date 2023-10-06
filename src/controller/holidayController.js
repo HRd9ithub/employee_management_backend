@@ -18,7 +18,7 @@ const createHoliday = async (req, res) => {
         // add data in database
         const holidayData = new holiday(req.body);
         const response = await holidayData.save();
-        return res.status(201).json({ success: true, message: "Data added Successfully." })
+        return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -41,7 +41,7 @@ const updateHoliday = async (req, res) => {
 
         const response = await holiday.findByIdAndUpdate({ _id: req.params.id }, req.body)
         if (response) {
-            return res.status(200).json({ success: true, message: "Data updated Successfully" })
+            return res.status(200).json({ success: true, message: "Data updated successfully" })
         } else {
             return res.status(404).json({ success: false, message: "Holiday is not found." })
         }
@@ -55,7 +55,7 @@ const deleteHoliday = async (req, res) => {
     try {
         const response = await holiday.findByIdAndDelete({ _id: req.params.id })
         if (response) {
-            return res.status(200).json({ success: true, message: "Data deleted Successfully." })
+            return res.status(200).json({ success: true, message: "Data deleted successfully." })
         } else {
             return res.status(404).json({ success: false, message: "Holiday is not found." })
         }
