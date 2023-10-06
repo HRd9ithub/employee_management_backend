@@ -37,7 +37,7 @@ userDocumentRoute.post('/',Auth, function (req, res) {
         if (data) {
             let response = await user_document.findByIdAndUpdate({ _id: data._id }, {resume,joining_letter,offer_letter,other});
             if (response) {
-                return res.status(200).json({ success: true, message: "Saved Successfully." })
+                return res.status(200).json({ success: true, message: "Data updated successfully." })
             } else {
                 return res.status(404).json({ success: false, message: "Record Not found." })
             }

@@ -71,7 +71,7 @@ const deleteLeaveType = async (req, res) => {
     try {
         const response = await leaveType.findByIdAndDelete({ _id: req.params.id })
         if (response) {
-            return res.status(200).json({ success: true, message: "Successfully deleted a leaveType." })
+            return res.status(200).json({ success: true, message: "Data deleted successfully." })
         } else {
             return res.status(404).json({ success: false, message: "LeaveType is not found." })
         }

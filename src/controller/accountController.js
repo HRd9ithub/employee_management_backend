@@ -20,7 +20,7 @@ const addAccount = async (req, res) => {
         if (data) {
             let response = await account.findByIdAndUpdate({ _id: data._id }, req.body);
             if (response) {
-                return res.status(200).json({ success: true, message: "Saved Successfully." })
+                return res.status(200).json({ success: true, message: "Data updated Successfully." })
             } else {
                 return res.status(400).json({ success: false, message: "Record Not found." })
             }

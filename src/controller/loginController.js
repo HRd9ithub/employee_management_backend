@@ -187,7 +187,7 @@ const verifyOtp = async (req, res) => {
             if (role_detail.name.toLowerCase() === "admin" || (login && time) || !req.body.isDesktop) {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "You have successfully logged in.", token: token, id: response._id })
+                return res.status(200).json({ success: true, message: "Logged in successfully.", token: token, id: response._id })
             }
         } else {
             // not match send message

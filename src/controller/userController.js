@@ -196,7 +196,7 @@ const updateUser = async (req, res) => {
                 const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
 
                 if (response) {
-                    return res.status(200).json({ success: true, message: "User update successfully." })
+                    return res.status(200).json({ success: true, message: "Data updated successfully." })
                 } else {
                     return res.status(404).json({ success: false, message: "User not found." })
                 }
@@ -219,7 +219,7 @@ const deleteUser = async (req, res) => {
             // req.body.deleteAt = Date.now()
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_at: Date.now() });
-            return res.status(200).json({ success: true, message: "Data has been successfully deleted." })
+            return res.status(200).json({ success: true, message: "Data deleted successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -237,7 +237,7 @@ const updateStatusUser = async (req, res) => {
         } else {
             // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { status: data.status === 'Active' ? 'Inactive' : "Active" });
-            return res.status(200).json({ success: true, message: "Status update successfully." })
+            return res.status(200).json({ success: true, message: "Status updated successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -308,7 +308,7 @@ const changeImage = async (req, res) => {
         try {
             if (req.file) {
                 let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: `uploads/${req.file.filename}` });
-                return res.status(200).json({ message: "Profile image changed successfully.", success: true })
+                return res.status(200).json({ message: "Profile image updated successfully.", success: true })
             } else {
                 return res.status(400).json({ message: "Profile Image is Required.", success: false })
             }
@@ -337,7 +337,7 @@ const changePassword = async (req, res) => {
         let isMatch = await bcrypt.compare(req.body.current_password, userData.password);
 
         if (!isMatch) {
-            return res.status(400).json({ message: "Current Password is invalid.", success: false })
+            return res.status(400).json({ error: ["Incorrect current password."], success: false })
         }
 
         // password convert hash
@@ -345,7 +345,7 @@ const changePassword = async (req, res) => {
 
         let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash })
 
-        res.status(200).json({ message: "Your password has been changed successfully.", success: true })
+        res.status(200).json({ message: "Password updated successfully.", success: true })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }

@@ -20,14 +20,14 @@ const addEmergency = async (req, res) => {
         if (data) {
             let response = await emergency_contact.findByIdAndUpdate({ _id: data._id }, req.body);
             if (response) {
-                return res.status(200).json({ success: true, message: "Saved Successfully." })
+                return res.status(200).json({ success: true, message: "Data updated successfully." })
             } else {
                 return res.status(404).json({ success: false, message: "Record Not found." })
             }
         } else {
             const emergency_contactData = new emergency_contact(req.body);
             const response = await emergency_contactData.save();
-            return res.status(201).json({ success: true, message: "Data added Successfully." })
+            return res.status(201).json({ success: true, message: "Data added successfully." })
         }
     } catch (error) {
         res.status(500).json({ message: "Internal server error", success: false })

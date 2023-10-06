@@ -72,7 +72,7 @@ const deleteDesignation = async (req, res) => {
     try {
         const response = await designation.findByIdAndDelete({ _id: req.params.id })
         if (response) {
-            return res.status(200).json({ success: true, message: "Successfully deleted a designation." })
+            return res.status(200).json({ success: true, message: "Data deleted successfully." })
         } else {
             return res.status(404).json({ success: false, message: "Designation is not found." })
         }

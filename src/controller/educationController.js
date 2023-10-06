@@ -31,7 +31,7 @@ const addEditEduction = async (req, res) => {
             });
             const response = await educationData.save();
         }
-        return res.status(200).json({ success: true, message: "Saved Successfully." })
+        return res.status(200).json({ success: true, message: !data ? "Data added successfully." : "Data updated successfully."})
     } catch (error) {
         res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
@@ -55,7 +55,7 @@ const deleteEducation = async (req, res) => {
             { '_id': req.params.id });
 
         if (response) {
-            return res.status(200).json({ success: true, message: "Deleted Successfully." })
+            return res.status(200).json({ success: true, message: "Data deleted Successfully." })
         } else {
             return res.status(404).json({ success: false, message: "Record Not found." })
         }

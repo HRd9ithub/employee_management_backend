@@ -39,7 +39,7 @@ const addLeave = async (req, res) => {
         let leaveRoute = new Leave({ user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status })
         let response = await leaveRoute.save()
 
-        res.status(201).json({ message: "Leave create successfully.", success: true, checkData: checkData })
+        res.status(201).json({ message: "Data added successfully.", success: true, checkData: checkData })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -220,7 +220,7 @@ const updateLeave = async (req, res) => {
         }, { new: true })
 
         if (leave_detail) {
-            return res.status(200).json({ message: "Leave edited successfully.", success: true })
+            return res.status(200).json({ message: "Data updated successfully.", success: true })
         } else {
             return res.status(404).json({ message: "Leave is not found.", success: false })
         }
