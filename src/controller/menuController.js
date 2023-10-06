@@ -78,7 +78,9 @@ const getMenu = async (req, res) => {
                         foreignField: "_id",
                         as: "menu"
                     }
-                }, {
+                }, 
+                { $sort : { "menu.createdAt" : 1 } },
+                {
                     $project: {
                         "name": { $first: "$menu.name" },
                         "_id": { $first: "$menu._id" },
@@ -88,7 +90,7 @@ const getMenu = async (req, res) => {
 
             ])
         } else {
-            data = await menu.find({}, { name: 1,path :1 })
+            data = await menu.find({}, { name: 1,path :1 }).sort({createdAt : 1})
         }
 
         return res.status(200).json({ success: true, message: "Successfully fetch a menu data.", data: data})
