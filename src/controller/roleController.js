@@ -18,6 +18,14 @@ const addRole = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
+        // find role name in database
+        const data = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
+
+        if (data && data.name.toLowerCase() == req.body.name.toLowerCase()) {
+            // exists leaveType name for send message
+            return res.status(400).json({ error: "User role is already exists.", success: false })
+        }
+
         const roleData = new role(req.body);
 
         const response = await roleData.save();
@@ -44,6 +52,14 @@ const updateRole = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
+        // find role name in database
+        const data = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
+
+        if (data && data._id != req.params.id && data.name.toLowerCase() == req.body.name.toLowerCase()) {
+            // exists leaveType name for send message
+            return res.status(400).json({ error: "User role is already exists.", success: false })
+        }
+
         const response = await role.findByIdAndUpdate({ _id: req.params.id }, req.body)
 
         if (response) {
@@ -56,22 +72,6 @@ const updateRole = async (req, res) => {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
-
-// delete document
-// const deleteDocument = async (req, res) => {
-//     try {
-//         const response = await document.findByIdAndDelete({ _id: req.params.id }, req.body)
-
-//         if (response) {
-//             return res.status(200).json({ success: true, message: "successfully deleted a document." })
-//         } else {
-//             return res.status(404).json({ success: false, message: "Document not found." })
-//         }
-
-//     } catch (error) {
-//         res.status(500).json({ message: "Internal server error", success: false })
-//     }
-// }
 
 // get function
 const getRole = async (req, res) => {
@@ -102,7 +102,7 @@ const singleRole = async (req, res) => {
                         "as": "permissions.data"
                     }
                 },
-                { $sort : { "permissions.data.createdAt" : 1 } },
+                { $sort: { "permissions.data.createdAt": 1 } },
                 {
                     $project: {
                         name: 1,
@@ -119,7 +119,7 @@ const singleRole = async (req, res) => {
 
             return res.status(200).json({ success: true, message: "successfully fetch for user role.", data: response })
         } else {
-            const response = await menu.find({}, { name: 1,path :1 }).sort({createdAt : 1});
+            const response = await menu.find({}, { name: 1, path: 1 }).sort({ createdAt: 1 });
 
             let data = response.map((val) => {
                 return { menuId: val._id, list: 0, create: 0, delete: 0, update: 0, name: val.name }
@@ -144,10 +144,12 @@ const checkRole = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        const response = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
+        // find role name in database
+        const data = await role.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
 
-        if (response) {
-            return res.status(400).json({ success: false, message: "User Role Already Exist." })
+        if (data && data._id != req.params.id && data.name.toLowerCase() == req.body.name.toLowerCase()) {
+            // exists leaveType name for send message
+            return res.status(400).json({ error: "User role is already exists.", success: false })
         }
         return res.status(200).json({ success: true, message: "User Role not exist" })
     } catch (error) {

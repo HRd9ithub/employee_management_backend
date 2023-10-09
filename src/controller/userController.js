@@ -118,9 +118,9 @@ const getUser = async (req, res) => {
             {
                 $match: {
                     "delete_at": { $exists: false },
-                    $or: [ 
-                        {"leaveing_date": {$eq: null}}, 
-                        {"leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    $or: [
+                        { "leaveing_date": { $eq: null } },
+                        { "leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
                     ]
                 }
             },
@@ -139,9 +139,9 @@ const getUser = async (req, res) => {
             {
                 $match: {
                     "report.delete_at": { $exists: false },
-                    $or: [ 
-                        {"report.leaveing_date": {$eq: null}}, 
-                        {"report.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                    $or: [
+                        { "report.leaveing_date": { $eq: null } },
+                        { "report.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
                     ]
                 }
             },
@@ -155,7 +155,7 @@ const getUser = async (req, res) => {
                     "phone": 1,
                     "status": 1,
                     "role.name": 1,
-                    "leaveing_date":1,
+                    "leaveing_date": 1,
                     "report.first_name": 1,
                     "report.last_name": 1,
                     "report.status": 1,
@@ -257,8 +257,7 @@ const checkEmail = async (req, res) => {
         }
 
         // check email exist or not
-        const data = await user.findOne({ email: { $regex: new RegExp('^' + req.body.email, 'i') } })
-
+        const data = await user.findOne({ email: req.body.email })
         if (data) {
             return res.status(400).json({ error: "Email address already exists.", success: false })
         } else {

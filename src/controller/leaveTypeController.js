@@ -17,14 +17,12 @@ const createLeaveType = async (req, res) => {
         // find leaveType name in database
         const data = await leaveType.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
 
-        if (data) {
-            // exists leaveType name for send message
+        if (data && data.name.toLowerCase() == req.body.name.toLowerCase()) {
             return res.status(400).json({ error: "Leave Type already exists.", success: false })
         }
-
         // not exists leaveType name for add database
         const leaveTypeData = new leaveType(req.body);
-        const response = await leaveTypeData.save();
+        const RESPONSE = await leaveTypeData.save();
         return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
@@ -48,7 +46,7 @@ const updateLeaveType = async (req, res) => {
         // find leaveType name in database
         const data = await leaveType.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
 
-        if (data && data._id != req.params.id) {
+        if (data && data._id != req.params.id && data.name.toLowerCase() == req.body.name.toLowerCase()) {
             // exists leaveType name for send message
             return res.status(400).json({ error: "Leave Type already exists.", success: false })
         }
@@ -87,7 +85,7 @@ const getLeaveType = async (req, res) => {
         // get leaveType data in database
         const data = await leaveType.find()
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a leaveType data.", data: data ,permissions: req.permissions})
+        return res.status(200).json({ success: true, message: "Successfully fetch a leaveType data.", data: data, permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -107,11 +105,15 @@ const checkLeaveType = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        const response = await leaveType.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if(response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()){
-            return res.status(400).json({ success: false, message: "Leave Type already exists.." })
+        // find leaveType name in database
+        const data = await leaveType.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } })
+
+        if (data && data._id != req.params.id && data.name.toLowerCase() == req.body.name.toLowerCase()) {
+            // exists leaveType name for send message
+            return res.status(400).json({ error: "Leave Type already exists.", success: false })
         }
+
         return res.status(200).json({ success: true, message: "Leave Type not exist" })
     } catch (error) {
         res.status(500).json({ message: "Internal server error", success: false })

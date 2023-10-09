@@ -36,11 +36,11 @@ const createReport = async (req, res) => {
 
         let reports = await report.findOne({
             $and: [
-                { "userId": { $eq:new mongoose.Types.ObjectId(userId || req.user._id)} },
+                { "userId": { $eq: new mongoose.Types.ObjectId(userId || req.user._id) } },
                 { "date": { $eq: moment(new Date()).format("YYYY-MM-DD") } },
             ]
         })
-        if(reports){
+        if (reports) {
             return res.status(400).json({ success: true, error: ["Please note that you are only able to submit one report per day."] })
         }
 
@@ -54,7 +54,7 @@ const createReport = async (req, res) => {
 }
 
 // update report 
-const updateReport = async(req,res) => {
+const updateReport = async (req, res) => {
     try {
         let { userId, projectId, description, hours } = req.body;
 
@@ -79,11 +79,11 @@ const updateReport = async(req,res) => {
 
         if (error.length !== 0) return res.status(422).json({ error: error, success: false });
 
-        let updateData = await report.findByIdAndUpdate({_id : req.params.id},{userId, projectId, description, hours},{new : true})
+        let updateData = await report.findByIdAndUpdate({ _id: req.params.id }, { userId, projectId, description, hours }, { new: true })
 
-        if(updateData){
+        if (updateData) {
             return res.status(200).json({ success: true, message: "Data updated successfully." })
-        }else{
+        } else {
             return res.status(404).json({ success: false, message: "Record is not found." })
         }
 
@@ -96,7 +96,12 @@ const updateReport = async(req,res) => {
 const getReport = async (req, res) => {
     try {
         let { id, startDate, endDate } = req.query;
-
+        var a = moment(startDate ,"YYYY-MM-DD");
+        var b = moment(endDate, "YYYY-MM-DD");
+        a.isValid();
+        if (!a.isValid() || !b.isValid()) {
+            return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
+        }
         // req.permissions.name.toLowerCase() === "admin" ?
         // get project data in database
         let data = await report.aggregate([
@@ -206,4 +211,4 @@ const getReport = async (req, res) => {
 }
 
 
-module.exports = { createReport, getReport,updateReport }
+module.exports = { createReport, getReport, updateReport }
