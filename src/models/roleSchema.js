@@ -4,37 +4,38 @@ const mongoose = require('mongoose');
 const roleSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
-    permissions :[{
+    permissions: [{
         menuId: {
-            type : mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             required: true
         },
         list: {
-            type : Number,
+            type: Number,
             required: true
         },
         create: {
-            type : Number,
+            type: Number,
             required: true
         },
         update: {
-            type : Number,
+            type: Number,
             required: true
         },
         delete: {
-            type : Number,
+            type: Number,
             required: true
         },
     }]
-},{
-    timestamps:true
+}, {
+    timestamps: true
 })
 
 
 
 // create collection
-const role = new mongoose.model("role", roleSchema)
+const role = new mongoose.model("role", roleSchema);
 
 module.exports = role
