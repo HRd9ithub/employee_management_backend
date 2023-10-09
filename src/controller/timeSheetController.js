@@ -8,8 +8,11 @@ const { default: mongoose } = require("mongoose");
 const getTimeSheet = async (req, res) => {
     let { id, startDate, endDate } = req.query;
     try {
-        if(!startDate || !endDate){
-            return res.status(400).json({ message: "Please enter startDate and endDate.", success: false})
+        var a = moment(startDate ,"YYYY-MM-DD");
+        var b = moment(endDate, "YYYY-MM-DD");
+        a.isValid();
+        if (!a.isValid() || !b.isValid()) {
+            return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
 
         let value = [];

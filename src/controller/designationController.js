@@ -14,17 +14,15 @@ const createDesignation = async (req, res) => {
             return res.status(400).json({ error: err[0], success: false })
         }
 
-        // find designation name in database
-        const data = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
+        const response = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if (data) {
-            // exists designation name for send message
-            return res.status(400).json({ error: "Designation name already exists.", success: false })
+        if (response && response.name.toLowerCase() == req.body.name.toLowerCase()) {
+            return res.status(400).json({ success: false, error: ["Designation name already exists."] })
         }
 
         // not exists designation name for add database
         const designationData = new designation(req.body);
-        const response = await designationData.save();
+        const data = await designationData.save();
         return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {
@@ -48,9 +46,9 @@ const updateDesignation = async (req, res) => {
         // find designation name in database
         const data = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if (data && data._id != req.params.id) {
+        if (data && data._id != req.params.id && data.name.toLowerCase() == req.body.name.toLowerCase()) {
             // exists designation name for send message
-            return res.status(400).json({ error: "Designation name already exists.", success: false })
+            return res.status(400).json({ error: ["Designation name already exists."], success: false })
         }
 
         // not exists designation name for update database
@@ -88,7 +86,7 @@ const getDesignation = async (req, res) => {
         // get designation data in database
         const data = await designation.find()
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a designation data.", data: data ,permissions : req.permissions})
+        return res.status(200).json({ success: true, message: "Successfully fetch a designation data.", data: data, permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -110,7 +108,7 @@ const checkDesignation = async (req, res) => {
 
         const response = await designation.findOne({ name: { $regex: new RegExp('^' + req.body.name, 'i') } });
 
-        if(response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()){
+        if (response && response._id != req.body.id && response.name.toLowerCase() == req.body.name.toLowerCase()) {
             return res.status(400).json({ success: false, message: "Designation name already exists." })
         }
         return res.status(200).json({ success: true, message: "Designation name not exist" })
