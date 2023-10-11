@@ -24,10 +24,11 @@ ReportRequestRoute.post('/', Auth, validation, async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(422).json({ error: [...new Set(err)], success: false })
         }
-
-        let data = await report.findOne({date : req.body.date, userId : req.user._id})
-
-        if(data)  return res.status(400).json({ success: false, message: "There is existing data for this date. Please modify the data in the edit request." })
+        if(req.body.title === "Add Request"){
+            let data = await report.findOne({date : req.body.date, userId : req.user._id})
+    
+            if(data)  return res.status(400).json({ success: false, message: "There is existing data for this date. Please modify the data in the edit request." })
+        }
 
         let reportRequestData = new ReportRequestSchema({
             userId: req.user._id,

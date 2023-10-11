@@ -1,12 +1,12 @@
+require('dotenv').config();
+require("./src/DB/conn");
 const role = require('./src/models/roleSchema');
 const user = require('./src/models/UserSchema');
 const menu = require('./src/models/menuSchema');
 const { default: mongoose } = require('mongoose');
 
-require('dotenv').config();
 
 // add database
-require("./src/DB/conn");
 
 const menuData = [{
     "name": "Dashboard",
