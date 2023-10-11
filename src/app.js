@@ -23,6 +23,7 @@ var handlebars = require('express-handlebars');
 const { swaggerServe, swaggerSetup } = require('./config');
 const projectRoute = require('./Routes/ProjectRoute')
 const workReportRoute = require('./Routes/WorkReportRoute')
+const ReportRequestRoute = require('./Routes/reportRequestRoute')
 
 // add database
 require("./DB/conn")
@@ -72,6 +73,7 @@ app.use('/api/user_document', userDocumentRoute)
 app.use('/api/education', educationRoute)
 app.use('/api/dashboard', DashboardRoute)
 app.use('/api/report', workReportRoute)
+app.use('/api/report_request', ReportRequestRoute)
 
 app.all("*", (req, res, next) => {
    let err = new Error(`Can't find ${req.originalUrl} on the server.`);

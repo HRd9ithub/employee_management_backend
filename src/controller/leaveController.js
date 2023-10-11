@@ -1,6 +1,7 @@
 let expressValidator = require("express-validator");
 const Leave = require("../models/leaveSchema");
 const moment = require("moment");
+const ReportRequestSchema = require("../models/reportRequestSchema");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -334,7 +335,36 @@ const getNotifications = async (req, res) => {
                 }
             }
         ])
-        res.status(200).json({ message: "Notification data fetch successfully.", success: true, data: leaveData })
+        let result = await ReportRequestSchema.aggregate([
+            {
+                $lookup:
+                    { from: "users", localField: 'userId', foreignField: "_id", as: 'user' }
+            },
+            {
+                $unwind:
+                {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            { $sort: { "createdAt": -1 } },
+            {
+                $project: {
+                    userId: 1,
+                    createdAt: 1,
+                    title: 1,
+                    description: 1,
+                    date: 1,
+                    "user.employee_id": 1,
+                    "user.profile_image": 1,
+                    "user.first_name": 1,
+                    "user.last_name": 1,
+                    "user.status": 1
+                }
+            }
+        ])
+
+        res.status(200).json({ message: "Notification data fetch successfully.", success: true, leave: leaveData, report: result })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
