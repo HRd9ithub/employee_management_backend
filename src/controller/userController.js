@@ -131,6 +131,22 @@ const getUser = async (req, res) => {
             },
             { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
             {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $ne: ["$role.name", "admin"] },
+                            { $ne: ["$role.name", "Admin"] },
+                        ],
+                    },
+                }
+            },
+            {
+                $lookup: {
+                    from: "designations", localField: "designation_id", foreignField: "_id", as: "designation"
+                }
+            },
+            { $unwind: { path: "$designation", preserveNullAndEmptyArrays: true } },
+            {
                 $lookup: {
                     from: "users", localField: "report_by", foreignField: "_id", as: "report"
                 }
@@ -155,6 +171,7 @@ const getUser = async (req, res) => {
                     "phone": 1,
                     "status": 1,
                     "role.name": 1,
+                    "designation.name": 1,
                     "leaveing_date": 1,
                     "report.first_name": 1,
                     "report.last_name": 1,

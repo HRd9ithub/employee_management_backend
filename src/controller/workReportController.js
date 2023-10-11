@@ -7,11 +7,9 @@ const holiday = require("../models/holidaySchema");
 let moment = require("moment");
 const { default: mongoose } = require("mongoose");
 
-
-
 const createReport = async (req, res) => {
     try {
-        let { userId, projectId, description, hours } = req.body;
+        let { userId, work, date, totalHours } = req.body;
 
         const errors = expressValidator.validationResult(req)
 
@@ -20,7 +18,7 @@ const createReport = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(422).json({ error: err, success: false })
+            return res.status(422).json({ error: [...new Set(err)], success: false })
         }
 
         let error = []
@@ -28,23 +26,24 @@ const createReport = async (req, res) => {
         let users = await user.findOne({ _id: req.body.userId || req.user._id })
         if (!users) { error.push("User is not exists.") }
 
-        // project id check
-        let projects = await project.findOne({ _id: req.body.projectId })
-        if (!projects) { error.push("The project does not exist.") }
-
         if (error.length !== 0) return res.status(422).json({ error: error, success: false });
 
         let reports = await report.findOne({
             $and: [
                 { "userId": { $eq: new mongoose.Types.ObjectId(userId || req.user._id) } },
-                { "date": { $eq: moment(new Date()).format("YYYY-MM-DD") } },
+                { "date": { $eq: date } },
             ]
         })
         if (reports) {
             return res.status(400).json({ success: true, error: ["Please note that you are only able to submit one report per day."] })
         }
 
-        const reportData = new report({ userId: userId || req.user._id, projectId, description, hours, date: moment(new Date()).format("YYYY-MM-DD") });
+        const reportData = new report({
+            userId: userId || req.user._id,
+            work,
+            date,
+            totalHours
+        });
         const response = await reportData.save();
         return res.status(201).json({ success: true, message: "Data added successfully." })
 
@@ -56,7 +55,7 @@ const createReport = async (req, res) => {
 // update report 
 const updateReport = async (req, res) => {
     try {
-        let { userId, projectId, description, hours } = req.body;
+        let { userId, work, date, totalHours } = req.body;
 
         const errors = expressValidator.validationResult(req)
 
@@ -65,7 +64,7 @@ const updateReport = async (req, res) => {
         })
         // check data validation error
         if (!errors.isEmpty()) {
-            return res.status(422).json({ error: err, success: false })
+            return res.status(422).json({ error: [...new Set(err)], success: false })
         }
 
         let error = []
@@ -73,13 +72,24 @@ const updateReport = async (req, res) => {
         let users = await user.findOne({ _id: req.body.userId })
         if (!users) { error.push("User is not exists.") }
 
-        // project id check
-        let projects = await project.findOne({ _id: req.body.projectId })
-        if (!projects) { error.push("The project does not exist.") }
-
         if (error.length !== 0) return res.status(422).json({ error: error, success: false });
 
-        let updateData = await report.findByIdAndUpdate({ _id: req.params.id }, { userId, projectId, description, hours }, { new: true })
+        let reports = await report.findOne({
+            $and: [
+                { "userId": { $eq: new mongoose.Types.ObjectId(userId || req.user._id) } },
+                { "date": { $eq: date } },
+            ]
+        })
+        if (reports && reports._id != req.params.id) {
+            return res.status(400).json({ success: true, error: ["Please note that you are only able to submit one report per day."] })
+        }
+
+        let updateData = await report.findByIdAndUpdate({ _id: req.params.id }, {
+            userId: userId || req.user._id,
+            work,
+            date,
+            totalHours
+        }, { new: true })
 
         if (updateData) {
             return res.status(200).json({ success: true, message: "Data updated successfully." })
@@ -96,13 +106,12 @@ const updateReport = async (req, res) => {
 const getReport = async (req, res) => {
     try {
         let { id, startDate, endDate } = req.query;
-        var a = moment(startDate ,"YYYY-MM-DD");
+        var a = moment(startDate, "YYYY-MM-DD");
         var b = moment(endDate, "YYYY-MM-DD");
         a.isValid();
         if (!a.isValid() || !b.isValid()) {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
-        // req.permissions.name.toLowerCase() === "admin" ?
         // get project data in database
         let data = await report.aggregate([
             {
@@ -114,32 +123,57 @@ const getReport = async (req, res) => {
                 }
             },
             {
+                $unwind: {
+                    path: '$work'
+                }
+            },
+            {
                 $lookup: {
-                    from: "users", localField: "userId", foreignField: "_id", as: "user"
+                    from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
+                }
+            },
+            {
+                $unwind: {
+                    path: '$work.project',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    _id: {
+                        userId: '$userId',
+                        createdAt: '$createdAt',
+                        updatedAt: '$updatedAt',
+                        totalHours: '$totalHours',
+                        date: '$date',
+                        _id: '$_id',
+
+                    },
+                    work: {
+                        $push: '$work'
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
                 }
             },
             { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             {
-                $lookup: {
-                    from: "projects", localField: "projectId", foreignField: "_id", as: "project"
-                }
-            },
-            { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
-            {
                 $project: {
-
-                    userId: 1,
-                    projectId: 1,
-                    description: 1,
-                    hours: 1,
-                    date: 1,
-                    updatedAt: 1,
+                    userId: "$_id.userId",
+                    totalHours: "$_id.totalHours",
+                    date: "$_id.date",
+                    work: 1,
+                    updatedAt: "$_id.updatedAt",
+                    _id: "$_id._id",
                     "user.employee_id": 1,
                     "user.profile_image": 1,
                     "user.first_name": 1,
                     "user.status": 1,
-                    "user.last_name": 1,
-                    "project.name": 1
+                    "user.last_name": 1
                 }
             }
         ])
