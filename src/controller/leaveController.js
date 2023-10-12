@@ -2,6 +2,7 @@ let expressValidator = require("express-validator");
 const Leave = require("../models/leaveSchema");
 const moment = require("moment");
 const ReportRequestSchema = require("../models/reportRequestSchema");
+const { default: mongoose } = require("mongoose");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -48,11 +49,26 @@ const addLeave = async (req, res) => {
 
 // get leave
 const getLeave = async (req, res) => {
+    let { id, startDate, endDate } = req.query;
     try {
+        var a = moment(startDate, "YYYY-MM-DD");
+        var b = moment(endDate, "YYYY-MM-DD");
+        a.isValid();
+        if (!a.isValid() || !b.isValid()) {
+            return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
+        }
         let leaveData = []
-        if (req.permissions.name.toLowerCase() !== "admin") {
+        if (req.permissions.name.toLowerCase() !== "admin" || id) {
             leaveData = await Leave.aggregate([
-                { $match: { user_id: req.user._id } },
+                {
+                    $match: {
+                        user_id: new mongoose.Types.ObjectId(id || req.user._id),
+                        $and: [
+                            { from_date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                            { to_date: { $lte: moment(endDate).format("YYYY-MM-DD") } }
+                        ],
+                    }
+                },
                 {
                     $lookup:
                     {
@@ -111,6 +127,10 @@ const getLeave = async (req, res) => {
                 },
                 {
                     $match: {
+                        $and: [
+                            { from_date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                            { to_date: { $lte: moment(endDate).format("YYYY-MM-DD") } }
+                        ],
                         "user.delete_at": { $exists: false },
                         "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
                         $or: [
