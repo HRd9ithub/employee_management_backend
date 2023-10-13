@@ -238,7 +238,7 @@ const getReport = async (req, res) => {
         });
 
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: Test, permissions: req.permissions })
+        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: data,test:Test, permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
