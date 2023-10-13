@@ -285,7 +285,8 @@ const allChangeStatus = async (req, res) => {
     try {
         const leave_detail = await Leave.updateMany({ status: "Pending" }, {
             status: "Read"
-        }, { new: true })
+        }, { new: true });
+        let result = await ReportRequestSchema.deleteMany({})
 
         return res.status(200).json({ message: "Status Updated successfully.", success: true })
 
@@ -383,8 +384,12 @@ const getNotifications = async (req, res) => {
                 }
             }
         ])
-
-        res.status(200).json({ message: "Notification data fetch successfully.", success: true, leave: leaveData, report: result })
+        let totalNotification = leaveData.concat(result);
+        
+        let notification = totalNotification.sort((a,b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt)
+        })
+        res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: notification})
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }

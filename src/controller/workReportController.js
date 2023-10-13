@@ -182,6 +182,7 @@ const getReport = async (req, res) => {
         let data1 = await Leave.find({
             user_id: new mongoose.Types.ObjectId(id || req.user._id),
             $and: [
+                {"status" : {$eq : "Approved"}},
                 { "from_date": { $gte: moment(startDate).format("YYYY-MM-DD") } },
                 { "to_date": { $lte: moment(endDate).format("YYYY-MM-DD") } },
             ]
