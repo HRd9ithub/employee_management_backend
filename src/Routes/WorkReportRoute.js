@@ -3,7 +3,7 @@ const express = require("express")
 // const { createProject, getProject, updateProject, deleteProject } = require("../controller/projectController");
 const { check } = require("express-validator");
 const Auth = require("../middleware/auth");
-const { createReport, getReport, updateReport } = require("../controller/workReportController");
+const { createReport, getReport, updateReport, generatorPdf, dowloandReport } = require("../controller/workReportController");
 const { reportPermission } = require("../middleware/permission");
 
 const workReportRoute = express.Router();
@@ -24,11 +24,16 @@ let workReportValidation = [
 // create Project api
 workReportRoute.post('/', Auth, reportPermission, workReportValidation, createReport);
 
-// create Project api
+// update Project api
 workReportRoute.patch('/:id', Auth, reportPermission, workReportValidation, updateReport);
 
 // get Project api
 workReportRoute.get('/', Auth, reportPermission, getReport);
+
+// preview api
+workReportRoute.post('/report-preview', Auth, generatorPdf);
+// pdf api
+workReportRoute.get('/report-dowloand', dowloandReport);
 
 
 module.exports = workReportRoute
