@@ -5,7 +5,12 @@ const report = require("../models/workReportSchema");
 const Leave = require("../models/leaveSchema");
 const holiday = require("../models/holidaySchema");
 let moment = require("moment");
+let path = require("path");
 const { default: mongoose } = require("mongoose");
+var fs = require('fs');
+const pdf = require("html-pdf");
+var ejs = require('ejs');
+
 
 const createReport = async (req, res) => {
     try {
@@ -112,6 +117,156 @@ const getReport = async (req, res) => {
         if (!a.isValid() || !b.isValid()) {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
+        let data = []
+        if(req.permissions.name.toLowerCase() !== "admin" || id){
+            // get project data in database
+         data = await report.aggregate([
+                {
+                    $match: {
+                        $and: [
+                            { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                            { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
+                        userId: new mongoose.Types.ObjectId(id || req.user._id)
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$work'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$work.project',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        _id: {
+                            userId: '$userId',
+                            createdAt: '$createdAt',
+                            updatedAt: '$updatedAt',
+                            totalHours: '$totalHours',
+                            date: '$date',
+                            _id: '$_id',
+    
+                        },
+                        work: {
+                            $push: '$work'
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
+                    }
+                },
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        userId: "$_id.userId",
+                        totalHours: "$_id.totalHours",
+                        date: "$_id.date",
+                        work: 1,
+                        updatedAt: "$_id.updatedAt",
+                        _id: "$_id._id",
+                        "user.employee_id": 1,
+                        "user.profile_image": 1,
+                        "user.first_name": 1,
+                        "user.status": 1,
+                        "user.last_name": 1
+                    }
+                }
+            ])
+        }else{
+            data = await report.aggregate([
+                {
+                    $match: {
+                        $and: [
+                            { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                            { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$work'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$work.project',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        _id: {
+                            userId: '$userId',
+                            createdAt: '$createdAt',
+                            updatedAt: '$updatedAt',
+                            totalHours: '$totalHours',
+                            date: '$date',
+                            _id: '$_id',
+    
+                        },
+                        work: {
+                            $push: '$work'
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
+                    }
+                },
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        userId: "$_id.userId",
+                        totalHours: "$_id.totalHours",
+                        date: "$_id.date",
+                        work: 1,
+                        updatedAt: "$_id.updatedAt",
+                        _id: "$_id._id",
+                        "user.employee_id": 1,
+                        "user.profile_image": 1,
+                        "user.first_name": 1,
+                        "user.status": 1,
+                        "user.last_name": 1
+                    }
+                }
+            ])
+        }
+
+        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: data, permissions: req.permissions })
+
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    }
+}
+
+// create preview
+const generatorPdf = async (req, res) => {
+    try {
+        let { id, month } = req.body;
+        month.concat("-", "1");
+        let date = moment(new Date()).format("YYYY-MM") == month
+
+        const startDate = moment(month).startOf('month').format('YYYY-MM-DD');
+        const endDate = date ? moment(new Date()).format('YYYY-MM-DD') :moment(month).endOf('month').format('YYYY-MM-DD');
+
         // get project data in database
         let data = await report.aggregate([
             {
@@ -178,11 +333,10 @@ const getReport = async (req, res) => {
             }
         ])
 
-
         let data1 = await Leave.find({
             user_id: new mongoose.Types.ObjectId(id || req.user._id),
             $and: [
-                {"status" : {$eq : "Approved"}},
+                { "status": { $eq: "Approved" } },
                 { "from_date": { $gte: moment(startDate).format("YYYY-MM-DD") } },
                 { "to_date": { $lte: moment(endDate).format("YYYY-MM-DD") } },
             ]
@@ -200,10 +354,14 @@ const getReport = async (req, res) => {
             var from_date = moment(val.from_date);
             var to_date = moment(val.to_date);
             let day = to_date.diff(from_date, 'days');
-            filterData.push({ date: val.from_date, name: "Leave" })
-            for (let index = 1; index <= day; index++) {
+            for (let index = 0; index <= day; index++) {
                 var new_date = moment(val.from_date).add(index, "d");
-                filterData.push({ date: moment(new_date).format("YYYY-MM-DD"), name: "Leave" })
+                let result = data2.find((item) => {
+                    return item.date === moment(new_date).format("YYYY-MM-DD")
+                })
+                if (!result) {
+                    filterData.push({ date: moment(new_date).format("YYYY-MM-DD"), name: "Leave", leave_for: val.leave_for })
+                }
             }
         })
         var mstartDate = moment(startDate);
@@ -222,28 +380,100 @@ const getReport = async (req, res) => {
             if (finalData.length === 0) {
                 finalData.push(val)
             } else {
-                let isDublication = finalData.findIndex((elem) => {
+                let isDublication = finalData.filter((elem) => {
                     return val.date == elem.date
                 })
-                if (isDublication === -1) {
+                if (isDublication.length === 0 || (val?.name !== "Saturday" && val?.name !== "Sunday")) {
                     finalData.push(val)
-
                 }
             }
         });
-
 
         let Test = finalData.sort(function (a, b) {
             return new Date(a.date) - new Date(b.date)
         });
 
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: data,test:Test, permissions: req.permissions })
+        //  ? generate total 
+        let holidayCount = data2.length;
+        // let dayCount = moment(endDate).format('DD');
 
+        function uniqByKeepLast(data, key) {
+
+            return [...new Map(data.map(x => [key(x), x])).values()]
+
+        }
+
+        let dayCount = uniqByKeepLast(Test, it => it.date).length;
+
+        let halfLeave = Test.filter((cur) => {
+            return cur.leave_for && cur.leave_for === "Half"
+        })
+        let fullLeave = Test.filter((cur) => {
+            return cur.leave_for && cur.leave_for === "Full"
+        })
+        let LeaveCount = fullLeave.length + (halfLeave.length / 2);
+
+        let totalHours = data.reduce((accumulator, currentValue) => {
+            return (accumulator.totalHours ? Number(accumulator.totalHours) : Number(accumulator)) + Number(currentValue.totalHours)
+        }, 0)
+
+        let summary = {
+            LeaveCount,
+            halfLeave: halfLeave.length,
+            fullLeave: fullLeave.length,
+            holidayCount,
+            dayCount,
+            totalHours,
+        }
+
+        let ejsData = {
+            reports: Test,
+            summary:summary
+        }
+        let filepath = path.resolve(__dirname, "../../views/reportTable.handlebars");
+
+        let htmlstring = fs.readFileSync(filepath).toString();
+        let handleData = ejs.render(htmlstring, ejsData);
+
+        let options = {
+            format: "A4",
+            orientation: "portrait",
+            border: "10mm"
+        }
+        pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
+            if (error) throw console.log('error', error);
+
+            return res.status(200).json({ data: Test, success: true, summary: summary })
+        })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
 
-module.exports = { createReport, getReport, updateReport }
+// dowlonad pdf
+const dowloandReport = async (req, res) => {
+    try {
+        let { id } = req.query;
+        console.log(id)
+        let filepath = path.resolve(__dirname, `../../${id.concat(".", "pdf")}`);
+        console.log(id, filepath)
+        res.download(filepath)
+        // fs.readFile(filepath, (err, file) => {
+        //     if (err) {
+        //       return res.status(400).json({message :"Something went wrong.",success:false});
+        //     }
+
+        //     res.setHeader("Content-type" , "application/pdf");
+        //     res.setHeader("Content-Disposition" , "attachment;filename=report.pdf");
+
+        //     res.send(file)
+        // })
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    }
+}
+
+
+module.exports = { createReport, getReport, updateReport, generatorPdf, dowloandReport }
