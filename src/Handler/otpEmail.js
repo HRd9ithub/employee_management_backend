@@ -1,27 +1,29 @@
+
 const nodemailer = require('nodemailer');
 const path = require('path');
 const ejs = require('ejs');
 const fs = require('fs');
 const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
-const forgetEmail = async (email, mailsubject, url) => {
+const sendOtpMail = async (email, mailsubject, otp) => {
     try {
-        const transporter = nodemailer.createTransport({
+        var transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
             auth: {
                 user: SMTP_EMAIL,
                 pass: SMTP_PASSWORD
             }
-        })
+        });
 
         // get file path
-        let filepath = path.resolve(__dirname, "../../views/forgotPassword.ejs");
+        let filepath = path.resolve(__dirname, "../../views/otp.ejs");
 
         // read file using fs module
         let htmlstring = fs.readFileSync(filepath).toString();
         // add data dynamic
-        let content = ejs.render(htmlstring, {action_url: url });
+        let content = ejs.render(htmlstring, {otp});
+
 
         let from = `D9ithub <${SMTP_EMAIL}>`
         var mailOptions = {
@@ -39,8 +41,8 @@ const forgetEmail = async (email, mailsubject, url) => {
             }
         });
     } catch (error) {
-        console.log(error, "error  ======> send mail file")
+        console.log(error.message, "error  ======> send mail file")
     }
 }
 
-module.exports = forgetEmail;
+module.exports = sendOtpMail;

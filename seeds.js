@@ -1,5 +1,5 @@
 require('dotenv').config();
-require("./src/DB/conn");
+require("./src/DB/connection");
 const role = require('./src/models/roleSchema');
 const user = require('./src/models/UserSchema');
 const menu = require('./src/models/menuSchema');
