@@ -19,14 +19,13 @@ const userDocumentRoute = require('./Routes/userDocumentRoute');
 const educationRoute = require('./Routes/educationRoute');
 const leaveRouter = require('./Routes/leaveRoute');
 const DashboardRoute = require('./Routes/DashboardRoute');
-var handlebars = require('express-handlebars');
 const { swaggerServe, swaggerSetup } = require('./config');
 const projectRoute = require('./Routes/ProjectRoute')
 const workReportRoute = require('./Routes/WorkReportRoute')
 const ReportRequestRoute = require('./Routes/reportRequestRoute')
 
 // add database
-require("./DB/conn")
+const connectDB = require("./DB/connection");
 
 const app = express();
 
@@ -41,9 +40,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 
-// Register `hbs.engine` with the Express app.
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, '../views'));
+// // Register `hbs.engine` with the Express app.
+// app.set('view engine', 'handlebars');
+// app.set('views', path.join(__dirname, '../views'));
 
 
 
@@ -87,6 +86,11 @@ app.use(function (err, req, res, next) {
    res.status(err.statusCode);
    res.json({ message: err.message, statusCode: err.statusCode })
 });
- app.listen(port, () => {
-    console.log(`server is running for ${port}.`)
+
+connectDB().then(() => {
+   app.listen(port, () => {
+      console.log(`server is running for ${port}.`)
+  })
+}).catch((error) => {
+   console.log(error.message);
 })

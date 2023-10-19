@@ -5,7 +5,7 @@ This project is an application skeleton for a typical [Node.js](https://nodejs.o
 To get you started you can simply clone the repository:
 
 ```
-git clone https://github.com/HRd9ithub/mongoDB_employee_management.git
+git clone https://github.com/HRd9ithub/employee_management_backend.git
 ```
 and install the dependencies
 ```

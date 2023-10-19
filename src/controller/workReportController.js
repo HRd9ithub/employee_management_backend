@@ -1,6 +1,5 @@
 const expressValidator = require("express-validator");
 const user = require("../models/UserSchema");
-const project = require("../models/projectSchema");
 const report = require("../models/workReportSchema");
 const Leave = require("../models/leaveSchema");
 const holiday = require("../models/holidaySchema");
@@ -431,11 +430,15 @@ const generatorPdf = async (req, res) => {
             reports: Test,
             summary:summary
         }
+        // get file path
         let filepath = path.resolve(__dirname, "../../views/reportTable.handlebars");
 
+        // read file using fs module
         let htmlstring = fs.readFileSync(filepath).toString();
+        // add data dynamic
         let handleData = ejs.render(htmlstring, ejsData);
 
+        // pdf format
         let options = {
             format: "A4",
             orientation: "portrait",
@@ -456,20 +459,12 @@ const generatorPdf = async (req, res) => {
 const dowloandReport = async (req, res) => {
     try {
         let { id } = req.query;
-        console.log(id)
+
+        // * get file path
         let filepath = path.resolve(__dirname, `../../${id.concat(".", "pdf")}`);
-        console.log(id, filepath)
-        res.download(filepath)
-        // fs.readFile(filepath, (err, file) => {
-        //     if (err) {
-        //       return res.status(400).json({message :"Something went wrong.",success:false});
-        //     }
-
-        //     res.setHeader("Content-type" , "application/pdf");
-        //     res.setHeader("Content-Disposition" , "attachment;filename=report.pdf");
-
-        //     res.send(file)
-        // })
+        
+        // response send for frontend
+        res.download(filepath);
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
