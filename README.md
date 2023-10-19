@@ -10,7 +10,6 @@ git clone https://github.com/HRd9ithub/employee_management_backend.git
 and install the dependencies
 ```
 npm install
-
 ```
 and and env file 
 
