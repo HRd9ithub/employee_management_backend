@@ -45,7 +45,16 @@
 </head>
 
 <body>
-
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td>
+                    <h4 style="display: inline;">Name : </h4>
+                    <%= name %>
+                </td>
+            </tr>
+        </tbody>
+    </table>
     <table width="100%" cellspacing="10px">
         <thead>
             <tr class="summary-report">
@@ -129,7 +138,7 @@
                                 </td>
                                 <td>
                                     <% for(let j=0;j<reports[i].work.length;j++) { %>
-                                        <p style={{ fontWeight: "bold" }} className='mb-0'>
+                                        <p style="font-weight: bold;" className='mb-0'>
                                             <%= j + 1 %>.
                                                 <%= reports[i].work[j].project?.name %>
                                         </p>

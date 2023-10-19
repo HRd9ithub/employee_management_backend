@@ -232,6 +232,17 @@ const getReport = async (req, res) => {
                 },
                 { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 {
+                    $match: {
+                        // "user.status": "Active",
+                        "user.delete_at": { $exists: false },
+                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
+                        $or: [ 
+                            {"user.leaveing_date": {$eq: null}}, 
+                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        ]
+                    }
+                },
+                {
                     $project: {
                         userId: "$_id.userId",
                         totalHours: "$_id.totalHours",
@@ -310,24 +321,13 @@ const generatorPdf = async (req, res) => {
                 }
             },
             {
-                $lookup: {
-                    from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
-                }
-            },
-            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-            {
                 $project: {
                     userId: "$_id.userId",
                     totalHours: "$_id.totalHours",
                     date: "$_id.date",
                     work: 1,
                     updatedAt: "$_id.updatedAt",
-                    _id: "$_id._id",
-                    "user.employee_id": 1,
-                    "user.profile_image": 1,
-                    "user.first_name": 1,
-                    "user.status": 1,
-                    "user.last_name": 1
+                    _id: "$_id._id"
                 }
             }
         ])
@@ -392,6 +392,7 @@ const generatorPdf = async (req, res) => {
             return new Date(a.date) - new Date(b.date)
         });
 
+        let userData = await user.findOne({_id :id},{first_name :1,last_name :1});
 
         //  ? generate total 
         let holidayCount = data2.length;
@@ -428,10 +429,11 @@ const generatorPdf = async (req, res) => {
 
         let ejsData = {
             reports: Test,
-            summary:summary
+            summary:summary,
+            name : userData.first_name.concat(" ",userData.last_name)
         }
         // get file path
-        let filepath = path.resolve(__dirname, "../../views/reportTable.handlebars");
+        let filepath = path.resolve(__dirname, "../../views/reportTable.ejs");
 
         // read file using fs module
         let htmlstring = fs.readFileSync(filepath).toString();
