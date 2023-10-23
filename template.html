@@ -120,17 +120,8 @@
             </tr>
         </thead>
         <tbody>
-
             {{#each reports}}
             <tr>
-                {{#ifCond this.name "==" "Leave"}}
-                <td colspan="3" style="text-align: center; color: red; ">
-                    {{this.date }}
-                    {{"-" }}
-                    {{this.name}}
-                    {{this.leave_for}}
-                </td>
-                {{/ifCond}}
                 {{#ifCond this.totalHours ">" "0"}}
                 <td style="width :15%;">
                     {{this.date }}
@@ -140,13 +131,21 @@
                 </td>
                 <td>
                     {{#each this.work}}
-                        <p style="font-weight: bold;" className='mb-0'>
-                            Project Name : {{this.project.name}}
-                        </p>
-                        <div className='w-100 text-wrap'>
-                            {{this.description}}
-                        </div>
-                        {{/each}}
+                    <p style="font-weight: bold;" className='mb-0'>
+                        {{this.id}}.{{this.project.name}}
+                    </p>
+                    <div className='w-100 text-wrap'>
+                        {{this.description}}
+                    </div>
+                    {{/each}}
+                </td>
+                {{else}}
+                {{#ifCond this.name "==" "Leave"}}
+                <td colspan="3" style="text-align: center; color: red; ">
+                    {{this.date }}
+                    {{"-" }}
+                    {{this.name}}
+                    {{this.leave_for}}
                 </td>
                 {{else}}
                 <td colspan="3" style="text-align: center; color: orange;">
@@ -154,6 +153,7 @@
                     {{"-" }}
                     {{this.name}}
                 </td>
+                {{/ifCond}}
                 {{/ifCond}}
             </tr>
             {{/each}}
