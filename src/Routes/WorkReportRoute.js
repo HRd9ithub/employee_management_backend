@@ -31,7 +31,7 @@ workReportRoute.patch('/:id', Auth, reportPermission, workReportValidation, upda
 workReportRoute.get('/', Auth, reportPermission, getReport);
 
 // preview api
-workReportRoute.post('/report-preview', Auth, generatorPdf);
+workReportRoute.post('/report-preview', generatorPdf);
 // pdf api
 workReportRoute.get('/report-dowloand', dowloandReport);
 

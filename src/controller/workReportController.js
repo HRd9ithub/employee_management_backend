@@ -6,9 +6,11 @@ const holiday = require("../models/holidaySchema");
 let moment = require("moment");
 let path = require("path");
 const { default: mongoose } = require("mongoose");
-var fs = require('fs');
-const pdf = require("html-pdf");
-var ejs = require('ejs');
+// var fs = require('fs');
+// const pdf = require("html-pdf");
+// var ejs = require('ejs');
+var pdf = require("pdf-creator-node");
+var fs = require("fs");
 
 
 const createReport = async (req, res) => {
@@ -433,27 +435,50 @@ const generatorPdf = async (req, res) => {
             name : userData.first_name.concat(" ",userData.last_name)
         }
         // get file path
-        let filepath = path.resolve(__dirname, "../../views/reportTable.ejs");
+        let filepath = path.resolve(__dirname, "../../template.html");
 
-        // read file using fs module
-        let htmlstring = fs.readFileSync(filepath).toString();
-        // add data dynamic
-        let handleData = ejs.render(htmlstring, ejsData);
+        var html = fs.readFileSync(filepath, "utf8");
 
-        // pdf format
-        let options = {
+        var options = {
             format: "A4",
             orientation: "portrait",
             border: "10mm"
-        }
-        pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
-            if (error) {
-                console.log('error', error);
-                return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
-            }
+        };
 
+        var document = {
+            html: html,
+            data: ejsData,
+            path: id.concat(".", "pdf"),
+            type: "",
+        };
+        pdf.create(document, options).then((result) => {
             return res.status(200).json({ data: Test, success: true, summary: summary })
         })
+        .catch((error) => {
+            return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
+        })
+        // // get file path
+        // let filepath = path.resolve(__dirname, "../../views/reportTable.ejs");
+
+        // // read file using fs module
+        // let htmlstring = fs.readFileSync(filepath).toString();
+        // // add data dynamic
+        // let handleData = ejs.render(htmlstring, ejsData);
+
+        // // pdf format
+        // let options = {
+        //     format: "A4",
+        //     orientation: "portrait",
+        //     border: "10mm"
+        // }
+        // pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
+        //     if (error) {
+        //         console.log('error', error);
+        //         return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
+        //     }
+
+        //     return res.status(200).json({ data: Test, success: true, summary: summary })
+        // })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
