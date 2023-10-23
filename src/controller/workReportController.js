@@ -6,9 +6,6 @@ const holiday = require("../models/holidaySchema");
 let moment = require("moment");
 let path = require("path");
 const { default: mongoose } = require("mongoose");
-// var fs = require('fs');
-// const pdf = require("html-pdf");
-// var ejs = require('ejs');
 var pdf = require("pdf-creator-node");
 var fs = require("fs");
 
@@ -119,9 +116,9 @@ const getReport = async (req, res) => {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
         let data = []
-        if(req.permissions.name.toLowerCase() !== "admin" || id){
+        if (req.permissions.name.toLowerCase() !== "admin" || id) {
             // get project data in database
-         data = await report.aggregate([
+            data = await report.aggregate([
                 {
                     $match: {
                         $and: [
@@ -156,7 +153,7 @@ const getReport = async (req, res) => {
                             totalHours: '$totalHours',
                             date: '$date',
                             _id: '$_id',
-    
+
                         },
                         work: {
                             $push: '$work'
@@ -185,7 +182,7 @@ const getReport = async (req, res) => {
                     }
                 }
             ])
-        }else{
+        } else {
             data = await report.aggregate([
                 {
                     $match: {
@@ -220,7 +217,7 @@ const getReport = async (req, res) => {
                             totalHours: '$totalHours',
                             date: '$date',
                             _id: '$_id',
-    
+
                         },
                         work: {
                             $push: '$work'
@@ -237,10 +234,10 @@ const getReport = async (req, res) => {
                     $match: {
                         // "user.status": "Active",
                         "user.delete_at": { $exists: false },
-                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
-                        $or: [ 
-                            {"user.leaveing_date": {$eq: null}}, 
-                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
+                        "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
+                        $or: [
+                            { "user.leaveing_date": { $eq: null } },
+                            { "user.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
                         ]
                     }
                 },
@@ -277,7 +274,7 @@ const generatorPdf = async (req, res) => {
         let date = moment(new Date()).format("YYYY-MM") == month
 
         const startDate = moment(month).startOf('month').format('YYYY-MM-DD');
-        const endDate = date ? moment(new Date()).format('YYYY-MM-DD') :moment(month).endOf('month').format('YYYY-MM-DD');
+        const endDate = date ? moment(new Date()).format('YYYY-MM-DD') : moment(month).endOf('month').format('YYYY-MM-DD');
 
         // get project data in database
         let data = await report.aggregate([
@@ -394,7 +391,7 @@ const generatorPdf = async (req, res) => {
             return new Date(a.date) - new Date(b.date)
         });
 
-        let userData = await user.findOne({_id :id},{first_name :1,last_name :1});
+        let userData = await user.findOne({ _id: id }, { first_name: 1, last_name: 1 });
 
         //  ? generate total 
         let holidayCount = data2.length;
@@ -431,8 +428,8 @@ const generatorPdf = async (req, res) => {
 
         let ejsData = {
             reports: Test,
-            summary:summary,
-            name : userData.first_name.concat(" ",userData.last_name)
+            summary: summary,
+            name: userData.first_name.concat(" ", userData.last_name)
         }
         // get file path
         let filepath = path.resolve(__dirname, "../../template.html");
@@ -454,31 +451,9 @@ const generatorPdf = async (req, res) => {
         pdf.create(document, options).then((result) => {
             return res.status(200).json({ data: Test, success: true, summary: summary })
         })
-        .catch((error) => {
-            return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
-        })
-        // // get file path
-        // let filepath = path.resolve(__dirname, "../../views/reportTable.ejs");
-
-        // // read file using fs module
-        // let htmlstring = fs.readFileSync(filepath).toString();
-        // // add data dynamic
-        // let handleData = ejs.render(htmlstring, ejsData);
-
-        // // pdf format
-        // let options = {
-        //     format: "A4",
-        //     orientation: "portrait",
-        //     border: "10mm"
-        // }
-        // pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
-        //     if (error) {
-        //         console.log('error', error);
-        //         return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
-        //     }
-
-        //     return res.status(200).json({ data: Test, success: true, summary: summary })
-        // })
+            .catch((error) => {
+                return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
+            })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -492,7 +467,7 @@ const dowloandReport = async (req, res) => {
 
         // * get file path
         let filepath = path.resolve(__dirname, `../../${id.concat(".", "pdf")}`);
-        
+
         // response send for frontend
         res.download(filepath);
     } catch (error) {
