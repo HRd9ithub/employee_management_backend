@@ -121,7 +121,7 @@ userSchema.methods.generateToken = async function () {
         await this.save();
         return token
     } catch (error) {
-        console.log('error :>> ', error);
+        console.log('error :>>>> ', error);
     }
 }
 

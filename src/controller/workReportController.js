@@ -447,7 +447,10 @@ const generatorPdf = async (req, res) => {
             border: "10mm"
         }
         pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
-            if (error) throw console.log('error', error);
+            if (error) {
+                console.log('error', error);
+                return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
+            }
 
             return res.status(200).json({ data: Test, success: true, summary: summary })
         })
