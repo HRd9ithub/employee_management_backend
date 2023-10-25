@@ -283,10 +283,13 @@ const changeStatus = async (req, res) => {
 // change status view all
 const allChangeStatus = async (req, res) => {
     try {
+        let {key} = req.query;
         const leave_detail = await Leave.updateMany({ status: "Pending" }, {
             status: "Read"
         }, { new: true });
-        let result = await ReportRequestSchema.deleteMany({})
+        if(key){
+            let result = await ReportRequestSchema.deleteMany({})
+        }
 
         return res.status(200).json({ message: "Status Updated successfully.", success: true })
 
