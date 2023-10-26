@@ -9,6 +9,7 @@ const { default: mongoose } = require("mongoose");
 var fs = require('fs');
 const pdf = require("html-pdf");
 var ejs = require('ejs');
+const createActivity = require("../helper/addActivity");
 
 
 const createReport = async (req, res) => {
@@ -49,6 +50,9 @@ const createReport = async (req, res) => {
             totalHours
         });
         const response = await reportData.save();
+        if(req.permissions.name.toLowerCase() !== "admin"){
+            createActivity(req.user._id,"Work report added by")
+        }
         return res.status(201).json({ success: true, message: "Data added successfully." })
 
     } catch (error) {

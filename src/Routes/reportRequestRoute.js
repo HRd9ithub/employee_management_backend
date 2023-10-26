@@ -4,6 +4,8 @@ const Auth = require('../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const ReportRequestSchema = require('../models/reportRequestSchema');
 const report = require('../models/workReportSchema');
+const createActivity = require('../helper/addActivity');
+const role = require('../models/roleSchema');
 
 // * check data 
 const validation = [
@@ -24,11 +26,14 @@ ReportRequestRoute.post('/', Auth, validation, async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(422).json({ error: [...new Set(err)], success: false })
         }
-        if(req.body.title === "Add Request"){
-            let data = await report.findOne({date : req.body.date, userId : req.user._id})
-    
-            if(data)  return res.status(400).json({ success: false, message: "There is existing data for this date. Please modify the data in the edit request." })
+        if (req.body.title === "Add Request") {
+            let data = await report.findOne({ date: req.body.date, userId: req.user._id })
+
+            if (data) return res.status(400).json({ success: false, message: "There is existing data for this date. Please modify the data in the edit request." })
         }
+
+        // role name get 
+        let roleData = await role.findOne({ _id: req.user.role_id });
 
         let reportRequestData = new ReportRequestSchema({
             userId: req.user._id,
@@ -37,6 +42,14 @@ ReportRequestRoute.post('/', Auth, validation, async (req, res) => {
             date: req.body.date
         })
         await reportRequestData.save();
+
+        if (roleData.name.toLowerCase() !== "admin") {
+            if (req.body.title === "Add Request") {
+                createActivity(req.user._id, "Add work report request added by")
+            } else {
+                createActivity(req.user._id, "Edit work report request added by")
+            }
+        }
 
         return res.status(201).json({ success: true, message: "Your request has been sent successfully." })
 

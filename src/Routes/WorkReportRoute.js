@@ -21,13 +21,13 @@ let workReportValidation = [
     })
 ]
 
-// create Project api
+// create  api
 workReportRoute.post('/', Auth, reportPermission, workReportValidation, createReport);
 
-// update Project api
+// update  api
 workReportRoute.patch('/:id', Auth, reportPermission, workReportValidation, updateReport);
 
-// get Project api
+// get  api
 workReportRoute.get('/', Auth, reportPermission, getReport);
 
 // preview api

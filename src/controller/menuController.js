@@ -18,7 +18,7 @@ const createMenu = async (req, res) => {
         return res.status(201).json({ success: true, message: "Successfully added a new menu." })
 
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 
@@ -41,7 +41,7 @@ const updateMenu = async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 
@@ -56,7 +56,7 @@ const deleteMenu = async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 
