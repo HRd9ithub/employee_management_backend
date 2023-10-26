@@ -63,7 +63,7 @@ const userPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -96,7 +96,7 @@ const projectPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 // report permission
@@ -128,7 +128,7 @@ const reportPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -162,7 +162,7 @@ const designationtPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -193,7 +193,7 @@ const leavePermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -227,7 +227,7 @@ const leaveTypePermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -262,7 +262,7 @@ const holidayPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -290,10 +290,43 @@ const timesheetPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
+// activity route check permission
+const activityPermission = async (req, res, next) => {
 
+    try {
+        let permission = ""
+        let data = await getRoleData(req.user.role_id)
+
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "activity logs"
+            }))
+        }
+
+        req.permissions = permission;
+
+        if (permission.name.toLowerCase() === "admin") {
+            next()
+        } else {
+            if (req.method === "POST" && req.baseUrl == "/api/activity") {
+                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create document." })
+            } else if (req.method === "GET" && req.baseUrl == "/api/activity") {
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin." })
+            } else if (req.method === "PUT") {
+                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update document." })
+            } else if (req.method === "DELETE") {
+                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete document." })
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 // document route check permission
 const documentPermission = async (req, res, next) => {
     try {
@@ -324,7 +357,7 @@ const documentPermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -358,8 +391,8 @@ const rolePermission = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json({ message: error.message })
     }
 }
 
-module.exports = { userPermission, rolePermission, projectPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
+module.exports = { userPermission, rolePermission, projectPermission,activityPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }

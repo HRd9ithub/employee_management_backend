@@ -1,10 +1,12 @@
 const expressValidator = require("express-validator");
 const education = require("../models/educationSchema");
+const role = require("../models/roleSchema");
+const createActivity = require("../helper/addActivity");
 
 // create and edit education detail function
 const addEditEduction = async (req, res) => {
     try {
-        const errors = expressValidator.validationResult(req)
+        const errors = expressValidator.validationResult(req);
 
         let err = errors.array().map((val) => {
             return val.msg
@@ -30,6 +32,16 @@ const addEditEduction = async (req, res) => {
                 degree: req.body.info[key].degree
             });
             const response = await educationData.save();
+        }
+        // role name get 
+        let roleData = await role.findOne({ _id: req.user.role_id });
+
+        if (roleData.name.toLowerCase() !== "admin") {
+            if(!data){
+                createActivity(req.user._id, "Education detail added by");
+            }else{
+                createActivity(req.user._id, "Education detail updated by");
+            }
         }
         return res.status(200).json({ success: true, message: !data ? "Data added successfully." : "Data updated successfully."})
     } catch (error) {

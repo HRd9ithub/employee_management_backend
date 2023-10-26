@@ -10,8 +10,9 @@ const tokenSchema = require("../models/TokenSchema");
 const role = require("../models/roleSchema");
 const moment = require("moment");
 const sendOtpMail = require("../Handler/otpEmail");
+const createActivity = require("../helper/addActivity");
 
-const addTime = async (id, login) => {
+const addTime = async (res, id, login) => {
     try {
         let data_detail = await timeSheet.findOne({ user_id: id, date: moment(new Date()).format("YYYY-MM-DD") });
 
@@ -34,7 +35,8 @@ const addTime = async (id, login) => {
         }
         return true
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+        return
     }
 }
 
@@ -65,11 +67,20 @@ const userLogin = async (req, res) => {
                     let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
 
                     // mail send function
-                    await sendOtpMail(req.body.email, mailsubject, otp);
+                    let result = await sendOtpMail(res, req.body.email, mailsubject, otp);
+                    if (result === "send") {
+                        // update data for otp
+                        const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
+                        return res.status(200).json({ success: true, message: "OTP sent successfully.", data: response.email })
+                    }
 
-                    // update data for otp
-                    const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                    return res.status(200).json({ success: true, message: "OTP sent successfully.", data: response.email })
+                } else {
+                    if (userData && userData.status === 'Inactive' && !userData.delete_at) {
+                        return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
+                    } else {
+                        // email not match send message
+                        return res.status(404).json({ message: "Invalid email or password.", success: false })
+                    }
                 }
             } else {
                 // password not match send message
@@ -79,15 +90,8 @@ const userLogin = async (req, res) => {
             // email not match send message
             return res.status(404).json({ message: "Invalid email or password.", success: false })
         }
-
-        if (userData && userData.status === 'Inactive' && !userData.delete_at) {
-            return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
-        } else {
-            // email not match send message
-            return res.status(404).json({ message: "Invalid email or password.", success: false })
-        }
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -133,8 +137,9 @@ const verifyOtp = async (req, res) => {
                 });
                 login = await loginData.save();
                 if (req.body.isDesktop) {
-                    time = await addTime(data._id, login._id)
+                    time = await addTime(res, data._id, login._id)
                 }
+                createActivity(data._id, 'Login by')
             }
 
             if (role_detail.name.toLowerCase() === "admin" || (login && time) || !req.body.isDesktop) {
@@ -172,11 +177,12 @@ const ResendOtp = async (req, res) => {
             let otp = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
 
             // mail send function
-            await sendOtpMail(req.body.email, mailsubject, otp);
-
-            // update data for otp
-            const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000 }, { new: true })
-            return res.status(200).json({ success: true, message: "OTP sent successfully." })
+            let result = await sendOtpMail(res, req.body.email, mailsubject, otp);
+            if (result === "send") {
+                // update data for otp
+                const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000 }, { new: true })
+                return res.status(200).json({ success: true, message: "OTP sent successfully." })
+            }
         } else {
             // email not match send message
             if (userData && userData.status === 'Inactive' && !userData.delete_at) {
@@ -215,17 +221,19 @@ const mailSend = async (req, res) => {
             let url = `${process.env.RESET_PASSWORD_URL}/reset-password?email=${req.body.email}&token=${token}`
 
             // mail send function
-            await forgetEmail(req.body.email, mailsubject, url);
+            let result = await forgetEmail(res,req.body.email, mailsubject, url);
+            if (result === "send") {
 
-            await tokenSchema.deleteMany({ email: req.body.email })
+                await tokenSchema.deleteMany({ email: req.body.email })
 
-            let tokenData = new tokenSchema({
-                email: req.body.email,
-                token,
-                expireIn: new Date().getTime() + 30 * 60000
-            })
-            await tokenData.save();
-            return res.status(200).json({ success: true, message: "A password reset link has been emailed to you." })
+                let tokenData = new tokenSchema({
+                    email: req.body.email,
+                    token,
+                    expireIn: new Date().getTime() + 30 * 60000
+                })
+                await tokenData.save();
+                return res.status(200).json({ success: true, message: "A password reset link has been emailed to you." })
+            }
         } else {
             if (!userData) {
                 // email not match send message
@@ -331,8 +339,9 @@ const userLogout = async (req, res) => {
     try {
         if (req.user) {
             let data = await timeSheet.findOne({ user_id: req.user._id, date: moment(new Date()).format("YYYY-MM-DD") });
+            let roleData = await role.findOne({_id: req.user.role_id});
             // get menu data in database
-            if (data) {
+            if (data && roleData?.name.toLowerCase() !== "admin") {
                 let Hours = new Date().getHours();
                 let Minutes = new Date().getMinutes();
                 let second = new Date().getSeconds();
@@ -340,6 +349,7 @@ const userLogout = async (req, res) => {
                 var total = moment.utc(moment(logout_time, "HH:mm:ss").diff(moment(data.login_time, "HH:mm:ss"))).format("HH:mm")
 
                 const response = await timeSheet.findByIdAndUpdate({ _id: data._id }, { logout_time, total }, { new: true })
+                createActivity(req.user._id,"Log out by");
             }
             await user.findByIdAndUpdate({ _id: req.user._id }, { $unset: { token: 1 } }, { new: true })
             return res.status(200).json({ success: true, message: "You have successfully logged out." })

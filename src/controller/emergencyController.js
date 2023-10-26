@@ -1,5 +1,7 @@
 const expressValidator = require("express-validator");
 const emergency_contact = require("../models/emergencySchema");
+const role = require("../models/roleSchema");
+const createActivity = require("../helper/addActivity");
 
 // create emergency detail function
 const addEmergency = async (req, res) => {
@@ -16,10 +18,15 @@ const addEmergency = async (req, res) => {
 
         // check data exist or not
         const data = await emergency_contact.findOne({ user_id: req.body.user_id })
+        // role name get 
+        let roleData = await role.findOne({ _id: req.user.role_id });
 
         if (data) {
             let response = await emergency_contact.findByIdAndUpdate({ _id: data._id }, req.body);
             if (response) {
+                if (roleData.name.toLowerCase() !== "admin") {
+                    createActivity(req.user._id, "Emergency contact detail updated by");
+                }
                 return res.status(200).json({ success: true, message: "Data updated successfully." })
             } else {
                 return res.status(404).json({ success: false, message: "Record Not found." })
@@ -27,6 +34,9 @@ const addEmergency = async (req, res) => {
         } else {
             const emergency_contactData = new emergency_contact(req.body);
             const response = await emergency_contactData.save();
+            if (roleData.name.toLowerCase() !== "admin") {
+                createActivity(req.user._id, "Emergency contact detail added by");
+            }
             return res.status(201).json({ success: true, message: "Data added successfully." })
         }
     } catch (error) {

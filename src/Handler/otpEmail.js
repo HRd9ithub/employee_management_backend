@@ -5,7 +5,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
-const sendOtpMail = async (email, mailsubject, otp) => {
+const sendOtpMail = async (res, email, mailsubject, otp) => {
     try {
         var transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -22,7 +22,7 @@ const sendOtpMail = async (email, mailsubject, otp) => {
         // read file using fs module
         let htmlstring = fs.readFileSync(filepath).toString();
         // add data dynamic
-        let content = ejs.render(htmlstring, {otp});
+        let content = ejs.render(htmlstring, { otp });
 
 
         let from = `D9ithub <${SMTP_EMAIL}>`
@@ -33,15 +33,12 @@ const sendOtpMail = async (email, mailsubject, otp) => {
             html: content
         };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
+        let mailSend = await transporter.sendMail(mailOptions)
+        if (mailSend) {
+            return "send"
+        }
     } catch (error) {
-        console.log(error.message, "error  ======> send mail file")
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

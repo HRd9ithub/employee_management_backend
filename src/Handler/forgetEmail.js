@@ -4,7 +4,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
-const forgetEmail = async (email, mailsubject, url) => {
+const forgetEmail = async (res,email, mailsubject, url) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -31,15 +31,12 @@ const forgetEmail = async (email, mailsubject, url) => {
             html: content
         };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
+        let mailSend = await transporter.sendMail(mailOptions)
+        if (mailSend) {
+            return "send"
+        }
     } catch (error) {
-        console.log(error, "error  ======> send mail file")
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

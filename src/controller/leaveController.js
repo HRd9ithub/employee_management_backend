@@ -3,6 +3,7 @@ const Leave = require("../models/leaveSchema");
 const moment = require("moment");
 const ReportRequestSchema = require("../models/reportRequestSchema");
 const { default: mongoose } = require("mongoose");
+const createActivity = require("../helper/addActivity");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -40,7 +41,10 @@ const addLeave = async (req, res) => {
 
         let leaveRoute = new Leave({ user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status })
         let response = await leaveRoute.save()
-
+        
+        if(req.permissions.name.toLowerCase() !== "admin"){
+            createActivity(req.user._id,"Leave added by")
+        }
         res.status(201).json({ message: "Data added successfully.", success: true, checkData: checkData })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -241,6 +245,9 @@ const updateLeave = async (req, res) => {
         }, { new: true })
 
         if (leave_detail) {
+            if(req.permissions.name.toLowerCase() !== "admin"){
+                createActivity(req.user._id,"Leave updated by")
+            }
             return res.status(200).json({ message: "Data updated successfully.", success: true })
         } else {
             return res.status(404).json({ message: "Leave is not found.", success: false })

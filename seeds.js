@@ -41,6 +41,10 @@ const menuData = [{
     "path": "/time-sheet",
 },
 {
+    "name": "Activity Logs",
+    "path": "/activity",
+},
+{
     "name": "Document",
     "path": "/document",
 },

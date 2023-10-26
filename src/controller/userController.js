@@ -8,6 +8,7 @@ const path = require("path");
 const role = require("../models/roleSchema");
 const designation = require("../models/designationSchema");
 const moment = require("moment");
+const createActivity = require("../helper/addActivity");
 
 // create user function
 const createUser = async (req, res) => {
@@ -201,23 +202,18 @@ const updateUser = async (req, res) => {
         if (data && data._id != req.params.id) {
             return res.status(422).json({ message: "email address already exists.", success: false })
         } else {
-            profile_image(req, res, async function (err) {
-                if (err) {
-                    return res.status(422).send({ message: err.message })
-                }
+            // data update method
+            const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
 
-                // Everything went fine.
-                let file = req.file;
-                req.body.profile_image = req.file && req.file.filename
-                // data update method
-                const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
-
-                if (response) {
-                    return res.status(200).json({ success: true, message: "Data updated successfully." })
-                } else {
-                    return res.status(404).json({ success: false, message: "User not found." })
+            if (response) {
+                let roleData = await role.findOne({ _id: req.user.role_id });
+                if (roleData.name.toLowerCase() !== "admin") {
+                    createActivity(req.user._id, "Profile Details updated by");
                 }
-            })
+                return res.status(200).json({ success: true, message: "Data updated successfully." })
+            } else {
+                return res.status(404).json({ success: false, message: "User not found." })
+            }
         }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -323,6 +319,10 @@ const changeImage = async (req, res) => {
 
         try {
             if (req.file) {
+                let roleData = await role.findOne({ _id: req.user.role_id });
+                if (roleData.name.toLowerCase() !== "admin") {
+                    createActivity(req.user._id, "Profile image updated by");
+                }
                 let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: `uploads/${req.file.filename}` });
                 return res.status(200).json({ message: "Profile image updated successfully.", success: true })
             } else {
@@ -355,11 +355,15 @@ const changePassword = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ error: ["Incorrect current password."], success: false })
         }
-
+        let roleData = await role.findOne({ _id: userData.role_id });
+        if (roleData.name.toLowerCase() !== "admin") {
+            createActivity(userData._id, "Password Change by");
+        }
         // password convert hash
-        let passwordHash = await bcrypt.hash(req.body.new_password, 10)
+        let passwordHash = await bcrypt.hash(req.body.new_password, 10);
 
-        let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash })
+
+        let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash, $unset: { token: "" } })
 
         res.status(200).json({ message: "Password updated successfully.", success: true })
     } catch (error) {
@@ -380,48 +384,6 @@ const getLoginInfo = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ error: err, success: false })
         }
-        // const value = await loginInfo.aggregate([
-        //     {
-        //         $match: { userId: new mongoose.Types.ObjectId(req.body.id) }
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "timesheets", localField: "_id", foreignField: "login_id", as: "timesheet"
-        //         }
-        //     },
-        //     {
-        //         $unwind:
-        //         {
-        //             path: "$timesheet",
-        //             preserveNullAndEmptyArrays: true
-        //         }
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "users", localField: "userId", foreignField: "_id", as: "user"
-        //         }
-        //     }, { $sort: { "createdAt": -1 } },
-        //     {
-        //         $project: {
-        //             "ip": 1,
-        //             "city": 1,
-        //             "device": 1,
-        //             "userId": 1,
-        //             "createdAt": 1,
-        //             "device_name": 1,
-        //             "browser_name": 1,
-        //             "timesheet.date": 1,
-        //             "timesheet.login_time": 1,
-        //             "timesheet.logout_time": 1,
-        //             "timesheet.total": 1,
-        //             "user.first_name": 1,
-        //             "user.last_name": 1,
-        //             "user.profile_image": 1,
-        //             "user.employee_id": 1,
-        //             "user.status": 1
-        //         }
-        //     }
-        // ])
 
         let value = await loginInfo.find({
             $and: [
