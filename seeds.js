@@ -1,60 +1,71 @@
 require('dotenv').config();
-require("./src/DB/connection");
 const role = require('./src/models/roleSchema');
 const user = require('./src/models/UserSchema');
 const menu = require('./src/models/menuSchema');
 const { default: mongoose } = require('mongoose');
-
+const connectDB = require("./src/DB/connection");
 
 // add database
 
 const menuData = [{
     "name": "Dashboard",
     "path": "/",
+    "icon": "fa-solid fa-house"
 },
 {
     "name": "Employees",
-    "path": "/employees"
+    "path": "/employees",
+    "icon": "fa-solid fa-user"
 },
 {
     "name": "Project",
     "path": "/project",
+    "icon": "fa-solid fa-user"
 },
 {
     "name": "Designation",
     "path": "/designation",
+    "icon": "fa-solid fa-user"
 },
 {
-    "name": "Leave type",
+    "name": "Leave Type",
     "path": "/leave-type",
+    "icon": "fa-solid fa-calendar"
 },
 {
     "name": "Leaves",
     "path": "/leaves",
+    "icon": "fa-solid fa-calendar"
 },
 {
     "name": "Holiday",
     "path": "/holiday",
+    "icon": "fa-solid fa-calendar"
 },
 {
     "name": "Timesheet",
     "path": "/time-sheet",
+    "icon": "fa-solid fa-clock"
 },
 {
     "name": "Activity Logs",
     "path": "/activity",
+    "icon": "fa-solid fa-clock-rotate-left"
 },
 {
     "name": "Document",
-    "path": "/document",
+    "path": "/documents",
+    "icon": "fa-solid fa-book"
 },
 {
     "name": "User Role",
-    "path": "/user-role"
+    "path": "/user-role",
+    "icon": "fa-solid fa-gear"
 },
 {
     "name": "Work Report",
     "path": "/work-report",
+    "icon": "fa-solid fa-gear"
 }]
 
 const defaultUser = async () => {
@@ -89,6 +100,8 @@ const defaultUser = async () => {
 }
 
 
-defaultUser().then(() => {
-    mongoose.connection.close();
+connectDB().then(() => {
+    defaultUser().then(() => {
+        mongoose.connection.close();
+    })
 })
