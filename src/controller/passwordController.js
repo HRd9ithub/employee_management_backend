@@ -76,7 +76,36 @@ const getPassword = async (req, res) => {
         let { _id } = req.user;
 
         if (permission.name.toLowerCase() !== "admin") {
-            passwords = await PasswordSchema.find({ access_employee: new mongoose.Types.ObjectId(_id), isDelete: false });
+            passwords = await PasswordSchema.aggregate([
+                {
+                    $match: {
+                        isDelete: false,
+                        access_employee: new mongoose.Types.ObjectId(_id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "access_employee",
+                        foreignField: "_id",
+                        as: "access"
+                    }
+                },
+                {
+                    $project: {
+                        "title": 1,
+                        "url": 1,
+                        "user_name": 1,
+                        "password": 1,
+                        "access_employee": 1,
+                        "createdAt": 1,
+                        "updatedAt": 1,
+                        "access._id": 1,
+                        "access.first_name": 1,
+                        "access.last_name": 1,
+                    }
+                }
+            ])
         } else {
             passwords = await PasswordSchema.aggregate([
                 { $match: { isDelete: false } },
