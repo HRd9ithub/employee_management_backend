@@ -66,6 +66,11 @@ const menuData = [{
     "name": "Work Report",
     "path": "/work-report",
     "icon": "fa-solid fa-gear"
+},
+{
+    "name": "Password",
+    "path": "/password",
+    "icon": "fa-solid fa-gear"
 }]
 
 const defaultUser = async () => {

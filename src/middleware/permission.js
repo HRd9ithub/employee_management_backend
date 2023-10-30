@@ -313,15 +313,9 @@ const activityPermission = async (req, res, next) => {
         if (permission.name.toLowerCase() === "admin") {
             next()
         } else {
-            if (req.method === "POST" && req.baseUrl == "/api/activity") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create document." })
-            } else if (req.method === "GET" && req.baseUrl == "/api/activity") {
+            if (req.method === "GET" && req.baseUrl == "/api/activity") {
                 permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin." })
-            } else if (req.method === "PUT") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update document." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete document." })
-            }
+            } 
         }
     } catch (error) {
         res.status(500).json({ message: error.message })
@@ -395,4 +389,38 @@ const rolePermission = async (req, res, next) => {
     }
 }
 
-module.exports = { userPermission, rolePermission, projectPermission,activityPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
+// password route check permission
+const passwordPermission = async (req, res, next) => {
+    try {
+        let permission = ""
+        let data = await getRoleData(req.user.role_id)
+
+        if (data && data[0].name.toLowerCase() == "admin") {
+            permission = data[0]
+        } else {
+            permission = data.find((val => {
+                return val.permissions.menu.name.toLowerCase() == "password"
+            }))
+        }
+
+        req.permissions = permission;
+
+        if (permission.name.toLowerCase() === "admin") {
+            next()
+        } else {
+            if (req.method === "POST" && req.baseUrl == "/api/password") {
+                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create password." })
+            } else if (req.method === "GET" && req.baseUrl == "/api/password") {
+                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing password to the Password Data. please contact admin." })
+            } else if (req.method === "PUT") {
+                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update password." })
+            } else if (req.method === "DELETE") {
+                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete password." })
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+module.exports = { userPermission,passwordPermission, rolePermission, projectPermission,activityPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
