@@ -43,7 +43,7 @@ const updatePassword = async (req, res) => {
         if (response) {
             return res.status(200).json({ success: true, message: "Data updated successfully." })
         } else {
-            return res.status(400).json({ success: false, message: "Record Not Found." })
+            return res.status(404).json({ success: false, message: "Record Not Found." })
         }
 
     } catch (error) {
@@ -60,7 +60,7 @@ const deletePassword = async (req, res) => {
         if (response) {
             return res.status(200).json({ success: true, message: "Data deleted successfully." })
         } else {
-            return res.status(400).json({ success: false, message: "Record Not Found." })
+            return res.status(404).json({ success: false, message: "Record Not Found." })
         }
 
     } catch (error) {
