@@ -985,7 +985,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1012,7 +1012,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '403':
             description: Access Denied.
           '404':
@@ -1047,7 +1047,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '401':
@@ -1143,7 +1143,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1170,7 +1170,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '404':
             description: Not Found.
           '403':
@@ -1205,7 +1205,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '401':
@@ -1303,7 +1303,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1330,7 +1330,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '404':
             description: Not Found.
           '403':
@@ -1365,7 +1365,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '401':
@@ -1478,7 +1478,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1505,7 +1505,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '404':
             description: Not Found.
           '403':
@@ -1694,7 +1694,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1733,7 +1733,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1863,7 +1863,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -1890,7 +1890,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -2141,7 +2141,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -2202,7 +2202,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '401':
@@ -2295,7 +2295,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -2435,7 +2435,7 @@ paths:
           
         responses:
           '200':
-            description: created sucess. 
+            description: ok. 
           '400':
             description: Bad Request.
           '404':
@@ -2447,4 +2447,155 @@ paths:
           '500':
             description: Server error.
 
+
+#  -------------------------------------------  password api -------------------------------------- #
+# get 
+  paths:
+  /api/password:
+      get:
+        tags:
+         -  password
+        security:
+        - token: []
+        summary: list password.   
+          
+        responses:
+          '200':
+            description: Success message. 
+          '401':
+            description:  Unauthorized.
+          '403':
+            description: Access Denied.
+          '500':
+            description: Server error.
+# add
+      post:
+        tags:
+          - password
+        security:
+        - token: []
+        summary: add password.        
+        post:
+        requestBody:
+          required: true
+          content:
+            # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  title:       
+                    type: string
+                    example : ""
+                  url:       
+                    type: string
+                    example : ""
+                  user_name:       
+                    type: string
+                    example : ""
+                  password:       
+                    type: string
+                    example : ""
+                  access_employee:       
+                    type: array
+                    example : []
+                required:
+                  - title
+                  - url
+                  - user_name
+                  - password
+                  - access_employee
+          
+        responses: 
+          '201':
+            description: created sucess. 
+          '400':
+            description: Bad Request.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+# update  api
+ 
+  paths:
+  /api/password/{id}:
+      put:
+        tags:
+          -  password
+        security:
+        - token: []
+        summary: update password.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        put:
+        requestBody:
+          required: true
+          content:
+          # multipart/form-data:
+            application/json:
+              schema:
+                properties: 
+                  title:       
+                    type: string
+                    example : ""
+                  url:       
+                    type: string
+                    example : ""
+                  user_name:       
+                    type: string
+                    example : ""
+                  password:       
+                    type: string
+                    example : ""
+                  access_employee:       
+                    type: array
+                    example : []
+                required:
+                  - title
+                  - url
+                  - user_name
+                  - password
+                  - access_employee
+          
+        responses:
+          '200':
+            description: ok. 
+          '400':
+            description: Bad Request.
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
+
+
+      delete:
+        tags:
+          -  password
+        security:
+        - token: []
+        summary: delete password.
+        parameters:
+        - name: id
+          in: path
+          required: true
+          description: Parameter description in CommonMark or HTML.        
+        
+        responses:
+          '200':
+            description: ok. 
+          '404':
+            description: Not Found.
+          '403':
+            description: Access Denied.
+          '401':
+            description:  Unauthorized.
+          '500':
+            description: Server error.
   
