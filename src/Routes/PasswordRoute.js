@@ -10,6 +10,7 @@ let passwordValidation = [
     check("url", "Url is a required field.").notEmpty(),
     check("user_name", "User Name is a required field.").notEmpty(),
     check("password", "Password is a required field.").notEmpty(),
+    check("note", "Note is a required field.").notEmpty(),
     // check('access_employee', "Access employee Insert values ​​into the array.").isArray(),
 ]
 
