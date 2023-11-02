@@ -91,7 +91,7 @@ const getMenu = async (req, res) => {
 
             ])
         } else {
-            data = await menu.find({}, { name: 1,path :1,icon :1 }).sort({createdAt : 1})
+            data = await menu.find({}, { name: 1,path :1,icon :1 }).sort({_id : 1})
         }
 
         return res.status(200).json({ success: true, message: "Successfully fetch a menu data.", data: data})
