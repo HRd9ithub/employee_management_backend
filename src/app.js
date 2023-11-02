@@ -93,7 +93,7 @@ app.use(function (err, req, res, next) {
 
 connectDB().then(() => {
    app.listen(port, () => {
-      console.log(`server is running for ${port}.`)
+      console.log(`Server is running for ${port}.`)
   })
 }).catch((error) => {
    console.log(error.message);
