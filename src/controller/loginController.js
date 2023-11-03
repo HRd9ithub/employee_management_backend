@@ -11,6 +11,9 @@ const role = require("../models/roleSchema");
 const moment = require("moment");
 const sendOtpMail = require("../Handler/otpEmail");
 const createActivity = require("../helper/addActivity");
+const account = require("../models/accountSchema");
+const emergencyRoute = require("../Routes/emergencyRoute");
+const emergency_contact = require("../models/emergencySchema");
 
 const addTime = async (res, id, login) => {
     try {
@@ -142,16 +145,20 @@ const verifyOtp = async (req, res) => {
                 createActivity(data._id, 'Login by')
             }
 
+            let accountCount = await account.find({user_id : data._id}).count();
+            let emergency_contactcount = await emergency_contact.find({user_id : data._id}).count();
+
             if (role_detail.name.toLowerCase() === "admin" || (login && time) || !req.body.isDesktop) {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Logged in successfully.", token: token, id: response._id })
+                return res.status(200).json({ success: true, message: "Logged in successfully.", token: token, id: response._id , userVerify : accountCount=== 0 || emergency_contactcount === 0 })
             }
         } else {
             // not match send message
             return res.status(400).json({ message: "OTP is invalid.", success: false })
         }
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

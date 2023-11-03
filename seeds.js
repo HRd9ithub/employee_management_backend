@@ -81,7 +81,7 @@ const defaultUser = async () => {
         });
 
         const response = await roleData.save();
-        if(response){
+        if (response) {
             const userData = new user({
                 employee_id: "D9-01",
                 first_name: "Admin",
@@ -90,6 +90,7 @@ const defaultUser = async () => {
                 phone: "7894561230",
                 joining_date: "2023-10-01",
                 status: "Active",
+                gender: "Male",
                 password: "Admin@123",
                 role_id: response._id,
             });

@@ -4,6 +4,7 @@ const moment = require("moment");
 const ReportRequestSchema = require("../models/reportRequestSchema");
 const { default: mongoose } = require("mongoose");
 const createActivity = require("../helper/addActivity");
+const role = require("../models/roleSchema");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -34,16 +35,17 @@ const addLeave = async (req, res) => {
                         { 'to_date': { $lte: to_date } },
                     ]
                 }
-            ]
+            ],
+            status: { $ne: "Declined" }
         })
 
         if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for leave has already been used."], success: false })
 
         let leaveRoute = new Leave({ user_id: user_id || req.user._id, leave_type_id, from_date, to_date, leave_for, duration, reason, status })
         let response = await leaveRoute.save()
-        
-        if(req.permissions.name.toLowerCase() !== "admin"){
-            createActivity(req.user._id,"Leave added by")
+
+        if (req.permissions.name.toLowerCase() !== "admin") {
+            createActivity(req.user._id, "Leave added by")
         }
         res.status(201).json({ message: "Data added successfully.", success: true, checkData: checkData })
     } catch (error) {
@@ -132,8 +134,8 @@ const getLeave = async (req, res) => {
                 {
                     $match: {
                         $and: [
-                            { from_date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
-                            { to_date: { $lte: moment(endDate).format("YYYY-MM-DD") } }
+                            { from_date: { $gte: startDate} },
+                            { to_date: { $lte: endDate} }
                         ],
                         "user.delete_at": { $exists: false },
                         "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
@@ -234,7 +236,7 @@ const updateLeave = async (req, res) => {
                     ]
                 }
             ],
-
+            status: { $ne: "Declined" }
         });
 
         if (checkData.length !== 0) return res.status(400).json({ error: ["It appears that the date you selected for leave has already been used."], success: false })
@@ -245,8 +247,8 @@ const updateLeave = async (req, res) => {
         }, { new: true })
 
         if (leave_detail) {
-            if(req.permissions.name.toLowerCase() !== "admin"){
-                createActivity(req.user._id,"Leave updated by")
+            if (req.permissions.name.toLowerCase() !== "admin") {
+                createActivity(req.user._id, "Leave updated by")
             }
             return res.status(200).json({ message: "Data updated successfully.", success: true })
         } else {
@@ -290,11 +292,11 @@ const changeStatus = async (req, res) => {
 // change status view all
 const allChangeStatus = async (req, res) => {
     try {
-        let {key} = req.query;
+        let { key } = req.query;
         const leave_detail = await Leave.updateMany({ status: "Pending" }, {
             status: "Read"
         }, { new: true });
-        if(key){
+        if (key) {
             let result = await ReportRequestSchema.deleteMany({})
         }
 
@@ -395,14 +397,35 @@ const getNotifications = async (req, res) => {
             }
         ])
         let totalNotification = leaveData.concat(result);
-        
-        let notification = totalNotification.sort((a,b) => {
+
+        let notification = totalNotification.sort((a, b) => {
             return new Date(b.createdAt) - new Date(a.createdAt)
         })
-        res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: notification})
+        res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: notification })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
-module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus, getNotifications }
+// delete leave
+const deleteLeave = async (req, res) => {
+    try {
+        let { id } = req.params;
+
+        const deletedUser = await Leave.findByIdAndDelete({ _id: id });
+
+        if (deletedUser) {
+            let roleData = await role.findOne({_id: req.user.role_id});
+            if(roleData.name.toLowerCase() !== "admin"){
+                createActivity(req.user._id, "Leave deleted by")
+            }
+            return res.status(200).json({ success: true, message: "Data deleted successfully." });
+        } else {
+            return res.status(404).json({ success: false, message: "Record is not found." });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message || "Interner server errror." })
+    }
+}
+
+module.exports = { addLeave, getLeave, singleGetLeave, updateLeave, deleteLeave, changeStatus, allChangeStatus, getNotifications }
