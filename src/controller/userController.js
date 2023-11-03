@@ -103,8 +103,10 @@ const activeUser = async (req, res) => {
                 }
             }
         ])
-
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0], permissions: req.permissions })
+            
+        let userVerify = (value[0].account_detail.length === 0 || value[0].emergency_contact.length === 0) && req.permissions.name.toLowerCase() !== "admin"
+ 
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0] ,userVerify : userVerify , permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

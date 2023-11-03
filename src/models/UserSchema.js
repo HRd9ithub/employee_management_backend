@@ -56,7 +56,8 @@ const userSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Active', 'Inactive']
+        enum: ['Active', 'Inactive'],
+        default :"Active"
     },
     profile_image: {
         type: String,
@@ -64,6 +65,7 @@ const userSchema = new mongoose.Schema({
     },
     country: {
         type: String,
+        default: "India"
     },
     state: {
         type: String,

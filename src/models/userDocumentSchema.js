@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 
 // document structure define 
 const user_documentSchema = new mongoose.Schema({
+    photo :{ 
+        type: String,
+        required : true
+    },
+    id_proof :{ 
+        type: String,
+        required : true
+    },
     resume :{ 
         type: String
     },
