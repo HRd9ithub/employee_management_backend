@@ -1,3 +1,4 @@
+const decryptData = require("../helper/decryptData");
 const activity_log = require("../models/activitySchema");
 let moment = require("moment");
 
@@ -57,7 +58,19 @@ const getActivity = async (req, res) => {
                 }
             }
         ])
-        res.status(200).json({ success: true, data: activityData, permissions: req.permissions ,date : new Date(moment(new Date()).format("YYYY-MM-DD"))})
+
+        let result = activityData.map((val) => {
+            return {...val,
+                User: {
+                    first_name: decryptData(val.User.first_name),
+                    last_name: decryptData(val.User.last_name),
+                    status: val.User.status,
+                    profile_image: val.User.profile_image
+                }
+            }
+        })
+
+        res.status(200).json({ success: true, data: result, permissions: req.permissions ,date : new Date(moment(new Date()).format("YYYY-MM-DD"))})
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal Server Error', success: false });
     }

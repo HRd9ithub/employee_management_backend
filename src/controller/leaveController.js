@@ -5,6 +5,7 @@ const ReportRequestSchema = require("../models/reportRequestSchema");
 const { default: mongoose } = require("mongoose");
 const createActivity = require("../helper/addActivity");
 const role = require("../models/roleSchema");
+const decryptData = require("../helper/decryptData");
 
 // add leave
 const addLeave = async (req, res) => {
@@ -184,7 +185,17 @@ const getLeave = async (req, res) => {
             ])
         }
 
-        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: leaveData, permissions: req.permissions })
+        let result = leaveData.map((val) => {
+            return {...val,
+                user: {
+                    first_name: decryptData(val.user.first_name),
+                    last_name: decryptData(val.user.last_name),
+                    status: val.user.status,
+                }
+            }
+        })
+
+        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: result, permissions: req.permissions })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -401,7 +412,18 @@ const getNotifications = async (req, res) => {
         let notification = totalNotification.sort((a, b) => {
             return new Date(b.createdAt) - new Date(a.createdAt)
         })
-        res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: notification })
+
+        let finalData = notification.map((val) => {
+            return {...val ,  
+                    user: {
+                        first_name: decryptData(val.user.first_name),
+                        last_name: decryptData(val.user.last_name),
+                        status: val.user.status,
+                        profile_image: val.user.profile_image,
+                    }
+                }
+        })
+        res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: finalData })
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }

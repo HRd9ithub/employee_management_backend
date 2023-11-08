@@ -9,6 +9,8 @@ const role = require("../models/roleSchema");
 const designation = require("../models/designationSchema");
 const moment = require("moment");
 const createActivity = require("../helper/addActivity");
+const encryptData = require("../helper/encrptData");
+const decryptData = require("../helper/decryptData");
 
 // create user function
 const createUser = async (req, res) => {
@@ -38,11 +40,31 @@ const createUser = async (req, res) => {
 
         if (error.length !== 0) return res.status(422).json({ error: error, success: false })
 
-        const userData = new user(req.body);
+        let first_name = encryptData(req.body.first_name)
+        let last_name = encryptData(req.body.last_name)
+        let phone = encryptData(req.body.phone.toString())
+        let gender = encryptData(req.body.gender)
+        let country = encryptData(req.body.country || "India")
+
+        const userData = new user({
+            employee_id: req.body.employee_id,
+            first_name,
+            last_name,
+            email: req.body.email,
+            phone,
+            gender,
+            status: req.body.status,
+            country,
+            password: req.body.password,
+            joining_date: req.body.joining_date,
+            role_id: req.body.role_id,
+            designation_id: req.body.designation_id,
+            report_by: req.body.report_by,
+        });
         const response = await userData.save();
         return res.status(201).json({ success: true, message: "Data added successfully." })
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -65,11 +87,11 @@ const activeUser = async (req, res) => {
                 }
             },
             { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
-            {
-                $lookup: {
-                    from: "users", localField: "report_by", foreignField: "_id", as: "report"
-                }
-            },
+            // {
+            //     $lookup: {
+            //         from: "users", localField: "report_by", foreignField: "_id", as: "report"
+            //     }
+            // },
             {
                 $lookup: {
                     from: "accounts", localField: "_id", foreignField: "user_id", as: "account_detail"
@@ -96,17 +118,71 @@ const activeUser = async (req, res) => {
                     "expireIn": 0,
                     "otp": 0,
                     "role.permissions": 0,
-                    "report.password": 0,
-                    "report.token": 0,
-                    "report.expireIn": 0,
-                    "report.otp": 0,
                 }
             }
         ])
-            
+
+        let result = value.map((item) => {
+            return {
+                ...item,
+                employee_id: item.employee_id,
+                first_name: decryptData(item.first_name),
+                last_name: decryptData(item.last_name),
+                email: item.email,
+                phone: decryptData(item.phone),
+                address: decryptData(item.address),
+                country: decryptData(item.country),
+                state: decryptData(item.state),
+                city: decryptData(item.city),
+                postcode: decryptData(item.postcode),
+                date_of_birth: item.date_of_birth,
+                joining_date: item.joining_date,
+                gender: decryptData(item.gender),
+                age: decryptData(item.age),
+                blood_group: decryptData(item.blood_group),
+                maried_status: decryptData(item.maried_status),
+                designation_id: item.designation_id,
+                role_id: item.role_id,
+                status: item.status,
+                leaveing_date: item.leaveing_date,
+                profile_image: item.profile_image,
+                account_detail: item.account_detail.map((val) => {
+                    return {
+                        _id : val._id,
+                        name : decryptData(val.name),
+                        bank_name : decryptData(val.bank_name),
+                        account_number : decryptData(val.account_number),
+                        ifsc_code : decryptData(val.ifsc_code),
+                        branch_name : decryptData(val.branch_name),
+                    }
+                }),
+                emergency_contact: item.emergency_contact.map((val) => {
+                    return {
+                        _id : val._id,
+                        name : decryptData(val.name),
+                        email : decryptData(val.email),
+                        phone : decryptData(val.phone),
+                        address : decryptData(val.address),
+                        relationship : decryptData(val.relationship),
+                    }
+                }),
+                education: item.education.map((val) => {
+                    return {
+                        _id : val._id,
+                        user_id : val.user_id,
+                        year : decryptData(val.year),
+                        percentage : decryptData(val.percentage),
+                        university_name : decryptData(val.university_name),
+                        degree : decryptData(val.degree),
+                    }
+                })
+            }
+        })
+
+
         let userVerify = (value[0].account_detail.length === 0 || value[0].emergency_contact.length === 0) && req.permissions.name.toLowerCase() !== "admin"
- 
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: value[0] ,userVerify : userVerify , permissions: req.permissions })
+
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: result[0], userVerify: userVerify, permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -188,7 +264,27 @@ const getUser = async (req, res) => {
         let data = value.filter((val) => {
             return !val.leaveing_date || moment(val.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD")
         })
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data, permissions: req.permissions })
+
+        let result = data.map((item) => {
+            return {
+                ...item,
+                first_name: decryptData(item.first_name),
+                last_name: decryptData(item.last_name),
+                employee_id: item.employee_id,
+                profile_image: item.profile_image,
+                email: item.email,
+                phone: decryptData(item.phone),
+                status: item.status,
+                report: {
+                    _id: item.report._id,
+                    first_name: decryptData(item.report.first_name),
+                    last_name: decryptData(item.report.last_name),
+                    status: item.report.status,
+                    profile_image: item.report.profile_image,
+                }
+            }
+        })
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: result, permissions: req.permissions })
         // }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -204,8 +300,43 @@ const updateUser = async (req, res) => {
         if (data && data._id != req.params.id) {
             return res.status(422).json({ message: "email address already exists.", success: false })
         } else {
+
+            let first_name = encryptData(req.body.first_name)
+            let last_name = encryptData(req.body.last_name)
+            let phone = encryptData(req.body.phone.toString())
+            let gender = encryptData(req.body.gender)
+            let country = encryptData(req.body.country || "India")
+            let age = req.body.age && encryptData(req.body.age.toString())
+            let blood_group = req.body.blood_group && encryptData(req.body.blood_group)
+            let maried_status = req.body.maried_status && encryptData(req.body.maried_status)
+            let state = req.body.state && encryptData(req.body.state)
+            let address = req.body.address && encryptData(req.body.address)
+            let city = req.body.city && encryptData(req.body.city)
+            let postcode = req.body.postcode && encryptData(req.body.postcode);
+
             // data update method
-            const response = await user.findByIdAndUpdate({ _id: req.params.id }, req.body);
+            const response = await user.findByIdAndUpdate({ _id: req.params.id }, {
+                first_name,
+                last_name,
+                email: req.body.email,
+                phone,
+                address,
+                country,
+                state,
+                city,
+                postcode,
+                joining_date: req.body.joining_date,
+                date_of_birth: req.body.date_of_birth,
+                gender,
+                age,
+                blood_group,
+                maried_status,
+                designation_id: req.body.designation_id,
+                role_id: req.body.role_id,
+                status: req.body.status,
+                report_by: req.body.report_by,
+                leaveing_date: req.body.leaveing_date,
+            });
 
             if (response) {
                 let roleData = await role.findOne({ _id: req.user.role_id });
@@ -437,8 +568,17 @@ const getUserName = async (req, res) => {
             return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date)
         })
 
+        let result = data.map((val) => {
+            return {
+                first_name: decryptData(val.first_name),
+                last_name: decryptData(val.last_name),
+                role: val.role,
+                _id: val._id
+            }
+        })
 
-        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: data })
+
+        return res.status(200).json({ success: true, message: "User data fetch successfully.", data: result })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })

@@ -14,6 +14,8 @@ const createActivity = require("../helper/addActivity");
 const account = require("../models/accountSchema");
 const emergencyRoute = require("../Routes/emergencyRoute");
 const emergency_contact = require("../models/emergencySchema");
+const decryptData = require("../helper/decryptData");
+const encryptData = require("../helper/encrptData");
 
 const addTime = async (res, id, login) => {
     try {
@@ -55,7 +57,6 @@ const userLogin = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ error: err, success: false })
         }
-
         // email check exist or not
         const userData = await user.findOne({ email: req.body.email, joining_date: { $lte: moment(new Date()).format("YYYY-MM-DD") } })
         if (userData) {
@@ -63,7 +64,7 @@ const userLogin = async (req, res) => {
             let isMatch = await bcrypt.compare(req.body.password, userData.password);
             if (isMatch) {
 
-                if (userData.status !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
+                if (decryptData(userData.status) !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
 
                     let mailsubject = 'Verification Code';
 
@@ -74,11 +75,11 @@ const userLogin = async (req, res) => {
                     if (result === "send") {
                         // update data for otp
                         const response = await user.findByIdAndUpdate({ _id: userData._id }, { otp, expireIn: new Date().getTime() + 5 * 60000, $unset: { token: 1 } }, { new: true })
-                        return res.status(200).json({ success: true, message: "OTP sent successfully.", data: response.email })
+                        return res.status(200).json({ success: true, message: "OTP sent successfully.",data: response.email })
                     }
 
                 } else {
-                    if (userData && userData.status === 'Inactive' && !userData.delete_at) {
+                    if (userData && decryptData(userData.status) === 'Inactive' && !userData.delete_at) {
                         return res.status(400).json({ message: "Your account is inactive; please contact your administrator.", success: false })
                     } else {
                         // email not match send message
@@ -123,13 +124,13 @@ const verifyOtp = async (req, res) => {
             let diff = data.expireIn - currTime
 
             if (diff < 0) {
-                await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
+                // await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
                 return res.status(400).json({ message: "OTP has expired.", success: false })
             }
 
             // generate token
             const token = await data.generateToken();
-            if (role_detail.name.toLowerCase() !== "admin") {
+            if ((role_detail.name).toLowerCase() !== "admin") {
                 const loginData = new loginInfo({
                     userId: data._id,
                     city: req.body.city,
@@ -151,14 +152,13 @@ const verifyOtp = async (req, res) => {
             if (role_detail.name.toLowerCase() === "admin" || (login && time) || !req.body.isDesktop) {
                 // otp match for update otp value null
                 const response = await user.findByIdAndUpdate({ _id: data._id }, { $unset: { otp: 1, expireIn: 1 } }, { new: true })
-                return res.status(200).json({ success: true, message: "Logged in successfully.", token: token, id: response._id , userVerify : accountCount=== 0 || emergency_contactcount === 0 })
+                return res.status(200).json({ success: true, message: "Logged in successfully.", token: token, id: response._id , userVerify : (accountCount=== 0 || emergency_contactcount === 0) && role_detail.name.toLowerCase() !== "admin"  })
             }
         } else {
             // not match send message
             return res.status(400).json({ message: "OTP is invalid.", success: false })
         }
     } catch (error) {
-        console.log(error)
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }

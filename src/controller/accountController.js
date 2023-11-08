@@ -2,6 +2,7 @@ const expressValidator = require("express-validator");
 const account = require("../models/accountSchema");
 const role = require("../models/roleSchema");
 const createActivity = require("../helper/addActivity");
+const encryptData = require("../helper/encrptData");
 
 // create ACCOUNT detail function
 const addAccount = async (req, res) => {
@@ -20,8 +21,17 @@ const addAccount = async (req, res) => {
         const data = await account.findOne({ user_id: req.body.user_id })
         let roleData = await role.findOne({ _id: req.user.role_id });
 
+        let value = {
+            bank_name: encryptData(req.body.bank_name),
+            account_number: encryptData(req.body.account_number),
+            ifsc_code: encryptData(req.body.ifsc_code),
+            user_id: req.body.user_id,
+            name: encryptData(req.body.name),
+            branch_name: encryptData(req.body.branch_name)
+        };
+        
         if (data) {
-            let response = await account.findByIdAndUpdate({ _id: data._id }, req.body);
+            let response = await account.findByIdAndUpdate({ _id: data._id }, value);
             if (response) {
                 if (roleData.name.toLowerCase() !== "admin") {
                     createActivity(req.user._id, "Account detail updated by");
@@ -32,7 +42,7 @@ const addAccount = async (req, res) => {
                 return res.status(400).json({ success: false, message: "Record Not found." })
             }
         } else {
-            const accountData = new account(req.body);
+            const accountData = new account(value);
             const response = await accountData.save();
             if (roleData.name.toLowerCase() !== "admin") {
                 createActivity(req.user._id, "Account detail added by");

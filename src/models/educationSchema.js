@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// document structure define 
+// education structure define 
 const educationSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,

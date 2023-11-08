@@ -6,6 +6,7 @@ const Leave = require('../models/leaveSchema');
 const timeSheet = require('../models/timeSheetSchema');
 const holiday = require('../models/holidaySchema');
 const { default: mongoose } = require('mongoose');
+const decryptData = require('../helper/decryptData');
 const DashboardRoute = Router();
 
 // Get all DashboardRoutes
@@ -134,7 +135,15 @@ DashboardRoute.get('/', Auth, async (req, res) => {
             totalEmployee: value.length,
             leaveRequest: leaveRequest.length,
             presentToday: value.length - absentToday.length,
-            absentToday,
+            absentToday : absentToday.map((val) => {
+                return {...val,
+                    user: {
+                        first_name: decryptData(val.user.first_name),
+                        last_name: decryptData(val.user.last_name),
+                        status: val.user.status,
+                    }
+                }
+            }),
             holidayDay,
             birthDay,
             success: true

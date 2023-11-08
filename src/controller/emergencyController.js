@@ -2,6 +2,7 @@ const expressValidator = require("express-validator");
 const emergency_contact = require("../models/emergencySchema");
 const role = require("../models/roleSchema");
 const createActivity = require("../helper/addActivity");
+const encryptData = require("../helper/encrptData");
 
 // create emergency detail function
 const addEmergency = async (req, res) => {
@@ -21,8 +22,17 @@ const addEmergency = async (req, res) => {
         // role name get 
         let roleData = await role.findOne({ _id: req.user.role_id });
 
+        let value = {
+            name: encryptData(req.body.name),
+            email: encryptData(req.body.email),
+            phone: encryptData(req.body.phone),
+            user_id: req.body.user_id,
+            address: encryptData(req.body.address),
+            relationship: encryptData(req.body.relationship)
+        };
+
         if (data) {
-            let response = await emergency_contact.findByIdAndUpdate({ _id: data._id }, req.body);
+            let response = await emergency_contact.findByIdAndUpdate({ _id: data._id }, value);
             if (response) {
                 if (roleData.name.toLowerCase() !== "admin") {
                     createActivity(req.user._id, "Emergency contact detail updated by");
@@ -32,7 +42,7 @@ const addEmergency = async (req, res) => {
                 return res.status(404).json({ success: false, message: "Record Not found." })
             }
         } else {
-            const emergency_contactData = new emergency_contact(req.body);
+            const emergency_contactData = new emergency_contact(value);
             const response = await emergency_contactData.save();
             if (roleData.name.toLowerCase() !== "admin") {
                 createActivity(req.user._id, "Emergency contact detail added by");
@@ -40,7 +50,7 @@ const addEmergency = async (req, res) => {
             return res.status(201).json({ success: true, message: "Data added successfully." })
         }
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", success: false })
+        res.status(500).json({ message: error.message || "Internal server error", success: false })
     }
 }
 

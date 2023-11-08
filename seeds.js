@@ -4,6 +4,7 @@ const user = require('./src/models/UserSchema');
 const menu = require('./src/models/menuSchema');
 const { default: mongoose } = require('mongoose');
 const connectDB = require("./src/DB/connection");
+const encryptData = require('./src/helper/encrptData');
 
 // add database
 
@@ -84,13 +85,13 @@ const defaultUser = async () => {
         if (response) {
             const userData = new user({
                 employee_id: "D9-01",
-                first_name: "Admin",
-                last_name: "Admin",
+                first_name: encryptData("Admin"),
+                last_name: encryptData("Admin"),
                 email: "hardik.d9ithub@gmail.com",
-                phone: "7894561230",
+                phone: encryptData("7894561230"),
                 joining_date: "2023-10-01",
                 status: "Active",
-                gender: "Male",
+                gender: encryptData("Male"),
                 password: "Admin@123",
                 role_id: response._id,
             });

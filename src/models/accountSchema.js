@@ -11,7 +11,7 @@ const accountSchema = new mongoose.Schema({
         required : true,   
     },
     account_number:{
-        type:Number,
+        type:String,
         required:true
     },
     ifsc_code:{
