@@ -1,6 +1,8 @@
 const expressValidator = require("express-validator");
 const PasswordSchema = require("../models/passwordSchema");
 const { default: mongoose } = require("mongoose");
+const encryptData = require("../helper/encrptData");
+const decryptData = require("../helper/decryptData");
 
 // create password function
 const createPassword = async (req, res) => {
@@ -15,7 +17,21 @@ const createPassword = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        let passwordData = new PasswordSchema(req.body);
+        // encrypt data 
+        let user_name = encryptData(req.body.user_name)
+        let password = encryptData(req.body.password)
+        let title = encryptData(req.body.title)
+        let url = encryptData(req.body.url)
+        let note = encryptData(req.body.note)
+
+        let passwordData = new PasswordSchema({
+            title: title,
+            url: url,
+            note: note,
+            user_name: user_name,
+            password: password,
+            access_employee: req.body.access_employee
+        });
         let response = await passwordData.save();
 
         return res.status(201).json({ success: true, message: "Data added successfully." })
@@ -124,7 +140,7 @@ const getPassword = async (req, res) => {
                         "url": 1,
                         "user_name": 1,
                         "password": 1,
-                        "note" :1,
+                        "note": 1,
                         "access_employee": 1,
                         "createdAt": 1,
                         "updatedAt": 1,
@@ -136,7 +152,22 @@ const getPassword = async (req, res) => {
             ])
         }
 
-        return res.status(200).json({ success: true, data: passwords, permissions: permission })
+        let decryptPassword = passwords.map((item) => {
+            return {
+                _id: item._id,
+                title:decryptData(item.title),
+                url:decryptData(item.url),
+                user_name: decryptData(item.user_name),
+                password: decryptData(item.password),
+                note:decryptData(item.note),
+                access_employee: item.access_employee,
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt,
+                access: item.access
+            }
+        })
+
+        return res.status(200).json({ success: true, data: decryptPassword, permissions: permission })
     } catch (err) {
         res.status(500).json({ message: err.message || 'Internal Server Error', success: false })
     }

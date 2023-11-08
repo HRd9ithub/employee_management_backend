@@ -42,12 +42,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 
-// // Register `hbs.engine` with the Express app.
-// app.set('view engine', 'handlebars');
-// app.set('views', path.join(__dirname, '../views'));
-
-
-
 // image get route
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))

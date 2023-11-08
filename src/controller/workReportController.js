@@ -10,6 +10,7 @@ var fs = require('fs');
 const pdf = require("html-pdf");
 var ejs = require('ejs');
 const createActivity = require("../helper/addActivity");
+const decryptData = require("../helper/decryptData");
 
 
 const createReport = async (req, res) => {
@@ -264,7 +265,16 @@ const getReport = async (req, res) => {
             ])
         }
 
-        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: data, permissions: req.permissions })
+        let result = data.map((val) => {
+            return {...val,
+                user: {
+                    first_name: decryptData(val.user.first_name),
+                    last_name: decryptData(val.user.last_name),
+                    status: val.user.status,
+                }
+            }
+        })
+        return res.status(200).json({ success: true, message: "Successfully fetch a work report data.", data: result, permissions: req.permissions })
 
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
@@ -452,7 +462,6 @@ const generatorPdf = async (req, res) => {
         }
         pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
             if (error) {
-                console.log('error', error);
                 return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
             }
 

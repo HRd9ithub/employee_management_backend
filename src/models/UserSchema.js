@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs")
-var jwt = require('jsonwebtoken')
+var jwt = require('jsonwebtoken');
+const decryptData = require('../helper/decryptData');
+
+function firstNameGet(first_name) {
+    return decryptData(first_name);
+}
+function lastNameGet(last_name) {
+    return decryptData(last_name);
+}
+mongoose.set('toJSON', { getters: true });
 
 // document structure define 
 const userSchema = new mongoose.Schema({
@@ -11,11 +20,13 @@ const userSchema = new mongoose.Schema({
     },
     first_name: {
         type: String,
-        required: true
+        required: true,
+        get: firstNameGet
     },
     last_name: {
         type: String,
-        required: true
+        required: true,
+        get: lastNameGet
     },
     email: {
         type: String,
@@ -23,22 +34,22 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
     phone: {
-        type: Number,
+        type: String,
         required: true
     },
     report_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user"
-        },
+    },
     age: {
-        type: Number,
+        type: String,
     },
     address: {
         type: String,
     },
     gender: {
         type: String,
-        enum: ['Male', 'Female']
+        // enum: ['Male', 'Female']
     },
     date_of_birth: {
         type: Date,
@@ -55,9 +66,8 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        required: true,
-        enum: ['Active', 'Inactive'],
-        default :"Active"
+        // enum: ['Active', 'Inactive'],
+        default: "Active"
     },
     profile_image: {
         type: String,
@@ -78,7 +88,7 @@ const userSchema = new mongoose.Schema({
         enum: ['Married', 'Unmarried']
     },
     postcode: {
-        type: Number,
+        type: String,
     },
     password: {
         type: String,
@@ -95,10 +105,10 @@ const userSchema = new mongoose.Schema({
     // },
     designation_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref : "designation"
+        ref: "designation"
     },
     otp: {
-        type: Number
+        type: String
     },
     delete_at: {
         type: Date
@@ -110,15 +120,15 @@ const userSchema = new mongoose.Schema({
         type: String
     }
 },
-{
-    timestamps: true,
-}
+    {
+        timestamps: true,
+    }, { toJSON: { getters: true } }
 )
 
 // generate token
 userSchema.methods.generateToken = async function () {
     try {
-        var token = jwt.sign({ _id: this._id,date: new Date().toLocaleDateString()}, process.env.SECRET_KEY);
+        var token = jwt.sign({ _id: this._id, date: new Date().toLocaleDateString() }, process.env.SECRET_KEY);
         this.token = token
         await this.save();
         return token

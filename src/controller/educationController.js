@@ -2,6 +2,7 @@ const expressValidator = require("express-validator");
 const education = require("../models/educationSchema");
 const role = require("../models/roleSchema");
 const createActivity = require("../helper/addActivity");
+const encryptData = require("../helper/encrptData");
 
 // create and edit education detail function
 const addEditEduction = async (req, res) => {
@@ -26,10 +27,10 @@ const addEditEduction = async (req, res) => {
         for (const key in req.body.info) {
             const educationData = new education({
                 user_id: req.body.user_id,
-                year: req.body.info[key].year,
-                percentage: req.body.info[key].percentage,
-                university_name: req.body.info[key].university_name,
-                degree: req.body.info[key].degree
+                year: encryptData(req.body.info[key].year),
+                percentage: encryptData(req.body.info[key].percentage),
+                university_name: encryptData(req.body.info[key].university_name),
+                degree: encryptData(req.body.info[key].degree)
             });
             const response = await educationData.save();
         }

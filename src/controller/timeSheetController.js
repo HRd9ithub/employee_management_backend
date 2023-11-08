@@ -2,6 +2,7 @@
 const moment = require("moment")
 const timeSheet = require("../models/timeSheetSchema");
 const { default: mongoose } = require("mongoose");
+const decryptData = require("../helper/decryptData");
 
 
 // get time sheet 
@@ -101,7 +102,18 @@ const getTimeSheet = async (req, res) => {
                 }
             ])
         }
-        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :value,permissions: req.permissions})
+         
+        let result = value.map((val) => {
+            return {...val,
+                user: {
+                    first_name: decryptData(val.user.first_name),
+                    last_name: decryptData(val.user.last_name),
+                    status: val.user.status,
+                }
+            }
+        })
+
+        res.status(200).json({ message: "Time sheet data fetch successfully.", success: true,data :result,permissions: req.permissions})
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
