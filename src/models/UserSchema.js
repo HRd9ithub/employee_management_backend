@@ -85,7 +85,7 @@ const userSchema = new mongoose.Schema({
     },
     maried_status: {
         type: String,
-        enum: ['Married', 'Unmarried']
+        // enum: ['Married', 'Unmarried']
     },
     postcode: {
         type: String,
