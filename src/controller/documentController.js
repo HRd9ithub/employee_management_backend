@@ -30,7 +30,7 @@ const addDocument = async(req,res) => {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
-;
+
 // update document
 const updateDocument = async(req,res) => {
     try {
@@ -93,7 +93,6 @@ const getDocument = async(req,res) => {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
-
 
 // downloadFile
 const downloadFile = async(req,res) => {

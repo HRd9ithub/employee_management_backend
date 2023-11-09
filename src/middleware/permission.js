@@ -1,7 +1,7 @@
 const role = require("../models/roleSchema")
 
-// common role data get
-const getRoleData = async (id) => {
+// TODO:  common role data get
+const getRoleData = async (id, name) => {
     let value = await role.aggregate([
         { $match: { _id: id } },
         {
@@ -25,402 +25,261 @@ const getRoleData = async (id) => {
             }
         }
     ])
+    let permission = "";
+    let result = Object.assign({}, ...value)
 
-    return value
+    if (result && result.name.toLowerCase() == "admin") {
+        permission = Object.assign(result, { permissions: { list: 1, create: 1, update: 1, delete: 1 } })
+    } else {
+        permission = value.find((val => {
+            return val.permissions.menu.name.toLowerCase() == name
+        }))
+    }
+    return permission
 }
 
-// user route permission check
+// * ==================  user route permission check ============================
 const userPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "employees"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "employees");
 
         req.permissions = permission;
 
-        if (permission && permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create Employee." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing employee to the Employee Data. please contact admin.", permissions: req.permissions })
-            } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update Employee." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete Employee." })
-            } else if (req.method === "GET" && req.route.path == "/:id") {
-                next();
-            } else if (req.method === "POST" && req.route.path == "/loginInfo") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "access denied." })
-            }
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create Employee.", success: false })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing employee to the Employee Data. please contact admin.", success: false })
+        } else if (req.method === "PATCH") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update Employee.", success: false })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete Employee.", success: false })
+        } else if (req.method === "GET" && req.route.path == "/:id") {
+            next();
+        } else if (req.method === "POST" && req.route.path == "/loginInfo") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "access denied.", success: false })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message, success: false })
     }
 }
 
-// project route check permission
+// * ================== project route check permission =========================
 const projectPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
+        let permission = await getRoleData(req.user.role_id, "project");
 
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "project"
-            }))
-        }
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create project." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing project to the Project Data. please contact admin.", permissions: req.permissions })
-            } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update project." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete project." })
-            }
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create project.", success: false })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing project to the Project Data. please contact admin.", permissions: req.permissions, success: false })
+        } else if (req.method === "PATCH") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update project.", success: false })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete project.", success: false })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
-// report permission
-const reportPermission = async (req, res, next) => {
-    try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "work report"
-            }))
-        }
-        req.permissions = permission;
-
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create work report." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing work report to the work report Data. please contact admin.", permissions: req.permissions })
-            } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update work report." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete work report." })
-            }
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message, success: false })
     }
 }
 
-// designation route check permission
+// * ================== designation route check permission =======================
 const designationtPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "designation"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "designation");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create designation." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing designation to the Designation Data. please contact admin.", permissions: req.permissions })
-            } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update designation." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete designation." })
-            }
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create designation." })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing designation to the Designation Data. please contact admin.", permissions: req.permissions })
+        } else if (req.method === "PATCH") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update designation." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete designation." })
         }
+
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
-// leave route check permission
-const leavePermission = async (req, res, next) => {
-    try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "leaves"
-            }))
-        }
-
-        req.permissions = permission;
-
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing leave to the leave Data. please contact admin." })
-            } else if (req.method === "PATCH" || req.method === "PUT" || (req.method === "POST" && req.route.path === "/status")) {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave." })
-            }
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
-
-// leave type route check permission
+// * ================== leave type route check permission =======================
 const leaveTypePermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "leave type"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "leave type");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.route.path == "/") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave type." })
-            } else if (req.method === "GET" && req.route.path == "/") {
-                permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing leave type to the leave type Data. please contact admin." })
-            } else if (req.method === "PATCH") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave type." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete leave type." })
-            }
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave type." })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 || req.query.key ? next() : res.status(403).json({ message: "You don't have permission to listing leave type to the leave type Data. please contact admin." })
+        } else if (req.method === "PATCH") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave type." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete leave type." })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
+// * ================== leave route check permission ==========================
+const leavePermission = async (req, res, next) => {
+    try {
+        let permission = await getRoleData(req.user.role_id, "leaves");
 
-// holiday route check permission
+        req.permissions = permission;
+
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create leave." })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing leave to the leave Data. please contact admin." })
+        } else if (req.method === "PATCH" || req.method === "PUT" || (req.method === "POST" && req.route.path === "/status")) {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update leave." })
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}
+
+// * ================== holiday route check permission ===========================
 const holidayPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "holiday"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "holiday");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.baseUrl == "/api/holiday") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create holiday." })
-            } else if (req.method === "GET" && req.baseUrl == "/api/holiday") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing holiday to the Holiday Data. please contact admin." })
-            } else if (req.method === "PUT") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update holiday." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete holiday." })
-            }
+        if (req.method === "POST" && req.baseUrl == "/api/holiday") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create holiday." })
+        } else if (req.method === "GET" && req.baseUrl == "/api/holiday") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing holiday to the Holiday Data. please contact admin." })
+        } else if (req.method === "PUT") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update holiday." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete holiday." });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
-// timesheet route check permission
+// * ================== timesheet route check permission ==========================
 const timesheetPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "timesheet"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "timesheet");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "GET") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing timesheet to the Timesheet Data. please contact admin." })
-            }
+        if (req.method === "GET") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing timesheet to the Timesheet Data. please contact admin." })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
-// activity route check permission
+
+// * ================== activity route check permission ===========================
 const activityPermission = async (req, res, next) => {
 
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
+        let data = await getRoleData(req.user.role_id, "activity logs");
 
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "activity logs"
-            }))
-        }
+        req.permissions = data;
 
-        req.permissions = permission;
-
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "GET" && req.baseUrl == "/api/activity") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin." })
-            } 
+        if (req.method === "GET" && req.baseUrl == "/api/activity") {
+            data.permissions.list === 1 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin.", success: false })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message, success: false })
     }
 }
-// document route check permission
+
+// * ================== document route check permission =========================
 const documentPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "document"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "document");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.baseUrl == "/api/document") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create document." })
-            } else if (req.method === "GET" && req.baseUrl == "/api/document") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing document to the Document Data. please contact admin." })
-            } else if (req.method === "PUT") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update document." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete document." })
-            }
+        if (req.method === "POST" && req.baseUrl == "/api/document") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create document." })
+        } else if (req.method === "GET" && req.baseUrl == "/api/document") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing document to the Document Data. please contact admin." })
+        } else if (req.method === "PUT") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update document." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete document." })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
-// role route check permission
+// * ================== role route check permission =============================
 const rolePermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "user role"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "user role");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.baseUrl == "/api/role") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create user role." })
-            } else if (req.method === "GET" && req.baseUrl == "/api/role") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing user role to the User Role Data. please contact admin." })
-            } else if (req.method === "PUT") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update user role." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete user role." })
-            }
+        if (req.method === "POST" && req.baseUrl == "/api/role") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create user role." })
+        } else if (req.method === "GET" && req.baseUrl == "/api/role") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing user role to the User Role Data. please contact admin." })
+        } else if (req.method === "PUT") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update user role." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete user role." })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
-// password route check permission
+// * ================== report route permission check ===========================
+const reportPermission = async (req, res, next) => {
+    try {
+        let permission = await getRoleData(req.user.role_id, "work report");
+
+        req.permissions = permission;
+
+        if (req.method === "POST" && req.route.path == "/") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create work report." })
+        } else if (req.method === "GET" && req.route.path == "/") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing work report to the work report Data. please contact admin.", permissions: req.permissions })
+        } else if (req.method === "PATCH") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update work report." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete work report." })
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+
+// * ================== password route check permission =========================
 const passwordPermission = async (req, res, next) => {
     try {
-        let permission = ""
-        let data = await getRoleData(req.user.role_id)
-
-        if (data && data[0].name.toLowerCase() == "admin") {
-            permission = data[0]
-        } else {
-            permission = data.find((val => {
-                return val.permissions.menu.name.toLowerCase() == "password"
-            }))
-        }
+        let permission = await getRoleData(req.user.role_id, "password");
 
         req.permissions = permission;
 
-        if (permission.name.toLowerCase() === "admin") {
-            next()
-        } else {
-            if (req.method === "POST" && req.baseUrl == "/api/password") {
-                permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create password." })
-            } else if (req.method === "GET" && req.baseUrl == "/api/password") {
-                permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing password to the Password Data. please contact admin." })
-            } else if (req.method === "PUT") {
-                permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update password." })
-            } else if (req.method === "DELETE") {
-                permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete password." })
-            }
+        if (req.method === "POST" && req.baseUrl == "/api/password") {
+            permission.permissions.create !== 0 ? next() : res.status(403).json({ message: "You do not have permission to create password." })
+        } else if (req.method === "GET" && req.baseUrl == "/api/password") {
+            permission.permissions.list !== 0 ? next() : res.status(403).json({ message: "You don't have permission to listing password to the Password Data. please contact admin." })
+        } else if (req.method === "PUT") {
+            permission.permissions.update !== 0 ? next() : res.status(403).json({ message: "You do not have permission to update password." })
+        } else if (req.method === "DELETE") {
+            permission.permissions.delete !== 0 ? next() : res.status(403).json({ message: "You do not have permission to delete password." })
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
-module.exports = { userPermission,passwordPermission, rolePermission, projectPermission,activityPermission,reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
+module.exports = { userPermission, passwordPermission, rolePermission, projectPermission, activityPermission, reportPermission, designationtPermission, documentPermission, leavePermission, leaveTypePermission, holidayPermission, timesheetPermission }
