@@ -117,6 +117,4 @@ const checkDesignation = async (req, res) => {
     }
 }
 
-
-
 module.exports = { createDesignation, updateDesignation, deleteDesignation, getDesignation, checkDesignation }

@@ -2,7 +2,7 @@ const decryptData = require("../helper/decryptData");
 const activity_log = require("../models/activitySchema");
 let moment = require("moment");
 
-// get activity function
+// * ===> get activity function
 const getActivity = async (req, res) => {
     let { startDate, endDate } = req.query;
     try {

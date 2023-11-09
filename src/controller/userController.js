@@ -87,16 +87,12 @@ const activeUser = async (req, res) => {
                 }
             },
             { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
-            // {
-            //     $lookup: {
-            //         from: "users", localField: "report_by", foreignField: "_id", as: "report"
-            //     }
-            // },
             {
                 $lookup: {
                     from: "accounts", localField: "_id", foreignField: "user_id", as: "account_detail"
                 }
             },
+            { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "emergency_contacts", localField: "_id", foreignField: "user_id", as: "emergency_contact"
@@ -178,9 +174,8 @@ const activeUser = async (req, res) => {
                 })
             }
         })
-
-
-        let userVerify = (value[0].account_detail.length === 0 || value[0].emergency_contact.length === 0) && req.permissions.name.toLowerCase() !== "admin"
+        
+        let userVerify = value.length !== 0 ? (value[0].account_detail.length === 0 || value[0].emergency_contact.length === 0) && req.permissions.name.toLowerCase() !== "admin" : false
 
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: result[0], userVerify: userVerify, permissions: req.permissions })
 

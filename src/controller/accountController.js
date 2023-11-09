@@ -4,7 +4,7 @@ const role = require("../models/roleSchema");
 const createActivity = require("../helper/addActivity");
 const encryptData = require("../helper/encrptData");
 
-// create ACCOUNT detail function
+// * ===>  create ACCOUNT detail function
 const addAccount = async (req, res) => {
     try {
         const errors = expressValidator.validationResult(req)
