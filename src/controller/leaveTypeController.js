@@ -120,6 +120,4 @@ const checkLeaveType = async (req, res) => {
     }
 }
 
-
-
 module.exports = { createLeaveType, updateLeaveType, deleteLeaveType, getLeaveType, checkLeaveType }

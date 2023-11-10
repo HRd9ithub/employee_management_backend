@@ -101,6 +101,4 @@ const getMenu = async (req, res) => {
     }
 }
 
-
-
 module.exports = { createMenu, updateMenu, deleteMenu, getMenu }

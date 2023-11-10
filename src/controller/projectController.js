@@ -94,5 +94,4 @@ const getProject = async (req, res) => {
     }
 }
 
-
 module.exports = {createProject,getProject,updateProject,deleteProject}
