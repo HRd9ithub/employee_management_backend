@@ -4,9 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-    <title>Document</title>
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">    <title>Document</title> -->
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: 'Jost', sans-serif;
+        }
+
         .table {
             border-collapse: collapse;
             width: 100%;
@@ -130,14 +137,16 @@
                     {{this.totalHours }}
                 </td>
                 <td>
-                    {{#each this.work}}
-                    <p style="font-weight: bold;" className='mb-0'>
-                        {{this.id}}.{{this.project.name}}
-                    </p>
-                    <div className='w-100 text-wrap'>
-                        {{this.description}}
-                    </div>
-                    {{/each}}
+                    <ol>
+                        {{#each this.work}}
+                        <li style="font-weight: bold;" className='mb-0'>
+                            {{this.project.name}}
+                        </li>
+                        <div className='w-100 text-wrap'>
+                            {{this.description}}
+                        </div>
+                        {{/each}}
+                    </ol>
                 </td>
                 {{else}}
                 {{#ifCond this.name "==" "Leave"}}
@@ -162,44 +171,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Hello world!</title>
-  </head>
-  <body>
-    <h1>User List</h1>
-    <ul>
-      {{#each users}}
-      <li>Name: {{this.name}}</li>
-      <li>Age: {{this.age}}</li>
-      <br />
-      {{/each}}
-    </ul>
-  </body>
-</html> -->
