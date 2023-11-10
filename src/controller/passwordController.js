@@ -88,82 +88,55 @@ const deletePassword = async (req, res) => {
 const getPassword = async (req, res) => {
     try {
         let permission = req.permissions;
-        let passwords = [];
+
         let { _id } = req.user;
 
-        if (permission.name.toLowerCase() !== "admin") {
-            passwords = await PasswordSchema.aggregate([
-                {
-                    $match: {
-                        isDelete: false,
-                        access_employee: new mongoose.Types.ObjectId(_id)
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "access_employee",
-                        foreignField: "_id",
-                        as: "access"
-                    }
-                },
-                {
-                    $project: {
-                        "title": 1,
-                        "url": 1,
-                        "user_name": 1,
-                        "password": 1,
-                        "note": 1,
-                        "access_employee": 1,
-                        "createdAt": 1,
-                        "updatedAt": 1,
-                        "access._id": 1,
-                        "access.first_name": 1,
-                        "access.last_name": 1,
-                    }
+        let passwords = await PasswordSchema.aggregate([
+            {
+                $match: {
+                    isDelete: false,
+                    access_employee: permission.name.toLowerCase() === "admin" ? { $nin: [] } : { $eq: new mongoose.Types.ObjectId(_id) }
                 }
-            ])
-        } else {
-            passwords = await PasswordSchema.aggregate([
-                { $match: { isDelete: false } },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "access_employee",
-                        foreignField: "_id",
-                        as: "access"
-                    }
-                },
-                {
-                    $project: {
-                        "title": 1,
-                        "url": 1,
-                        "user_name": 1,
-                        "password": 1,
-                        "note": 1,
-                        "access_employee": 1,
-                        "createdAt": 1,
-                        "updatedAt": 1,
-                        "access._id": 1,
-                        "access.first_name": 1,
-                        "access.last_name": 1,
-                    }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "access_employee",
+                    foreignField: "_id",
+                    as: "access"
                 }
-            ])
-        }
+            },
+            {
+                $project: {
+                    "title": 1,
+                    "url": 1,
+                    "user_name": 1,
+                    "password": 1,
+                    "note": 1,
+                    "access_employee": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
+                    "access._id": 1,
+                    "access.first_name": 1,
+                    "access.last_name": 1,
+                }
+            }
+        ])
 
         let decryptPassword = passwords.map((item) => {
             return {
                 _id: item._id,
-                title:decryptData(item.title),
-                url:decryptData(item.url),
+                title: decryptData(item.title),
+                url: decryptData(item.url),
                 user_name: decryptData(item.user_name),
                 password: decryptData(item.password),
-                note:decryptData(item.note),
+                note: decryptData(item.note),
                 access_employee: item.access_employee,
                 createdAt: item.createdAt,
                 updatedAt: item.updatedAt,
-                access: item.access
+                access: item.access.map((val) => {
+                    return { ...val, first_name: decryptData(val.first_name), last_name: decryptData(val.last_name) }
+                })
             }
         })
 
