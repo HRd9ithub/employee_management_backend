@@ -58,135 +58,78 @@ const addLeave = async (req, res) => {
 const getLeave = async (req, res) => {
     let { id, startDate, endDate } = req.query;
     try {
+        // date validation
         var a = moment(startDate, "YYYY-MM-DD");
         var b = moment(endDate, "YYYY-MM-DD");
         a.isValid();
         if (!a.isValid() || !b.isValid()) {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
-        let leaveData = []
-        if (req.permissions.name.toLowerCase() !== "admin" || id) {
-            leaveData = await Leave.aggregate([
-                {
-                    $match: {
-                        user_id: new mongoose.Types.ObjectId(id || req.user._id),
-                        $and: [
-                            { from_date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
-                            { to_date: { $lte: moment(endDate).format("YYYY-MM-DD") } }
-                        ],
-                    }
-                },
-                {
-                    $lookup:
-                    {
-                        from: "users",
-                        localField: "user_id",
-                        foreignField: "_id",
-                        as: "user"
-                    }
-                },
-                {
-                    $lookup:
-                    {
-                        from: "leavetypes",
-                        localField: "leave_type_id",
-                        foreignField: "_id",
-                        as: "leaveType"
-                    }
-                },
-                {
-                    $unwind:
-                    {
-                        path: "$user",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $project: {
-                        "user_id": 1,
-                        "leave_type_id": 1,
-                        "from_date": 1,
-                        "to_date": 1,
-                        "leave_for": 1,
-                        "duration": 1,
-                        "reason": 1,
-                        "status": 1,
-                        "createdAt": 1,
-                        "leaveType": { $first: "$leaveType.name" },
-                        "user.employee_id": 1,
-                        "user.profile_image": 1,
-                        "user.first_name": 1,
-                        "user.last_name": 1,
-                        "user.status": 1,
-                    }
-                }
-            ])
-        } else {
-            leaveData = await Leave.aggregate([
-                {
-                    $lookup:
-                    {
-                        from: "users",
-                        localField: "user_id",
-                        foreignField: "_id",
-                        as: "user"
-                    }
-                },
-                {
-                    $match: {
-                        $and: [
-                            { from_date: { $gte: startDate} },
-                            { to_date: { $lte: endDate} }
-                        ],
-                        "user.delete_at": { $exists: false },
-                        "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
-                        $or: [
-                            { "user.leaveing_date": { $eq: null } },
-                            { "user.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
-                        ]
-                    }
 
-                },
-                {
-                    $lookup:
-                    {
-                        from: "leavetypes",
-                        localField: "leave_type_id",
-                        foreignField: "_id",
-                        as: "leaveType"
-                    }
-                },
-                {
-                    $unwind:
-                    {
-                        path: "$user",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $project: {
-                        "user_id": 1,
-                        "leave_type_id": 1,
-                        "from_date": 1,
-                        "to_date": 1,
-                        "leave_for": 1,
-                        "duration": 1,
-                        "reason": 1,
-                        "status": 1,
-                        "leaveType": { $first: "$leaveType.name" },
-                        "user.employee_id": 1,
-                        "user.profile_image": 1,
-                        "user.first_name": 1,
-                        "user.last_name": 1,
-                        "user.status": 1,
-                        "createdAt": 1,
-                    }
-                }
-            ])
-        }
+        // check for id 
+        let identify = id || req.permissions.name.toLowerCase() !== "admin";
 
+        // get data for leave
+        let leaveData = await Leave.aggregate([
+            {
+                $match: {
+                    user_id: !identify ? { $nin: [] } : { $eq: new mongoose.Types.ObjectId(id || req.user._id) },
+                    $and: [
+                        { from_date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                        { to_date: { $lte: moment(endDate).format("YYYY-MM-DD") } }
+                    ],
+                }
+            },
+            {
+                $lookup:
+                {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $lookup:
+                {
+                    from: "leavetypes",
+                    localField: "leave_type_id",
+                    foreignField: "_id",
+                    as: "leaveType"
+                }
+            },
+            {
+                $unwind:
+                {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    "user_id": 1,
+                    "leave_type_id": 1,
+                    "from_date": 1,
+                    "to_date": 1,
+                    "leave_for": 1,
+                    "duration": 1,
+                    "reason": 1,
+                    "status": 1,
+                    "createdAt": 1,
+                    "leaveType": { $first: "$leaveType.name" },
+                    "user.employee_id": 1,
+                    "user.profile_image": 1,
+                    "user.first_name": 1,
+                    "user.last_name": 1,
+                    "user.status": 1,
+                }
+            }
+        ]);
+
+        // data decrypt 
         let result = leaveData.map((val) => {
-            return {...val,
+            return {
+                ...val,
                 user: {
                     first_name: decryptData(val.user.first_name),
                     last_name: decryptData(val.user.last_name),
@@ -195,9 +138,9 @@ const getLeave = async (req, res) => {
             }
         })
 
-        res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: result, permissions: req.permissions })
+        return res.status(200).json({ message: "Leave data fetch successfully.", success: true, data: result, permissions: req.permissions })
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
@@ -414,14 +357,15 @@ const getNotifications = async (req, res) => {
         })
 
         let finalData = notification.map((val) => {
-            return {...val ,  
-                    user: {
-                        first_name: decryptData(val.user.first_name),
-                        last_name: decryptData(val.user.last_name),
-                        status: val.user.status,
-                        profile_image: val.user.profile_image,
-                    }
+            return {
+                ...val,
+                user: {
+                    first_name: decryptData(val.user.first_name),
+                    last_name: decryptData(val.user.last_name),
+                    status: val.user.status,
+                    profile_image: val.user.profile_image,
                 }
+            }
         })
         res.status(200).json({ message: "Notification data fetch successfully.", success: true, notification: finalData })
     } catch (error) {
@@ -437,8 +381,8 @@ const deleteLeave = async (req, res) => {
         const deletedUser = await Leave.findByIdAndDelete({ _id: id });
 
         if (deletedUser) {
-            let roleData = await role.findOne({_id: req.user.role_id});
-            if(roleData.name.toLowerCase() !== "admin"){
+            let roleData = await role.findOne({ _id: req.user.role_id });
+            if (roleData.name.toLowerCase() !== "admin") {
                 createActivity(req.user._id, "Leave deleted by")
             }
             return res.status(200).json({ success: true, message: "Data deleted successfully." });

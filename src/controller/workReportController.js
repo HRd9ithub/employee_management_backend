@@ -51,8 +51,8 @@ const createReport = async (req, res) => {
             totalHours
         });
         const response = await reportData.save();
-        if(req.permissions.name.toLowerCase() !== "admin"){
-            createActivity(req.user._id,"Work report added by")
+        if (req.permissions.name.toLowerCase() !== "admin") {
+            createActivity(req.user._id, "Work report added by")
         }
         return res.status(201).json({ success: true, message: "Data added successfully." })
 
@@ -121,152 +121,78 @@ const getReport = async (req, res) => {
         if (!a.isValid() || !b.isValid()) {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
-        let data = []
-        if(req.permissions.name.toLowerCase() !== "admin" || id){
-            // get project data in database
-         data = await report.aggregate([
-                {
-                    $match: {
-                        $and: [
-                            { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
-                            { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
-                        userId: new mongoose.Types.ObjectId(id || req.user._id)
-                    }
-                },
-                {
-                    $unwind: {
-                        path: '$work'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: '$work.project',
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $group: {
+
+        let identify = id || req.permissions.name.toLowerCase() !== "admin";
+
+        // get project data in database
+        let data = await report.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
+                        { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
+                    userId : !identify ? {$nin : []} : { $eq : new mongoose.Types.ObjectId(id || req.user._id)}
+                }
+            },
+            {
+                $unwind: {
+                    path: '$work'
+                }
+            },
+            {
+                $lookup: {
+                    from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
+                }
+            },
+            {
+                $unwind: {
+                    path: '$work.project',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    _id: {
+                        userId: '$userId',
+                        createdAt: '$createdAt',
+                        updatedAt: '$updatedAt',
+                        totalHours: '$totalHours',
+                        date: '$date',
                         _id: '$_id',
-                        _id: {
-                            userId: '$userId',
-                            createdAt: '$createdAt',
-                            updatedAt: '$updatedAt',
-                            totalHours: '$totalHours',
-                            date: '$date',
-                            _id: '$_id',
-    
-                        },
-                        work: {
-                            $push: '$work'
-                        }
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
-                    }
-                },
-                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-                {
-                    $project: {
-                        userId: "$_id.userId",
-                        totalHours: "$_id.totalHours",
-                        date: "$_id.date",
-                        work: 1,
-                        updatedAt: "$_id.updatedAt",
-                        _id: "$_id._id",
-                        "user.employee_id": 1,
-                        "user.profile_image": 1,
-                        "user.first_name": 1,
-                        "user.status": 1,
-                        "user.last_name": 1
+
+                    },
+                    work: {
+                        $push: '$work'
                     }
                 }
-            ])
-        }else{
-            data = await report.aggregate([
-                {
-                    $match: {
-                        $and: [
-                            { date: { $gte: moment(startDate).format("YYYY-MM-DD") } },
-                            { date: { $lte: moment(endDate).format("YYYY-MM-DD") } }],
-                    }
-                },
-                {
-                    $unwind: {
-                        path: '$work'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "projects", localField: "work.projectId", foreignField: "_id", as: "work.project"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: '$work.project',
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $group: {
-                        _id: '$_id',
-                        _id: {
-                            userId: '$userId',
-                            createdAt: '$createdAt',
-                            updatedAt: '$updatedAt',
-                            totalHours: '$totalHours',
-                            date: '$date',
-                            _id: '$_id',
-    
-                        },
-                        work: {
-                            $push: '$work'
-                        }
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
-                    }
-                },
-                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-                {
-                    $match: {
-                        // "user.status": "Active",
-                        "user.delete_at": { $exists: false },
-                        "user.joining_date" : {"$lte" : new Date(moment(new Date()).format("YYYY-MM-DD"))},
-                        $or: [ 
-                            {"user.leaveing_date": {$eq: null}}, 
-                            {"user.leaveing_date": {$gt: new Date(moment(new Date()).format("YYYY-MM-DD"))}}, 
-                        ]
-                    }
-                },
-                {
-                    $project: {
-                        userId: "$_id.userId",
-                        totalHours: "$_id.totalHours",
-                        date: "$_id.date",
-                        work: 1,
-                        updatedAt: "$_id.updatedAt",
-                        _id: "$_id._id",
-                        "user.employee_id": 1,
-                        "user.profile_image": 1,
-                        "user.first_name": 1,
-                        "user.status": 1,
-                        "user.last_name": 1
-                    }
+            },
+            {
+                $lookup: {
+                    from: "users", localField: "_id.userId", foreignField: "_id", as: "user"
                 }
-            ])
-        }
+            },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    userId: "$_id.userId",
+                    totalHours: "$_id.totalHours",
+                    date: "$_id.date",
+                    work: 1,
+                    updatedAt: "$_id.updatedAt",
+                    _id: "$_id._id",
+                    "user.employee_id": 1,
+                    "user.profile_image": 1,
+                    "user.first_name": 1,
+                    "user.status": 1,
+                    "user.last_name": 1
+                }
+            }
+        ])
 
         let result = data.map((val) => {
-            return {...val,
+            return {
+                ...val,
                 user: {
                     first_name: decryptData(val.user.first_name),
                     last_name: decryptData(val.user.last_name),
@@ -289,7 +215,7 @@ const generatorPdf = async (req, res) => {
         let date = moment(new Date()).format("YYYY-MM") == month
 
         const startDate = moment(month).startOf('month').format('YYYY-MM-DD');
-        const endDate = date ? moment(new Date()).format('YYYY-MM-DD') :moment(month).endOf('month').format('YYYY-MM-DD');
+        const endDate = date ? moment(new Date()).format('YYYY-MM-DD') : moment(month).endOf('month').format('YYYY-MM-DD');
 
         // get project data in database
         let data = await report.aggregate([
@@ -406,7 +332,7 @@ const generatorPdf = async (req, res) => {
             return new Date(a.date) - new Date(b.date)
         });
 
-        let userData = await user.findOne({_id :id},{first_name :1,last_name :1});
+        let userData = await user.findOne({ _id: id }, { first_name: 1, last_name: 1 });
 
         //  ? generate total 
         let holidayCount = data2.length;
@@ -443,8 +369,8 @@ const generatorPdf = async (req, res) => {
 
         let ejsData = {
             reports: Test,
-            summary:summary,
-            name : userData.first_name.concat(" ",userData.last_name)
+            summary: summary,
+            name: userData.first_name.concat(" ", userData.last_name)
         }
         // get file path
         let filepath = path.resolve(__dirname, "../../views/reportTable.ejs");
@@ -480,7 +406,7 @@ const dowloandReport = async (req, res) => {
 
         // * get file path
         let filepath = path.resolve(__dirname, `../../${id.concat(".", "pdf")}`);
-        
+
         // response send for frontend
         res.download(filepath);
     } catch (error) {
