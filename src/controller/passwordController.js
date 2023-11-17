@@ -55,7 +55,23 @@ const updatePassword = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        let response = await PasswordSchema.findByIdAndUpdate({ _id: id }, { $set: req.body });
+        let user_name = encryptData(req.body.user_name)
+        let password = encryptData(req.body.password)
+        let title = encryptData(req.body.title)
+        let url = encryptData(req.body.url)
+        let note = encryptData(req.body.note)
+
+        let response = await PasswordSchema.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                title: title,
+                url: url,
+                note: note,
+                user_name: user_name,
+                password: password,
+                access_employee: req.body.access_employee
+            }
+        }, { new: true });
+
         if (response) {
             return res.status(200).json({ success: true, message: "Data updated successfully." })
         } else {
