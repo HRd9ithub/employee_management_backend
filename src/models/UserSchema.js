@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs")
 var jwt = require('jsonwebtoken');
 const decryptData = require('../helper/decryptData');
+const encryptData = require('../helper/encrptData');
 
 function firstNameGet(first_name) {
     return decryptData(first_name);
@@ -75,7 +76,7 @@ const userSchema = new mongoose.Schema({
     },
     country: {
         type: String,
-        default: "India"
+        default: encryptData("India")
     },
     state: {
         type: String,
@@ -99,10 +100,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         ref: "role"
     },
-    // department_id: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref : "department"
-    // },
     designation_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "designation"
@@ -137,7 +134,7 @@ userSchema.methods.generateToken = async function () {
     }
 }
 
-// password convert
+// password convert for hash
 userSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 10)

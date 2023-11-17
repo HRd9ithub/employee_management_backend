@@ -44,9 +44,8 @@ const createUser = async (req, res) => {
         let last_name = encryptData(req.body.last_name)
         let phone = encryptData(req.body.phone.toString())
         let gender = encryptData(req.body.gender)
-        let country = encryptData(req.body.country || "India")
 
-        const userData = new user({
+        const response = await user.create({
             employee_id: req.body.employee_id,
             first_name,
             last_name,
@@ -54,15 +53,14 @@ const createUser = async (req, res) => {
             phone,
             gender,
             status: req.body.status,
-            country,
             password: req.body.password,
             joining_date: req.body.joining_date,
             role_id: req.body.role_id,
             designation_id: req.body.designation_id,
             report_by: req.body.report_by,
-        });
-        const response = await userData.save();
-        return res.status(201).json({ success: true, message: "Data added successfully." })
+        })
+        return res.status(201).json({ success: true, message: "Data added successfully." });
+
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
