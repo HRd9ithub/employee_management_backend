@@ -61,7 +61,8 @@ const userLogin = async (req, res) => {
         const userData = await user.findOne({ email: req.body.email, joining_date: { $lte: moment(new Date()).format("YYYY-MM-DD") } })
         if (userData) {
             // password compare
-            let isMatch = await bcrypt.compare(req.body.password, userData.password);
+            let isMatch = await userData.comparePassword(req.body.password);
+
             if (isMatch) {
 
                 if (decryptData(userData.status) !== 'Inactive' && !userData.delete_at && (!userData.leaveing_date || moment(userData.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))) {
