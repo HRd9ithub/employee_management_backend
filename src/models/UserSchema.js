@@ -134,6 +134,11 @@ userSchema.methods.generateToken = async function () {
     }
 }
 
+userSchema.methods.comparePassword = async function (password) {
+    const isMatched = await bcrypt.compare(password, this.password);
+    return isMatched;
+}
+
 // password convert for hash
 userSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
