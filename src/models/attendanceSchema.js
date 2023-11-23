@@ -7,15 +7,15 @@ const attendanceSchema = new Schema({
             ref: "User",
             required: true
         },
-        date: {
+        timestamp: {
             type: Date,
             required: true
         },
-        login_time: {
+        clock_in: {
             type: String,
             required: true
         },
-        logout_time: {
+        clock_out: {
             type: String,
             required: false
         },

@@ -5,8 +5,8 @@ const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
 
 
-// add login time
-const addLogin = async (req, res) => {
+// add clockIn time
+const clockIn = async (req, res) => {
     try {
 
         const errors = expressValidator.validationResult(req)
@@ -21,8 +21,8 @@ const addLogin = async (req, res) => {
 
         const data = {
             userId: req.user._id,
-            date: new Date(),
-            login_time: req.body.login_time
+            timestamp: moment(new Date()).format("YYYY-MM-DD"),
+            clock_in: req.body.clock_in
         }
 
         // add database data
@@ -42,7 +42,7 @@ const addLogin = async (req, res) => {
 }
 
 // add logout time
-const addLogout = async (req, res) => {
+const clockOut = async (req, res) => {
     try {
 
         const { id } = req.params;
@@ -57,8 +57,10 @@ const addLogout = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
+        const record = await attendance.findOne({_id : id})
+
         // generate total hours
-        req.body.totalHours = moment.utc(moment(req.body.logout_time, "HH:mm:ss").diff(moment(req.body.login_time, "HH:mm:ss"))).format("HH:mm")
+        req.body.totalHours = moment.utc(moment(req.body.clock_out, "HH:mm:ss").diff(moment(record.clock_in, "HH:mm:ss"))).format("HH:mm")
 
         const attendanceData = await attendance.findByIdAndUpdate({ _id: id }, req.body)
 
@@ -119,8 +121,8 @@ const getAttendance = async (req, res) => {
                     "user.profile_image": 1,
                     "userId": 1,
                     "date": 1,
-                    "login_time": 1,
-                    "logout_time": 1,
+                    "clock_in": 1,
+                    "clock_out": 1,
                     "totalHours": 1,
                 }
             }
@@ -137,17 +139,13 @@ const getAttendance = async (req, res) => {
             }
         })
 
-        const currentData = await attendance.find({createdAt : moment(new Date()).format("YYYY-MM-DD")});
+        const currentData = await attendance.find({ timestamp: moment(new Date()).format("YYYY-MM-DD") }).sort({createdAt : -1});
 
-        const toggle = currentData.every((val) => {
-            return !val.logout_time
-        })
 
         return res.status(200).json({
             success: true,
             message: 'Successfully fetched data',
             data: result,
-            toggle,
             currentData
         })
     } catch (error) {
@@ -159,4 +157,4 @@ const getAttendance = async (req, res) => {
 }
 
 
-module.exports = { addLogin, addLogout,getAttendance }
+module.exports = { clockIn, clockOut, getAttendance }

@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { addLogin, addLogout, getAttendance } = require("../controller/attendanceController");
+const { getAttendance, clockIn, clockOut } = require("../controller/attendanceController");
 const { check } = require("express-validator");
 const Auth = require("../middleware/auth");
 const { attendancePermission } = require("../middleware/permission");
@@ -7,19 +7,18 @@ const { attendancePermission } = require("../middleware/permission");
 const route = Router();
 
 // validation part
-const addvalidation = [
-    check("login_time", "Log in time is required.").notEmpty()
+const clockInvalidation = [
+    check("clock_in", "clock in time is required.").notEmpty()
 ]
 // validation part
-const updatevalidation = [
-    check("login_time", "Log in time is required.").notEmpty(),
-    check("logout_time", "Log in time is required.").notEmpty(),
+const clockOutvalidation = [
+    check("clock_out", "clock out time is required.").notEmpty(),
 ]
 
 
-route.post("/",Auth,attendancePermission,addvalidation, addLogin);
+route.post("/",Auth,attendancePermission,clockInvalidation, clockIn);
 
-route.put("/:id",Auth,attendancePermission,updatevalidation, addLogout);
+route.put("/:id",Auth,attendancePermission,clockOutvalidation, clockOut);
 
 route.get("/", Auth,attendancePermission,getAttendance);
 
