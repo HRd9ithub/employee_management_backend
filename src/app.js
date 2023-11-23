@@ -28,6 +28,7 @@ const ReportRequestRoute = require('./Routes/reportRequestRoute')
 const connectDB = require("./DB/connection");
 const activityRoute = require('./Routes/activityRoute')
 const passwordRoute = require('./Routes/PasswordRoute')
+const attendanceRoute = require('./Routes/AttendanceRoute')
 
 const app = express();
 
@@ -70,7 +71,8 @@ app.use('/api/dashboard', DashboardRoute)
 app.use('/api/report', workReportRoute)
 app.use('/api/report_request', ReportRequestRoute)
 app.use('/api/activity', activityRoute)
-app.use('/api/password', passwordRoute)
+app.use('/api/password', passwordRoute);
+app.use('/api/attendance', attendanceRoute)
 
 app.all("*", (req, res, next) => {
    let err = new Error(`Can't find ${req.originalUrl} on the server.`);

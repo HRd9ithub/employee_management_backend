@@ -83,7 +83,7 @@ const defaultUser = async () => {
 
         const response = await roleData.save();
         if (response) {
-            const userData = new user({
+            const defaultUser = {
                 employee_id: "D9-01",
                 first_name: encryptData("Admin"),
                 last_name: encryptData("Admin"),
@@ -94,9 +94,10 @@ const defaultUser = async () => {
                 gender: encryptData("Male"),
                 password: "Admin@123",
                 role_id: response._id,
-            });
-            const abc = await userData.save();
-            if (abc) {
+            }
+
+            const userData = await user.create(defaultUser)
+            if (userData) {
                 console.log("Successfully created.")
             }
             let data = await menu.insertMany(menuData)
@@ -105,7 +106,6 @@ const defaultUser = async () => {
         console.log('error', error)
     }
 }
-
 
 connectDB().then(() => {
     defaultUser().then(() => {
