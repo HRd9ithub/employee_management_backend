@@ -6,7 +6,6 @@ const decryptData = require("../helper/decryptData");
 const user = require("../models/UserSchema");
 const regulationMail = require("../Handler/regulationEmail");
 
-
 // add clockIn time
 const clockIn = async (req, res) => {
     try {
@@ -168,12 +167,12 @@ const sendRegulationMail = async (req, res) => {
     try {
         const { clockIn, clockOut, explanation, userId, timestamp} = req.body;
 
-        const user = await user.findOne({ _id: userId })
-        if (!user) {
+        const userData = await user.findOne({ _id: userId })
+        if (!userData) {
             return res.status(404).json({success: false,message: 'Employee not found'})
         }
-        const userName = decryptData(user.first_name).concat(" " ,decryptData(user.last_name));
-
+        const name = userData.first_name.concat(" " ,userData.last_name);
+        
         // get email id for send mail
         const maillist = await user.aggregate([
             { 
@@ -200,12 +199,14 @@ const sendRegulationMail = async (req, res) => {
             }
         ]);
 
-        const response = await regulationMail(res,maillist,clockIn, clockOut, explanation, timestamp,userName);
+        const convertDate = moment(timestamp).format("DD MMM YYYY");
 
-        console.log('response :>> ', response);
+        await regulationMail( res, maillist, clockIn, clockOut, explanation, convertDate, name);
+
+        return res.status(200).json({ message : "Request sent successfully.", success: true })
 
     }catch(error){
-
+      return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 

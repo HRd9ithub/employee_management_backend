@@ -5,7 +5,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const { SMTP_EMAIL, SMTP_PASSWORD } = process.env
 
-const regulationMail = async (res,maillist,clockIn, clockOut, explanation, timestamp,userName) => {
+const regulationMail = async (res,maillist,clockIn, clockOut, explanation, timestamp,name) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -22,7 +22,7 @@ const regulationMail = async (res,maillist,clockIn, clockOut, explanation, times
         // read file using fs module
         const htmlstring = fs.readFileSync(filepath).toString();
         // add data dynamic
-        const content = ejs.render(htmlstring, { clockIn, clockOut, explanation, timestamp,userName });
+        const content = ejs.render(htmlstring, { clock_in_time : "", clock_out_time : "", explanation, timestamp, name });
 
 
         const from = `D9ithub <${SMTP_EMAIL}>`
@@ -33,12 +33,12 @@ const regulationMail = async (res,maillist,clockIn, clockOut, explanation, times
             const mailOptions = {
                 from: from,
                 to: element.email,
-                subject: mailsubject,
+                subject: "Change Request",
                 html: content
             };
-            const mailSend = await transporter.sendMail(mailOptions);
+            await transporter.sendMail(mailOptions);
         });
-        
+
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
