@@ -49,6 +49,11 @@ const menuData = [{
     "icon": "fa-solid fa-clock"
 },
 {
+    "name": "Attendance",
+    "path": "/attendance",
+    "icon": "fa-solid fa-user-check"
+},
+{
     "name": "Activity Logs",
     "path": "/activity",
     "icon": "fa-solid fa-clock-rotate-left"
@@ -72,7 +77,8 @@ const menuData = [{
     "name": "Password",
     "path": "/password",
     "icon": "fa-solid fa-gear"
-}]
+}
+]
 
 const defaultUser = async () => {
     try {

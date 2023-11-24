@@ -3,6 +3,8 @@ const moment = require("moment");
 const attendance = require("../models/attendanceSchema");
 const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
+const user = require("../models/UserSchema");
+const regulationMail = require("../Handler/regulationEmail");
 
 
 // add clockIn time
@@ -125,7 +127,7 @@ const getAttendance = async (req, res) => {
                     "user.status": 1,
                     "user.profile_image": 1,
                     "userId": 1,
-                    "date": 1,
+                    "timestamp": 1,
                     "clock_in": 1,
                     "clock_out": 1,
                     "totalHours": 1,
@@ -161,5 +163,50 @@ const getAttendance = async (req, res) => {
     }
 }
 
+// regulation mail send function
+const sendRegulationMail = async (req, res) => {
+    try {
+        const { clockIn, clockOut, explanation, userId, timestamp} = req.body;
 
-module.exports = { clockIn, clockOut, getAttendance }
+        const user = await user.findOne({ _id: userId })
+        if (!user) {
+            return res.status(404).json({success: false,message: 'Employee not found'})
+        }
+        const userName = decryptData(user.first_name).concat(" " ,decryptData(user.last_name));
+
+        // get email id for send mail
+        const maillist = await user.aggregate([
+            { 
+                $lookup :
+                {
+                    from : "roles",
+                    localField : "role_id",
+                    foreignField : "_id",
+                    as : "role"
+                }
+            },
+            {$unwind : {path : "$role"}},
+            {
+                $match :
+                {
+                    "role.name" : { $in: ["ADMIN", "admin", "Admin"] }
+                }
+            },
+            {
+                $project : 
+                {
+                    email : 1 
+                }
+            }
+        ]);
+
+        const response = await regulationMail(res,maillist,clockIn, clockOut, explanation, timestamp,userName);
+
+        console.log('response :>> ', response);
+
+    }catch(error){
+
+    }
+}
+
+module.exports = { clockIn, clockOut, getAttendance, sendRegulationMail}
