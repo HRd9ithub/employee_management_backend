@@ -35,16 +35,20 @@
                             <strong style="color: #084c89;">Dear Sir/Ma'am,</strong>
                           </p>
                           <p style="color: #000000;font-size: .9375rem;font-weight: 600;text-align:justify;">
-                            <strong style="color: #084c89;">{employee}</strong> has recently requested to attendance adjustment for <strong style="color: #084c89;">{this Date}</strong>. He/She may requested to change his/her older details to below details.
+                            <strong style="color: #084c89;"><%= name %></strong> has recently requested to attendance adjustment for <strong style="color: #084c89;"><%= timestamp %></strong>. He/She may requested to change his/her older details to below details.
                           </p>
+                          <% if(clock_in_time) { %>
+                            <p style="color: #000000;font-size: .9375rem;font-weight: 600; margin-bottom: 0;">
+                              Clock In Time: <strong style="color: #084c89;"><%= clock_in_time %></strong> 
+                            </p>
+                          <% } %>
+                          <% if(clock_out_time) { %>
+                            <p style="color: #000000;font-size: .9375rem;font-weight: 600; margin-bottom: 0;">
+                              Clock Out Time: <strong style="color: #084c89;"><%= clock_out_time %></strong>
+                            </p>
+                          <% } %>
                           <p style="color: #000000;font-size: .9375rem;font-weight: 600; margin-bottom: 0;">
-                            Clock In Time: <strong style="color: #084c89;">{clock_in_time}</strong>
-                          </p>
-                          <p style="color: #000000;font-size: .9375rem;font-weight: 600; margin-bottom: 0;">
-                            Clock Out Time: <strong style="color: #084c89;">{clock_out_time}</strong>
-                          </p>
-                          <p style="color: #000000;font-size: .9375rem;font-weight: 600; margin-bottom: 0;">
-                            Explanation: Lorem, ipsum dolor sit amet consectetur adipisicing elit. Unde deleniti minima magni laboriosam dolor, omnis veniam aspernatur iure? Illo odio, sequi deleniti eveniet dolorem nihil placeat expedita? Quas, unde! Dicta repellat, sequi commodi, nam architecto totam atque ducimus dolores ratione recusandae blanditiis quasi deleniti debitis dolorum iure eos! Quaerat, reiciendis.
+                            <%= explanation %>
                           </p>
                           <p style="color: #000000;font-size: .9375rem;text-align:justify;">
                             <div>
