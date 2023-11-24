@@ -87,12 +87,17 @@ const clockOut = async (req, res) => {
 const getAttendance = async (req, res) => {
     try {
         const { id, startDate, endDate } = req.query;
-        const identify = id || req.permissions?.name?.toLowerCase() !== "admin";
+
+        const identify = req.permissions?.name?.toLowerCase() !== "admin";
 
         const value = await attendance.aggregate([
             {
                 $match: {
-                    userId: !identify ? { $nin: [] } : { $eq: new mongoose.Types.ObjectId(id || req.userId) }
+                    $and: [
+                        { timestamp: { $gte: new Date(startDate) } },
+                        { timestamp: { $lte: new Date(endDate) } }
+                    ],
+                    userId: !identify ? { $nin: [] } : { $eq: new mongoose.Types.ObjectId(req.user._id) }
                 }
             },
             {
@@ -132,21 +137,21 @@ const getAttendance = async (req, res) => {
             return {
                 ...val,
                 user: {
-                    first_name: decryptData(val.user.first_name),
-                    last_name: decryptData(val.user.last_name),
+                    name : decryptData(val.user.first_name).concat(" ",decryptData(val.user.last_name)),
                     status: val.user.status,
                 }
             }
         })
 
-        const currentData = await attendance.find({ timestamp: moment(new Date()).format("YYYY-MM-DD") }).sort({createdAt : -1});
+        const currentData = await attendance.find({ timestamp: moment(new Date()).format("YYYY-MM-DD"), userId : req.user._id }).sort({createdAt : -1});
 
 
         return res.status(200).json({
             success: true,
             message: 'Successfully fetched data',
             data: result,
-            currentData
+            currentData,
+            permissions :req.permissions
         })
     } catch (error) {
         return res.status(500).json({
