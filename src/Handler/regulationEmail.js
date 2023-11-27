@@ -22,7 +22,7 @@ const regulationMail = async (res,maillist,clockIn, clockOut, explanation, times
         // read file using fs module
         const htmlstring = fs.readFileSync(filepath).toString();
         // add data dynamic
-        const content = ejs.render(htmlstring, { clock_in_time : "", clock_out_time : "", explanation, timestamp, name });
+        const content = ejs.render(htmlstring, { clock_in_time : clockIn, clock_out_time : clockOut, explanation, timestamp, name });
 
 
         const from = `D9ithub <${SMTP_EMAIL}>`
