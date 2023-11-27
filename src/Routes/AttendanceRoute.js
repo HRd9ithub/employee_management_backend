@@ -10,9 +10,16 @@ const route = Router();
 const clockInvalidation = [
     check("clock_in", "clock in time is required.").notEmpty()
 ]
-// validation part
 const clockOutvalidation = [
     check("clock_out", "clock out time is required.").notEmpty(),
+]
+const regulationValidation = [
+    // check("clockIn", "Clock in time is required field.").notEmpty(),
+    // check("clockOut", "Clock out time is required field.").notEmpty(),
+    check("explanation", "Explanation is required field.").notEmpty(),
+    check("timestamp", "Timestamp is required field.").notEmpty(),
+    check("userId", "User id is required field.").isMongoId(),
+    check("id", "ID is required field.").isMongoId(),
 ]
 
 
@@ -23,7 +30,7 @@ route.put("/:id",Auth,attendancePermission,clockOutvalidation, clockOut);
 route.get("/", Auth,attendancePermission,getAttendance);
 
 // regulation email send route
-route.post("/regulation", Auth, sendRegulationMail);
+route.post("/regulation", Auth,regulationValidation, sendRegulationMail);
 
 
 module.exports = route;

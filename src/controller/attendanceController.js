@@ -5,6 +5,7 @@ const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
 const user = require("../models/UserSchema");
 const regulationMail = require("../Handler/regulationEmail");
+const attendanceRegulation = require("../models/attendanceregulationSchema");
 
 // add clockIn time
 const clockIn = async (req, res) => {
@@ -165,7 +166,17 @@ const getAttendance = async (req, res) => {
 // regulation mail send function
 const sendRegulationMail = async (req, res) => {
     try {
-        const { clockIn, clockOut, explanation, userId, timestamp} = req.body;
+        const { clockIn, clockOut, explanation, userId, timestamp,id} = req.body;
+
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
 
         const userData = await user.findOne({ _id: userId })
         if (!userData) {
@@ -202,6 +213,14 @@ const sendRegulationMail = async (req, res) => {
         const convertDate = moment(timestamp).format("DD MMM YYYY");
 
         await regulationMail( res, maillist, clockIn, clockOut, explanation, convertDate, name);
+
+        await attendanceRegulation.create({
+            userId,
+            clock_in: clockIn,
+            clock_out: clockOut,
+            explanation,
+            attendanceId: id
+        })
 
         return res.status(200).json({ message : "Request sent successfully.", success: true })
 
