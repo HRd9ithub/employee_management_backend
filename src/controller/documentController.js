@@ -1,5 +1,5 @@
 const document = require('../models/documentSchema');
-const { importDocument } = require('../middleware/documentUpload');
+const { importDocument } = require('../middlewares/documentUpload');
 const path = require("path");
 
 // add document function
@@ -125,7 +125,7 @@ const getDocument = async (req, res) => {
 
 // downloadFile
 const downloadFile = async (req, res) => {
-    let filePath = path.join(__dirname, "../../uploads/document");
+    let filePath = path.join(__dirname, "../../public/document");
     try {
         let { file } = req.query;
         if (!file) {

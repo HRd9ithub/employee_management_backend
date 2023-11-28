@@ -1,9 +1,9 @@
 const express = require("express");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { body } = require("express-validator");
 const { addRole, singleRole, checkRole, updateRole, getRole } = require("../controller/roleController");
 const role = require("../models/roleSchema");
-const { rolePermission } = require("../middleware/permission");
+const { rolePermission } = require("../middlewares/permission");
 const roleRoute = express.Router();
 
 // single data

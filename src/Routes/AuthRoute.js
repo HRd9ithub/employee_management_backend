@@ -1,7 +1,7 @@
 const express = require("express")
 const expressValidator = require("express-validator");
 const { userLogin, verifyOtp, mailSend, resetPassword, userLogout, ResendOtp, checkLink } = require("../controller/loginController");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const AuthRoute = express.Router();
 
 // login api 

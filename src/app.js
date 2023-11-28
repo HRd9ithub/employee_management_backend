@@ -1,34 +1,33 @@
 require('dotenv').config()
 const express = require("express")
-var cors = require('cors')
-require("./middleware/CreateFolder")
+var cors = require('cors');
 const path = require("path")
 var bodyParser = require('body-parser');
-const userRoute = require("./Routes/UserRoute");
-const AuthRoute = require("./Routes/AuthRoute");
-const designationRoute = require('./Routes/DesignationRoute');
-const menuRoute = require('./Routes/MenuRoute');
-const holidayRoute = require('./Routes/HolidayRoute');
-const leaveTypeRoute = require('./Routes/leaveTypeRoute');
-const accountRoute = require('./Routes/AccountRoute');
-const timeSheetRoute = require('./Routes/timesheetRoute');
-const documentRoute = require('./Routes/documentRoute');
-const roleRoute = require('./Routes/roleRoute');
-const emergencyRoute = require('./Routes/emergencyRoute');
-const userDocumentRoute = require('./Routes/userDocumentRoute');
-const educationRoute = require('./Routes/educationRoute');
-const leaveRouter = require('./Routes/leaveRoute');
-const DashboardRoute = require('./Routes/DashboardRoute');
+const userRoute = require("./routes/userRoute");
+const AuthRoute = require("./routes/authRoute");
+const designationRoute = require('./routes/designationRoute');
+const menuRoute = require('./routes/menuRoute');
+const holidayRoute = require('./routes/holidayRoute');
+const leaveTypeRoute = require('./routes/leaveTypeRoute');
+const accountRoute = require('./routes/accountRoute');
+const timeSheetRoute = require('./routes/timesheetRoute');
+const documentRoute = require('./routes/documentRoute');
+const roleRoute = require('./routes/roleRoute');
+const emergencyRoute = require('./routes/emergencyRoute');
+const userDocumentRoute = require('./routes/userDocumentRoute');
+const educationRoute = require('./routes/educationRoute');
+const leaveRouter = require('./routes/leaveRoute');
+const DashboardRoute = require('./routes/dashboardRoute');
 const { swaggerServe, swaggerSetup } = require('./config');
-const projectRoute = require('./Routes/ProjectRoute')
-const workReportRoute = require('./Routes/WorkReportRoute')
-const ReportRequestRoute = require('./Routes/reportRequestRoute')
+const projectRoute = require('./routes/projectRoute')
+const workReportRoute = require('./routes/workReportRoute')
+const ReportRequestRoute = require('./routes/reportRequestRoute')
 
 // add database
 const connectDB = require("./DB/connection");
-const activityRoute = require('./Routes/activityRoute')
-const passwordRoute = require('./Routes/PasswordRoute')
-const attendanceRoute = require('./Routes/AttendanceRoute')
+const activityRoute = require('./routes/activityRoute')
+const passwordRoute = require('./routes/passwordRoute')
+const attendanceRoute = require('./routes/attendanceRoute')
 
 const app = express();
 
@@ -44,9 +43,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 // image get route
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
-app.use('/uploads', express.static(path.join(__dirname, '../uploads/document')))
-app.use('/uploads', express.static(path.join(__dirname, '../')));
+app.use('/uploads', express.static(path.resolve('./public/images')))
+app.use('/uploads', express.static(path.join(__dirname, '../public/document')))
+app.use('/uploads', express.static(path.join(__dirname, '../public')));
 
 // swagger route
 app.use("/api-docs", swaggerServe, swaggerSetup);

@@ -1,8 +1,7 @@
 const express = require("express");
-const Auth = require("../middleware/auth");
-const { body } = require("express-validator");
+const Auth = require("../middlewares/authtication");
 const { addDocument, getDocument, updateDocument, deleteDocument, downloadFile } = require("../controller/documentController");
-const { documentPermission } = require("../middleware/permission");
+const { documentPermission } = require("../middlewares/permission");
 const documentRoute = express.Router();
 
 

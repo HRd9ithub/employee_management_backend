@@ -2,9 +2,9 @@ const express = require("express")
 // const {projectPermission } = require("../middleware/permission");
 // const { createProject, getProject, updateProject, deleteProject } = require("../controller/projectController");
 const { check } = require("express-validator");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { createReport, getReport, updateReport, generatorPdf, dowloandReport } = require("../controller/workReportController");
-const { reportPermission } = require("../middleware/permission");
+const { reportPermission } = require("../middlewares/permission");
 
 const workReportRoute = express.Router();
 

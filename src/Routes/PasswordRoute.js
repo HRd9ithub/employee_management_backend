@@ -1,8 +1,8 @@
 let express = require("express");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { createPassword, getPassword, updatePassword, deletePassword } = require("../controller/passwordController");
 const { check } = require("express-validator");
-const { passwordPermission } = require("../middleware/permission");
+const { passwordPermission } = require("../middlewares/permission");
 let passwordRoute = express.Router();
 
 let passwordValidation = [

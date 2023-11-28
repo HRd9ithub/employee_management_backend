@@ -1,5 +1,5 @@
 const expressValidator = require("express-validator");
-const user = require("../models/UserSchema");
+const user = require("../models/userSchema");
 const report = require("../models/workReportSchema");
 const Leave = require("../models/leaveSchema");
 const holiday = require("../models/holidaySchema");
@@ -386,7 +386,8 @@ const generatorPdf = async (req, res) => {
             orientation: "portrait",
             border: "10mm"
         }
-        pdf.create(handleData, options).toFile(id.concat(".", "pdf"), (error, response) => {
+        const pathData = path.join(__dirname,`../../public/document/${id.concat(".", "pdf")}`)
+        pdf.create(handleData, options).toFile(pathData, (error, response) => {
             if (error) {
                 return res.status(400).json({ message: error.message || 'Something went wrong. please try again.', success: false });
             }
@@ -405,7 +406,7 @@ const dowloandReport = async (req, res) => {
         let { id } = req.query;
 
         // * get file path
-        let filepath = path.resolve(__dirname, `../../${id.concat(".", "pdf")}`);
+        let filepath = path.resolve(__dirname, `../../public/document/${id.concat(".", "pdf")}`);
 
         // response send for frontend
         res.download(filepath);

@@ -3,9 +3,9 @@ const moment = require("moment");
 const attendance = require("../models/attendanceSchema");
 const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
-const user = require("../models/UserSchema");
-const regulationMail = require("../Handler/regulationEmail");
-const Attendance_Regulation = require("../models/attendanceregulationSchema");
+const user = require("../models/userSchema");
+const regulationMail = require("../handler/regulationEmail");
+const Attendance_Regulation = require("../models/attendanceRegulationSchema");
 const Attendance_Comment = require("../models/attendanceCommentSchema");
 
 // add clockIn time

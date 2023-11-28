@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const ReportRequestRoute = Router();
-const Auth = require('../middleware/auth');
+const Auth = require('../middlewares/authtication');
 const { check, validationResult } = require('express-validator');
 const ReportRequestSchema = require('../models/reportRequestSchema');
 const report = require('../models/workReportSchema');
