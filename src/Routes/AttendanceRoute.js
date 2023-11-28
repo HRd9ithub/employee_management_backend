@@ -1,8 +1,8 @@
 const { Router } = require("express");
 const { getAttendance, clockIn, clockOut, sendRegulationMail, getAttendanceRegulation, addComment } = require("../controller/attendanceController");
 const { check } = require("express-validator");
-const Auth = require("../middleware/auth");
-const { attendancePermission } = require("../middleware/permission");
+const Auth = require("../middlewares/authtication");
+const { attendancePermission } = require("../middlewares/permission");
 
 const route = Router();
 

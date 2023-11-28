@@ -1,6 +1,6 @@
 const express = require("express")
 const expressValidator = require("express-validator");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { addEditEduction, deleteEducation } = require("../controller/educationController");
 const educationRoute = express.Router();
 

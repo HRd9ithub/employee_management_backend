@@ -1,8 +1,8 @@
 const express = require("express")
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const expressValidator = require("express-validator");
 const { createDesignation, updateDesignation,deleteDesignation,getDesignation, checkDesignation} = require("../controller/designationController");
-const { designationtPermission } = require("../middleware/permission");
+const { designationtPermission } = require("../middlewares/permission");
 
 const designationRoute = express.Router();
 

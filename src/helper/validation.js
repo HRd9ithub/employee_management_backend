@@ -1,5 +1,5 @@
 const { check } = require("express-validator");
-const user = require("../models/UserSchema");
+const user = require("../models/userSchema");
 
 exports.userValidation = [
     check("first_name", "First name is required.").isAlpha(),

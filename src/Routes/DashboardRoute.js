@@ -1,7 +1,7 @@
 const moment = require('moment');
 const { Router } = require('express');
-const Auth = require('../middleware/auth');
-const user = require('../models/UserSchema');
+const Auth = require('../middlewares/authtication');
+const user = require('../models/userSchema');
 const Leave = require('../models/leaveSchema');
 const timeSheet = require('../models/timeSheetSchema');
 const holiday = require('../models/holidaySchema');

@@ -1,5 +1,5 @@
 const express = require("express")
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { createMenu,updateMenu ,getMenu, deleteMenu} = require("../controller/menuController");
 
 const menuRoute = express.Router();

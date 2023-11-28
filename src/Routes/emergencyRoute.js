@@ -1,6 +1,6 @@
 const express = require("express")
 const expressValidator = require("express-validator");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { addEmergency } = require("../controller/emergencyController");
 const emergencyRoute = express.Router();
 

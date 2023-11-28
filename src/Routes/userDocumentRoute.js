@@ -1,6 +1,6 @@
 const express = require("express")
-const Auth = require("../middleware/auth");
-const { uploadSingleImage } = require("../middleware/documentUpload");
+const Auth = require("../middlewares/authtication");
+const { uploadSingleImage } = require("../middlewares/documentUpload");
 const user_document = require("../models/userDocumentSchema");
 const createActivity = require("../helper/addActivity");
 const role = require("../models/roleSchema");

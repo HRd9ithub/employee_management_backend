@@ -1,9 +1,9 @@
 const { Router } = require('express');
 const leaveRouter = Router();
-const Auth = require('../middleware/auth');
+const Auth = require('../middlewares/authtication');
 const { body } = require('express-validator');
 const { addLeave, getLeave, singleGetLeave, updateLeave, changeStatus, allChangeStatus, getNotifications, deleteLeave } = require('../controller/leaveController');
-const { leavePermission } = require('../middleware/permission');
+const { leavePermission } = require('../middlewares/permission');
 
 // Get all leave
 leaveRouter.get('/', Auth, leavePermission, getLeave)

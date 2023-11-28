@@ -1,11 +1,11 @@
 const express = require("express")
 var bodyParser = require('body-parser');
 const expressValidator = require("express-validator");
-const upload = require("../middleware/ImageProfile");
+const upload = require("../middlewares/ImageProfile");
 const { createUser, activeUser, getUser, updateUser, deleteUser, updateStatusUser, checkEmail, checkEmployeeId, changeImage, changePassword, getLoginInfo, getUserName } = require("../controller/userController");
-const Auth = require("../middleware/auth");
-const user = require("../models/UserSchema");
-const { userPermission } = require("../middleware/permission");
+const Auth = require("../middlewares/authtication");
+const user = require("../models/userSchema");
+const { userPermission } = require("../middlewares/permission");
 const { userValidation, passwordValidation } = require("../helper/validation");
 
 const userRoute = express.Router();

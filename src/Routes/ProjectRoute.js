@@ -1,6 +1,6 @@
 const express = require("express")
-const Auth = require("../middleware/auth");
-const {projectPermission } = require("../middleware/permission");
+const Auth = require("../middlewares/authtication");
+const {projectPermission } = require("../middlewares/permission");
 const { createProject, getProject, updateProject, deleteProject } = require("../controller/projectController");
 const { check } = require("express-validator");
 

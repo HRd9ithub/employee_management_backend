@@ -1,8 +1,8 @@
 const express = require("express")
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const expressValidator = require("express-validator");
 const { createHoliday, getHoliday, deleteHoliday,updateHoliday } = require("../controller/holidayController");
-const { holidayPermission } = require("../middleware/permission");
+const { holidayPermission } = require("../middlewares/permission");
 
 const holidayRoute = express.Router();
 

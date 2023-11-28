@@ -1,8 +1,8 @@
 const { default: mongoose } = require("mongoose");
-const user = require("../models/UserSchema")
+const user = require("../models/userSchema")
 const expressValidator = require("express-validator");
 const bcrypt = require("bcryptjs");
-const profile_image = require("../middleware/ImageProfile");
+const profile_image = require("../middlewares/ImageProfile");
 const loginInfo = require("../models/loginInfoSchema");
 const path = require("path");
 const role = require("../models/roleSchema");

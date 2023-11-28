@@ -1,8 +1,8 @@
 const express = require("express")
 const expressValidator = require("express-validator");
-const Auth = require("../middleware/auth");
+const Auth = require("../middlewares/authtication");
 const { createLeaveType,checkLeaveType ,getLeaveType, deleteLeaveType, updateLeaveType} = require("../controller/leaveTypeController");
-const { leaveTypePermission } = require("../middleware/permission");
+const { leaveTypePermission } = require("../middlewares/permission");
 
 const leaveTypeRoute = express.Router();
 
