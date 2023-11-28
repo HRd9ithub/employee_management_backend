@@ -5,7 +5,8 @@ const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
 const user = require("../models/UserSchema");
 const regulationMail = require("../Handler/regulationEmail");
-const attendanceRegulation = require("../models/attendanceregulationSchema");
+const Attendance_Regulation = require("../models/attendanceregulationSchema");
+const Attendance_Comment = require("../models/attendanceCommentSchema");
 
 // add clockIn time
 const clockIn = async (req, res) => {
@@ -59,10 +60,10 @@ const clockOut = async (req, res) => {
             return res.status(400).json({ error: err, success: false })
         }
 
-        const record = await attendance.findOne({_id : id})
+        const record = await attendance.findOne({ _id: id })
 
         // generate total hours
-        req.body.totalHours = moment.utc(moment(req.body.clock_out, "HH:mm:ss").diff(moment(record.clock_in, "HH:mm:ss"))).format("HH:mm")
+        req.body.totalHours = moment.utc(moment(req.body.clock_out, "HH:mm:ss A").diff(moment(record.clock_in, "HH:mm:ss A"))).format("HH:mm")
 
         const attendanceData = await attendance.findByIdAndUpdate({ _id: id }, req.body)
 
@@ -103,14 +104,30 @@ const getAttendance = async (req, res) => {
                 }
             },
             {
-                $lookup: {
-                    from: "users", localField: "userId", foreignField: "_id", as: "user"
+                $group:
+                {
+                    _id: {
+                        date: "$timestamp",
+                        userId: "$userId"
+                    },
+                    "child": { "$push": "$$ROOT" },
                 }
             },
-            { $unwind: { path: "$user" } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id.userId",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    "path": "$user",
+                }
+            },
             {
                 $match: {
-                    // "user.status": "Active",
                     "user.delete_at": { $exists: false },
                     "user.joining_date": { "$lte": new Date(moment(new Date()).format("YYYY-MM-DD")) },
                     $or: [
@@ -119,18 +136,12 @@ const getAttendance = async (req, res) => {
                     ]
                 }
             },
+            { $sort : { "_id.date" : -1 } },
             {
                 $project: {
-                    "user.employee_id": 1,
+                    child: 1,
                     "user.first_name": 1,
                     "user.last_name": 1,
-                    "user.status": 1,
-                    "user.profile_image": 1,
-                    "userId": 1,
-                    "timestamp": 1,
-                    "clock_in": 1,
-                    "clock_out": 1,
-                    "totalHours": 1,
                 }
             }
         ])
@@ -139,13 +150,13 @@ const getAttendance = async (req, res) => {
             return {
                 ...val,
                 user: {
-                    name : decryptData(val.user.first_name).concat(" ",decryptData(val.user.last_name)),
+                    name: decryptData(val.user.first_name).concat(" ", decryptData(val.user.last_name)),
                     status: val.user.status,
                 }
             }
         })
 
-        const currentData = await attendance.find({ timestamp: moment(new Date()).format("YYYY-MM-DD"), userId : req.user._id }).sort({createdAt : -1});
+        const currentData = await attendance.find({ timestamp: moment(new Date()).format("YYYY-MM-DD"), userId: req.user._id }).sort({ createdAt: -1 });
 
 
         return res.status(200).json({
@@ -153,7 +164,7 @@ const getAttendance = async (req, res) => {
             message: 'Successfully fetched data',
             data: result,
             currentData,
-            permissions :req.permissions
+            permissions: req.permissions
         })
     } catch (error) {
         return res.status(500).json({
@@ -166,7 +177,7 @@ const getAttendance = async (req, res) => {
 // regulation mail send function
 const sendRegulationMail = async (req, res) => {
     try {
-        const { clockIn, clockOut, explanation, userId, timestamp,id} = req.body;
+        const { clockIn, clockOut, explanation, userId, timestamp, id } = req.body;
 
         const errors = expressValidator.validationResult(req)
 
@@ -180,41 +191,45 @@ const sendRegulationMail = async (req, res) => {
 
         const userData = await user.findOne({ _id: userId })
         if (!userData) {
-            return res.status(404).json({success: false,message: 'Employee not found'})
+            return res.status(404).json({ success: false, message: 'Employee not found' })
         }
-        const name = userData.first_name.concat(" " ,userData.last_name);
+        const name = userData.first_name.concat(" ", userData.last_name);
         
+        const Attendance_Regulation_data = await Attendance_Regulation.findOne({ attendanceId: id, isDelete : {$exists : false} })
+        if (Attendance_Regulation_data) {
+            return res.status(422).json({ success: false, error: ["The request already exists."] })
+        }
         // get email id for send mail
         const maillist = await user.aggregate([
-            { 
-                $lookup :
+            {
+                $lookup:
                 {
-                    from : "roles",
-                    localField : "role_id",
-                    foreignField : "_id",
-                    as : "role"
+                    from: "roles",
+                    localField: "role_id",
+                    foreignField: "_id",
+                    as: "role"
                 }
             },
-            {$unwind : {path : "$role"}},
+            { $unwind: { path: "$role" } },
             {
-                $match :
+                $match:
                 {
-                    "role.name" : { $in: ["ADMIN", "admin", "Admin"] }
+                    "role.name": { $in: ["ADMIN", "admin", "Admin"] }
                 }
             },
             {
-                $project : 
+                $project:
                 {
-                    email : 1 
+                    email: 1
                 }
             }
         ]);
 
         const convertDate = moment(timestamp).format("DD MMM YYYY");
 
-        await regulationMail( res, maillist, clockIn, clockOut, explanation, convertDate, name);
+        await regulationMail(res, maillist, clockIn, clockOut, explanation, convertDate, name);
 
-        await attendanceRegulation.create({
+        await Attendance_Regulation.create({
             userId,
             clock_in: clockIn,
             clock_out: clockOut,
@@ -222,11 +237,115 @@ const sendRegulationMail = async (req, res) => {
             attendanceId: id
         })
 
-        return res.status(200).json({ message : "Request sent successfully.", success: true })
+        return res.status(200).json({ message: "Request sent successfully.", success: true })
 
-    }catch(error){
-      return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
+    } catch (error) {
+        return res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
 }
 
-module.exports = { clockIn, clockOut, getAttendance, sendRegulationMail}
+// 
+const getAttendanceRegulation = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const data = await Attendance_Regulation.aggregate([
+            {
+                $match: {
+                    attendanceId: new mongoose.Types.ObjectId(id),
+                    isDelete : {$exists : false}
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "attendances",
+                    localField: "attendanceId",
+                    foreignField: "_id",
+                    as: "attendance"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$attendance",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    userId: 1,
+                    clock_in: 1,
+                    attendanceId: 1,
+                    clock_out: 1,
+                    explanation: 1,
+                    "user.first_name": 1,
+                    "user.last_name": 1,
+                    "attendance.timestamp": 1
+                }
+            }
+        ]);
+
+        // data decrypt
+        const result = data.map((val) => {
+            return {
+                ...val,
+                user: {
+                    name: decryptData(val.user.first_name).concat(" ", decryptData(val.user.last_name)),
+                }
+            }
+        })
+
+        return res.status(200).json({ data: result, success: true,permissions: req.permissions })
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message || "Interner server error.", success: false })
+    }
+}
+
+// ADD COMMENT 
+const addComment = async (req, res) => {
+    try {
+        const { comment, status, attendanceRegulationId, clock_in,clock_out } = req.body;
+
+        const errors = expressValidator.validationResult(req)
+
+        let err = errors.array().map((val) => {
+            return val.msg
+        })
+        // check data validation error
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: err, success: false })
+        }
+
+        // generate total hours
+        req.body.totalHours = moment.utc(moment(clock_out, "HH:mm:ss A").diff(moment(clock_in, "HH:mm:ss A"))).format("HH:mm")
+
+        await Attendance_Comment.create({
+            comment, status, attendanceRegulationId
+        })
+
+        const response = await attendance.findByIdAndUpdate({_id : attendanceRegulationId},{$set : {clock_in,clock_out,totalHours : req.body.totalHours}})
+
+        await Attendance_Regulation.updateMany({attendanceId: attendanceRegulationId},{$set : {isDelete : true}})
+
+        return res.status(200).json({ message: "Data added successfully.", success: true })
+    } catch (error) {
+        return res.status(500).json({ message: error.message || "Interner server error.", success: false })
+    }
+}
+
+module.exports = { clockIn, clockOut, getAttendance, sendRegulationMail, getAttendanceRegulation, addComment }
