@@ -3,28 +3,37 @@ const mongoose = require("mongoose");
 
 
 const attendanceRegulationSchema = new mongoose.Schema({
-    userId : {
-        type : mongoose.Schema.Types.ObjectId,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required : true
+        required: true
     },
-    clock_in:{
-        type : String
+    clock_in: {
+        type: String,
+        required: true
     },
-    clock_out:{
-        type : String
+    clock_out: {
+        type: String,
+        required: true
     },
-    explanation:{
-        type : String,
-        required : true
+    explanation: {
+        type: String,
+        required: true
     },
-    attendanceId :{
-        type : mongoose.Schema.Types.ObjectId,
-        required : true,
-        ref:'Attendance'
+    isDelete: {
+        type: Boolean
+    },
+    attendanceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Attendance'
     }
-});
+},
+    {
+        timestamps: true
+    }
+);
 
-const attendanceRegulation = new mongoose.model("attendanceRegulation",attendanceRegulationSchema);
+const Attendance_Regulation = new mongoose.model("Attendance_Regulation", attendanceRegulationSchema);
 
-module.exports = attendanceRegulation;
+module.exports = Attendance_Regulation;
