@@ -116,7 +116,7 @@ const activeUser = async (req, res) => {
             }
         ])
 
-        let result = value.map((item) => {
+        const result = value.map((item) => {
             return {
                 ...item,
                 employee_id: item.employee_id,
@@ -185,7 +185,6 @@ const activeUser = async (req, res) => {
 // all user data fetch function
 const getUser = async (req, res) => {
     try {
-        // if (req.user) {
         const value = await user.aggregate([
             {
                 $match: {
@@ -224,19 +223,18 @@ const getUser = async (req, res) => {
                 }
             },
             { $unwind: { path: "$report", preserveNullAndEmptyArrays: true } },
-            {
-                $match: {
-                    "report.delete_at": { $exists: false },
-                    $or: [
-                        { "report.leaveing_date": { $eq: null } },
-                        { "report.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
-                    ]
-                }
-            },
+            // {
+            //     $match: {
+            //         "report.delete_at": { $exists: false },
+            //         $or: [
+            //             { "report.leaveing_date": { $eq: null } },
+            //             { "report.leaveing_date": { $gt: new Date(moment(new Date()).format("YYYY-MM-DD")) } },
+            //         ]
+            //     }
+            // },
             {
                 $project: {
                     "employee_id": 1,
-                    "profile_image": 1,
                     "first_name": 1,
                     "last_name": 1,
                     "email": 1,
@@ -244,41 +242,34 @@ const getUser = async (req, res) => {
                     "status": 1,
                     "role.name": 1,
                     "designation.name": 1,
-                    "leaveing_date": 1,
                     "report.first_name": 1,
                     "report.last_name": 1,
                     "report.status": 1,
                     "report._id": 1,
-                    "report.profile_image": 1
                 }
             }
-        ])
+        ]);
 
-        let data = value.filter((val) => {
-            return !val.leaveing_date || moment(val.leaveing_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD")
-        })
-
-        let result = data.map((item) => {
+        const result = value.map((item) => {
             return {
-                ...item,
-                first_name: decryptData(item.first_name),
-                last_name: decryptData(item.last_name),
+                _id : item._id,
+                name : decryptData(item.first_name).concat(" ", decryptData(item.last_name)),
                 employee_id: item.employee_id,
-                profile_image: item.profile_image,
                 email: item.email,
                 phone: decryptData(item.phone),
                 status: item.status,
                 report: {
                     _id: item.report._id,
-                    first_name: decryptData(item.report.first_name),
+                    name :decryptData(item.report.first_name).concat(" ", decryptData(item.report.last_name)),
                     last_name: decryptData(item.report.last_name),
                     status: item.report.status,
-                    profile_image: item.report.profile_image,
+                },
+                role:{
+                    name: item.role.name
                 }
             }
         })
         return res.status(200).json({ success: true, message: "User data fetch successfully.", data: result, permissions: req.permissions })
-        // }
     } catch (error) {
         res.status(500).json({ message: error.message || 'Internal server Error', success: false })
     }
@@ -332,7 +323,7 @@ const updateUser = async (req, res) => {
             });
 
             if (response) {
-                let roleData = await role.findOne({ _id: req.user.role_id });
+                const roleData = await role.findOne({ _id: req.user.role_id });
                 if (roleData.name.toLowerCase() !== "admin") {
                     createActivity(req.user._id, "Profile Details updated by");
                 }
@@ -349,14 +340,12 @@ const updateUser = async (req, res) => {
 // delete user data function
 const deleteUser = async (req, res) => {
     try {
-        // check email exist or not
+        // check user exist or not
         const data = await user.findOne({ _id: req.params.id })
 
         if (!data) {
             return res.status(404).json({ message: "User are not found.", success: false })
         } else {
-            // req.body.deleteAt = Date.now()
-            // data update method
             const response = await user.findByIdAndUpdate({ _id: req.params.id }, { delete_at: Date.now() });
             return res.status(200).json({ success: true, message: "Data deleted successfully." })
         }
@@ -368,7 +357,7 @@ const deleteUser = async (req, res) => {
 // update user status function
 const updateStatusUser = async (req, res) => {
     try {
-        // check email exist or not
+        // check user exist or not
         const data = await user.findOne({ _id: req.params.id })
 
         if (!data) {
@@ -441,15 +430,15 @@ const changeImage = async (req, res) => {
         }
 
         // Everything went fine.
-        let file = req.file;
+        const file = req.file;
 
         try {
-            if (req.file) {
-                let roleData = await role.findOne({ _id: req.user.role_id });
+            if (file) {
+                const roleData = await role.findOne({ _id: req.user.role_id });
                 if (roleData.name.toLowerCase() !== "admin") {
                     createActivity(req.user._id, "Profile image updated by");
                 }
-                let data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: `uploads/${req.file.filename}` });
+                const data = await user.findByIdAndUpdate({ _id: req.user._id }, { profile_image: `uploads/${file.filename}` });
                 return res.status(200).json({ message: "Profile image updated successfully.", success: true })
             } else {
                 return res.status(400).json({ message: "Profile Image is Required.", success: false })
@@ -476,20 +465,20 @@ const changePassword = async (req, res) => {
         const userData = await user.findOne({ _id: req.user._id }).select("-token")
 
         // password compare
-        let isMatch = await bcrypt.compare(req.body.current_password, userData.password);
+        const isMatch = await bcrypt.compare(req.body.current_password, userData.password);
 
         if (!isMatch) {
             return res.status(400).json({ error: ["Incorrect current password."], success: false })
         }
-        let roleData = await role.findOne({ _id: userData.role_id });
+        const roleData = await role.findOne({ _id: userData.role_id });
         if (roleData.name.toLowerCase() !== "admin") {
             createActivity(userData._id, "Password Change by");
         }
         // password convert hash
-        let passwordHash = await bcrypt.hash(req.body.new_password, 10);
+        const passwordHash = await bcrypt.hash(req.body.new_password, 10);
 
 
-        let updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash, $unset: { token: "" } })
+        const updateData = await user.findByIdAndUpdate({ _id: userData._id }, { password: passwordHash, $unset: { token: "" } })
 
         res.status(200).json({ message: "Password updated successfully.", success: true })
     } catch (error) {
@@ -529,7 +518,6 @@ const getLoginInfo = async (req, res) => {
 // get user name information
 const getUserName = async (req, res) => {
     try {
-        let date = new Date().toISOString()
         const value = await user.aggregate([
             {
                 $match: {
@@ -555,13 +543,9 @@ const getUserName = async (req, res) => {
                     leaveing_date: 1
                 }
             }
-        ])
+        ]);
 
-        let data = value.filter((val) => {
-            return (!val.leaveing_date || val.leaveing_date && new Date(val.leaveing_date).toISOString() > date)
-        })
-
-        let result = data.map((val) => {
+        const result = value.map((val) => {
             return {
                 first_name: decryptData(val.first_name),
                 last_name: decryptData(val.last_name),
