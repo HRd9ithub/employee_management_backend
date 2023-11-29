@@ -20,12 +20,13 @@ const documentUpload = multer({
     }
 });
 
-const uploadSingleImage = documentUpload.fields([{ name: 'resume' },
-{ name: 'offer_letter' },
-{ name: 'joining_letter' },
-{ name: 'other' },
-{ name: 'photo' },
-{ name: 'id_proof' },
+const uploadSingleImage = documentUpload.fields([
+    { name: 'resume' },
+    { name: 'offer_letter' },
+    { name: 'joining_letter' },
+    { name: 'other' },
+    { name: 'photo' },
+    { name: 'id_proof' },
 ]);
 const importDocument = documentUpload.single("image");
 

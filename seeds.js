@@ -1,6 +1,6 @@
 require('dotenv').config();
 const role = require('./src/models/roleSchema');
-const user = require('./src/models/UserSchema');
+const user = require('./src/models/userSchema');
 const menu = require('./src/models/menuSchema');
 const { default: mongoose } = require('mongoose');
 const connectDB = require("./src/DB/connection");
@@ -106,7 +106,7 @@ const defaultUser = async () => {
             if (userData) {
                 console.log("Successfully created.")
             }
-            let data = await menu.insertMany(menuData)
+            await menu.insertMany(menuData)
         }
     } catch (error) {
         console.log('error', error)

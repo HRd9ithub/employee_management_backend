@@ -1,5 +1,5 @@
 require('dotenv').config()
-const express = require("express")
+const express = require("express");
 var cors = require('cors');
 const path = require("path")
 var bodyParser = require('body-parser');
@@ -22,12 +22,12 @@ const { swaggerServe, swaggerSetup } = require('./config');
 const projectRoute = require('./routes/projectRoute')
 const workReportRoute = require('./routes/workReportRoute')
 const ReportRequestRoute = require('./routes/reportRequestRoute')
-
-// add database
-const connectDB = require("./DB/connection");
 const activityRoute = require('./routes/activityRoute')
 const passwordRoute = require('./routes/passwordRoute')
 const attendanceRoute = require('./routes/attendanceRoute')
+
+// add database
+const connectDB = require("./DB/connection");
 
 const app = express();
 

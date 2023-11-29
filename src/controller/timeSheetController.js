@@ -4,21 +4,20 @@ const timeSheet = require("../models/timeSheetSchema");
 const { default: mongoose } = require("mongoose");
 const decryptData = require("../helper/decryptData");
 
-
 // get time sheet 
 const getTimeSheet = async (req, res) => {
-    let { id, startDate, endDate } = req.query;
+    const { id, startDate, endDate } = req.query;
     try {
-        var a = moment(startDate, "YYYY-MM-DD");
-        var b = moment(endDate, "YYYY-MM-DD");
+        const a = moment(startDate, "YYYY-MM-DD");
+        const b = moment(endDate, "YYYY-MM-DD");
         a.isValid();
         if (!a.isValid() || !b.isValid()) {
             return res.status(400).json({ message: "Please enter startDate and endDate.", success: false })
         }
 
-        let identify = id || req.permissions.name.toLowerCase() !== "admin";
+        const identify = id || req.permissions.name.toLowerCase() !== "admin";
 
-        let value = await timeSheet.aggregate([
+        const value = await timeSheet.aggregate([
             {
                 $match: {
                     $and: [
@@ -61,7 +60,7 @@ const getTimeSheet = async (req, res) => {
             }
         ])
 
-        let result = value.map((val) => {
+        const result = value.map((val) => {
             return {
                 ...val,
                 user: {
