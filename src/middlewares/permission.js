@@ -191,7 +191,7 @@ const activityPermission = async (req, res, next) => {
         req.permissions = data;
 
         if (req.method === "GET" && req.baseUrl == "/api/activity") {
-            data.permissions.list === 1 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin.", success: false })
+            data.permissions.list === 1 ? next() : res.status(403).json({ message: "You don't have permission to listing activity logs to the activity Data. please contact admin.", permissions: req.permissions, success: false })
         }
     } catch (error) {
         return res.status(500).json({ message: error.message, success: false })
