@@ -3,7 +3,6 @@ const express = require("express");
 var cors = require('cors');
 const path = require("path")
 var bodyParser = require('body-parser');
-const userroute = require("./routes/userRoute");
 const AuthRoute = require("./routes/authRoute");
 const designationRoute = require('./routes/designationRoute');
 const menuRoute = require('./routes/menuRoute');
@@ -24,7 +23,8 @@ const workReportRoute = require('./routes/workReportRoute')
 const ReportRequestRoute = require('./routes/reportRequestRoute')
 const activityRoute = require('./routes/activityRoute')
 const passwordRoute = require('./routes/passwordRoute')
-const attendanceRoute = require('./routes/attendanceRoute')
+const attendanceRoute = require('./routes/attendanceRoute');
+const userRoute = require("./routes/userRoute");
 
 // add database
 const connectDB = require("./DB/connection");
@@ -52,7 +52,7 @@ app.use("/api-docs", swaggerServe, swaggerSetup);
 
 // apiu route
 app.use('/api/auth', AuthRoute)
-app.use('/api/user', userroute)
+app.use('/api/user', userRoute);
 app.use('/api/project', projectRoute)
 app.use('/api/designation', designationRoute)
 app.use('/api/menu', menuRoute)
