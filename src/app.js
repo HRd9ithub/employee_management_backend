@@ -3,7 +3,7 @@ const express = require("express");
 var cors = require('cors');
 const path = require("path")
 var bodyParser = require('body-parser');
-const userRoute = require("./routes/userRoute");
+const userroute = require("./routes/userRoute");
 const AuthRoute = require("./routes/authRoute");
 const designationRoute = require('./routes/designationRoute');
 const menuRoute = require('./routes/menuRoute');
@@ -52,7 +52,7 @@ app.use("/api-docs", swaggerServe, swaggerSetup);
 
 // apiu route
 app.use('/api/auth', AuthRoute)
-app.use('/api/user', userRoute)
+app.use('/api/user', userroute)
 app.use('/api/project', projectRoute)
 app.use('/api/designation', designationRoute)
 app.use('/api/menu', menuRoute)
